@@ -116,11 +116,11 @@ def medallion(s,cx_mid,cy_mid,diam=360000,glyph='→',fill=CY,color=BG,size=14):
 s=0
 img(s,'hd-fork.jpg',W-M-5100000,1580000,5100000,3400000,'Hand-drawn illustration: robot dispatcher at a fork choosing between a fast courier bike and a heavy cargo van')
 x=M+80000; cx=5800000
-rect(s,x,740000,560000,40000,fill=CY,preset='roundRect')
-tb(s,x,860000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=0.9,cy=280000)
-tb(s,x,1220000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=1460000)
-tb(s,x,2800000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16.5,color=MUTED,cy=1300000)
-tb(s,x,4280000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.5,color=INK,bold=True,cy=380000)
+rect(s,x,480000,560000,40000,fill=CY,preset='roundRect')
+tb(s,x,590000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=0.9,cy=260000)
+tb(s,x,920000,cx,'Auto-routing\nLLMs',size=44,color=INK,font=HF,bold=True,cy=1380000)
+tb(s,x,2400000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16,color=MUTED,cy=1100000)
+tb(s,x,3620000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.2,color=INK,bold=True,cy=350000)
 footer(s,'',1)
 note(s,'大家好，欢迎来到今天的分享。今天我们聊一个几乎所有做 AI 应用的团队都绕不开的问题：市面上的模型越来越多、换代越来越快，我们怎么在保证效果不掉的前提下，把调用成本和等待时间都压下来？答案就是自动路由 Auto-routing。\n接下来这 45 分钟，我会结合微软自己的工程实践，从大家熟悉的 Microsoft Copilot、GitHub Copilot Fusion 和 Foundry Model Router 讲起，拆开看看它们底层到底是怎么选模型的，再重点介绍微软专门为程序控制打造的决策模型 Microsoft-Decision-1.1，最后通过三组真实的交互 Demo，看看怎么把这套能力用到你自己的系统里。')
 
@@ -935,7 +935,33 @@ def add_appear_animation(sl,item_shapes):
     )
     sl._element.insert_element_before(timing,'p:extLst')
 
-def build(out,img_dir):
+def add_pages_qr(sl, pages_url):
+    clean = (pages_url or '').strip()
+    if not clean:
+        return
+    import io, re, qrcode
+    display = re.sub(r'^https?://', '', clean).rstrip('/')
+    card = sl.shapes.add_shape(PRESETS['roundRect'], Emu(740000), Emu(4190000), Emu(4720000), Emu(1930000))
+    card.shadow.inherit = False
+    card.fill.solid(); card.fill.fore_color.rgb = rgb(CODEBG)
+    card.line.color.rgb = rgb(EDGE); card.line.width = Emu(12700)
+    pad = sl.shapes.add_shape(PRESETS['roundRect'], Emu(860000), Emu(4310000), Emu(1690000), Emu(1690000))
+    pad.shadow.inherit = False
+    pad.fill.solid(); pad.fill.fore_color.rgb = rgb('FFFFFF')
+    pad.line.color.rgb = rgb(EDGE); pad.line.width = Emu(9525)
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=12, border=2)
+    qr.add_data(clean); qr.make(fit=True)
+    img_buf = io.BytesIO()
+    qr.make_image(fill_color='#' + INK, back_color='#FFFFFF').save(img_buf, format='PNG')
+    img_buf.seek(0)
+    sl.shapes.add_picture(img_buf, Emu(875000), Emu(4325000), Emu(1660000), Emu(1660000))
+    cap = sl.shapes.add_textbox(Emu(2710000), Emu(4780000), Emu(2640000), Emu(280000))
+    write_text(cap.text_frame, {'text': 'SCAN FOR LIVE SLIDES & DEMO', 'size': 8.5, 'bold': True, 'color': CY, 'font': BF})
+    url_tb = sl.shapes.add_textbox(Emu(2710000), Emu(5060000), Emu(2640000), Emu(380000))
+    write_text(url_tb.text_frame, {'text': display, 'size': 11, 'bold': True, 'color': INK, 'font': MF})
+    url_tb.text_frame.paragraphs[0].runs[0].hyperlink.address = clean
+
+def build(out,img_dir,pages_url=None):
     validate_layout()
     out_dir=os.path.dirname(os.path.abspath(out))
     os.makedirs(out_dir,exist_ok=True)
@@ -960,6 +986,8 @@ def build(out,img_dir):
                 if o.get('rot'): sh.rotation=o['rot']/60000
                 if 'text' in o: write_text(sh.text_frame,o)
                 rendered.append(sh)
+        if k==0 and pages_url:
+            add_pages_qr(sl, pages_url)
         if k==3:
             add_appear_animation(sl,[rendered[start:start+6] for start in (4,10,16,22)])
         elif k==6:
@@ -973,4 +1001,5 @@ if __name__=='__main__':
     ap=argparse.ArgumentParser()
     ap.add_argument('--out',default=os.path.join(root,'dist','pptx','Auto-routing LLMs.pptx'))
     ap.add_argument('--images',default=os.path.join(here,'assets','images'))
-    a=ap.parse_args(); build(a.out,a.images)
+    ap.add_argument('--pages-url',default=os.environ.get('PAGES_URL'))
+    a=ap.parse_args(); build(a.out,a.images,pages_url=a.pages_url)
