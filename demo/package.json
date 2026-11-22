@@ -1,0 +1,20 @@
+{
+  "name": "auto-routing-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "node --check src/demo-cli.mjs && node --check src/web-demo-server.mjs && node --check src/record-web-demo.mjs",
+    "check": "npm run build",
+    "test": "npm run check && node src/demo-cli.mjs --demo all",
+    "demo:fusion": "node src/demo-cli.mjs --demo fusion",
+    "demo:foundry": "node src/demo-cli.mjs --demo foundry",
+    "demo:decision": "node src/demo-cli.mjs --demo decision",
+    "demo:all": "node src/demo-cli.mjs --demo all",
+    "demo:web": "node src/web-demo-server.mjs",
+    "demo:record": "node src/record-web-demo.mjs"
+  }
+}

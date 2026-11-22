@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 760" width="1120" height="760">
+  <defs>
+    <style>
+      .f-sans { font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .f-mono { font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; }
+    </style>
+  </defs>
+  <rect width="1120" height="760" rx="16" fill="#FFFFFF"/>
+  <text x="44" y="48" class="f-mono" font-size="13" font-weight="700" fill="#3F607E" letter-spacing="1.4">MICROSOFT-DECISION-1.1 ARCHITECTURE BENCHMARK  ·  $10,000 / MO BUDGET</text>
+  <text x="44" y="86" class="f-sans" font-size="27" font-weight="800" fill="#1E242B">Three Low-Overhead Decision Checks Cut Agent CAC 7.2×</text>
+  <text x="44" y="114" class="f-sans" font-size="15" fill="#57534C">Routing routine replies away from Frontier Sol and reserving human review for high-priority &amp; flagged drafts.</text>
+
+  <!-- Top KPI Strip -->
+  <g transform="translate(44, 138)">
+    <rect x="0" y="0" width="328" height="106" rx="12" fill="#F8F5EE" stroke="#DFD8C8"/>
+    <text x="22" y="30" class="f-mono" font-size="11.5" font-weight="700" fill="#6E685F">CUSTOMER ACQUISITION COST</text>
+    <text x="22" y="70" class="f-sans" font-size="32" font-weight="800" fill="#A84A35">$13.00</text>
+    <text x="136" y="68" class="f-sans" font-size="24" font-weight="700" fill="#6E685F">→</text>
+    <text x="170" y="70" class="f-sans" font-size="32" font-weight="800" fill="#1F583D">$1.81</text>
+    <text x="22" y="93" class="f-mono" font-size="12" font-weight="600" fill="#1F583D">7.2× lower CAC</text>
+
+    <rect x="352" y="0" width="328" height="106" rx="12" fill="#F8F5EE" stroke="#DFD8C8"/>
+    <text x="374" y="30" class="f-mono" font-size="11.5" font-weight="700" fill="#6E685F">32-REPLY ROUTER ACCURACY</text>
+    <text x="374" y="70" class="f-sans" font-size="32" font-weight="800" fill="#3F607E">100%</text>
+    <text x="472" y="68" class="f-sans" font-size="16" font-weight="600" fill="#6E685F">vs. 88% regex</text>
+    <text x="374" y="93" class="f-mono" font-size="12" font-weight="600" fill="#3F607E">p50: 180 ms  ·  32 calls = $0.00040</text>
+
+    <rect x="704" y="0" width="328" height="106" rx="12" fill="#F8F5EE" stroke="#DFD8C8"/>
+    <text x="726" y="30" class="f-mono" font-size="11.5" font-weight="700" fill="#6E685F">NEW CUSTOMERS / MONTH</text>
+    <text x="726" y="70" class="f-sans" font-size="32" font-weight="800" fill="#57534C">764</text>
+    <text x="796" y="68" class="f-sans" font-size="24" font-weight="700" fill="#6E685F">→</text>
+    <text x="830" y="70" class="f-sans" font-size="32" font-weight="800" fill="#3F607E">5,511</text>
+    <text x="726" y="93" class="f-mono" font-size="12" font-weight="600" fill="#57534C">Same $10,000 monthly budget</text>
+  </g>
+
+  <!-- Stacked Bar Waterfall Section -->
+  <text x="44" y="290" class="f-mono" font-size="12.5" font-weight="700" fill="#2B2B2B" letter-spacing="1">COST PER LEAD WATERFALL  ·  BY DECISION-1.1 CHECK</text>
+  <!-- Legend -->
+  <g transform="translate(560, 277)">
+    <rect x="0" y="0" width="14" height="14" rx="3" fill="#94A3B8"/>
+    <text x="20" y="12" class="f-sans" font-size="13" fill="#475569">Email ($0.002)</text>
+    <rect x="132" y="0" width="14" height="14" rx="3" fill="#3F607E"/>
+    <text x="152" y="12" class="f-sans" font-size="13" fill="#475569">Frontier Sol</text>
+    <rect x="254" y="0" width="14" height="14" rx="3" fill="#10B981"/>
+    <text x="274" y="12" class="f-sans" font-size="13" fill="#475569">MD-1.1 (~$0.00019)</text>
+    <rect x="418" y="0" width="14" height="14" rx="3" fill="#D97757"/>
+    <text x="438" y="12" class="f-sans" font-size="13" fill="#475569">Human Review</text>
+  </g>
+
+  <line x1="44" y1="308" x2="1076" y2="308" stroke="#E5E0D5" stroke-width="1.5"/>
+
+  <!-- Row 1: Baseline ($0.31) -->
+  <g transform="translate(44, 334)">
+    <text x="0" y="22" class="f-sans" font-size="16" font-weight="700" fill="#2B2B2B">1. Sol + Human Review</text>
+    <text x="0" y="44" class="f-mono" font-size="12" fill="#6E685F">100% reviewed  ·  CAC $13.00</text>
+    <!-- Scale: $0.31 = 680 px (2193 px per $1) -->
+    <rect x="260" y="8" width="6" height="42" rx="2" fill="#94A3B8"/>
+    <rect x="268" y="8" width="158" height="42" rx="4" fill="#3F607E"/>
+    <text x="347" y="34" text-anchor="middle" class="f-mono" font-size="12.5" font-weight="700" fill="#FFFFFF">Sol $0.072</text>
+    <rect x="428" y="8" width="526" height="42" rx="4" fill="#D97757"/>
+    <text x="691" y="34" text-anchor="middle" class="f-mono" font-size="13" font-weight="700" fill="#FFFFFF">Human Review $0.240 (77% of spend)</text>
+    <text x="968" y="35" class="f-mono" font-size="18" font-weight="800" fill="#A84A35">$0.31</text>
+  </g>
+
+  <!-- Row 2: + MD-1.1 Router ($0.14) -->
+  <g transform="translate(44, 422)">
+    <text x="0" y="22" class="f-sans" font-size="16" font-weight="700" fill="#2B2B2B">2. + MD-1.1 Router (choice)</text>
+    <text x="0" y="44" class="f-mono" font-size="12" fill="#3F607E">57% skip Sol  ·  CAC $5.77</text>
+    <rect x="260" y="8" width="6" height="42" rx="2" fill="#94A3B8"/>
+    <rect x="268" y="8" width="70" height="42" rx="4" fill="#3F607E"/>
+    <text x="303" y="34" text-anchor="middle" class="f-mono" font-size="11.5" font-weight="700" fill="#FFFFFF">$0.032</text>
+    <rect x="340" y="8" width="5" height="42" rx="2" fill="#10B981"/>
+    <rect x="347" y="8" width="230" height="42" rx="4" fill="#D97757"/>
+    <text x="462" y="34" text-anchor="middle" class="f-mono" font-size="12.5" font-weight="700" fill="#FFFFFF">Review $0.105 (44%)</text>
+    <text x="592" y="35" class="f-mono" font-size="18" font-weight="800" fill="#2B2B2B">$0.14</text>
+  </g>
+
+  <!-- Row 3: + MD-1.1 Escalation Scheduler ($0.07) -->
+  <g transform="translate(44, 510)">
+    <text x="0" y="22" class="f-sans" font-size="16" font-weight="700" fill="#2B2B2B">3. + MD-1.1 Scheduler (score)</text>
+    <text x="0" y="44" class="f-mono" font-size="12" fill="#3F607E">17% reviewed (P1–P3)  ·  CAC $2.63</text>
+    <rect x="260" y="8" width="6" height="42" rx="2" fill="#94A3B8"/>
+    <rect x="268" y="8" width="64" height="42" rx="4" fill="#3F607E"/>
+    <text x="300" y="34" text-anchor="middle" class="f-mono" font-size="11.5" font-weight="700" fill="#FFFFFF">$0.029</text>
+    <rect x="334" y="8" width="6" height="42" rx="2" fill="#10B981"/>
+    <rect x="342" y="8" width="90" height="42" rx="4" fill="#D97757"/>
+    <text x="387" y="34" text-anchor="middle" class="f-mono" font-size="12" font-weight="700" fill="#FFFFFF">$0.041</text>
+    <text x="448" y="35" class="f-mono" font-size="18" font-weight="800" fill="#2B2B2B">$0.07</text>
+  </g>
+
+  <!-- Row 4: + MD-1.1 Content Filter ($0.05) -->
+  <g transform="translate(44, 598)">
+    <text x="0" y="22" class="f-sans" font-size="16" font-weight="800" fill="#1F583D">4. + MD-1.1 Guardrail (noul)</text>
+    <text x="0" y="44" class="f-mono" font-size="12" font-weight="700" fill="#1F583D">8% reviewed  ·  CAC $1.81</text>
+    <rect x="260" y="8" width="6" height="42" rx="2" fill="#94A3B8"/>
+    <rect x="268" y="8" width="64" height="42" rx="4" fill="#3F607E"/>
+    <text x="300" y="34" text-anchor="middle" class="f-mono" font-size="11.5" font-weight="700" fill="#FFFFFF">$0.029</text>
+    <rect x="334" y="8" width="8" height="42" rx="2" fill="#10B981"/>
+    <rect x="344" y="8" width="44" height="42" rx="4" fill="#D97757"/>
+    <text x="404" y="35" class="f-mono" font-size="19" font-weight="800" fill="#1F583D">$0.05  (-84% / lead)</text>
+  </g>
+
+  <!-- Bottom note -->
+  <rect x="44" y="678" width="1032" height="50" rx="10" fill="#EDF6F1" stroke="#A7D7BE"/>
+  <text x="66" y="709" class="f-sans" font-size="14" font-weight="600" fill="#1F583D">All three Microsoft-Decision-1.1 checks combined cost ~$0.000189 per message ($0.042 / 1M input tokens, $0 output tokens).</text>
+</svg>
