@@ -20,7 +20,7 @@
 2. **成本压缩与缓存边界（Slides 5–6）**：引用 GenisisIQ 28 模型 × 8 多模态任务基准（前 14 名质量仅差 4.2 分，算力却相差 **163×**），证明常规工作无需动用昂贵旗舰，同时阐述 **10×–20×** 前缀缓存自然边界铁律。
 3. **微软产品实战与官方截图（Slides 7–13）**：结合官方产品截图拆解 **Microsoft Copilot Home**、**Copilot Cowork Auto**、**GitHub Copilot Fusion**（`Single` / `Cascade` / `Critique` 三种执行拓扑，AA 指数接近满血但省费约 50%）与 **Microsoft Foundry Model Router 工作原理**（非 LLM 毫秒级专用 ML 排序器、1–2% / 5–6% 质量带与子集重校准、`Adaptive` 消息指纹缓存亲和、排序前资格过滤 + 跨厂商参数自动适配，以及 `PTU（$0 模型费） → PAYG → 托管 → 子集内第 2 顺位模型` 两级容量与故障转移）。
 4. **底层架构：业界通用方案 vs. 微软方案（Slides 14–16）**：对比规则/向量路由、二分类偏好路由（如 RouteLLM 绑死模型 ID 的重训痛点）、级联 FrugalGPT 与生成式 LLM 路由；详解 GitHub **HyDRA（`arXiv:2605.17106`）** 4 头 `ModernBERT` 能力需求预测（86 ms CPU）+ 零重训配置短板匹配（等质量省费 **54.1%**）。
-5. **Microsoft-Decision-1.1 与交互式 Demo（Slides 17–26）**：介绍基于 Gemma 4 26B-A4B MoE 与定制推理引擎的 **Microsoft-Decision-1.1**（`$0.042/1M` 输入、输出免费，102 项盲测第一，支持文本/JSON/图片），详解 `/providers/microsoft/v1/systemone` 的 `choice`、`noul`、`score` 三大原语、四个生产示例、获客成本降低 **7.2×**（`$13 → $1.81`）案例，以及三个可逐步回放的交互式 Demo。
+5. **Microsoft-Decision-1.1 与交互式 Demo（Slides 17–26）**：介绍基于 Gemma 4 26B-A4B MoE 与定制推理引擎的 **Microsoft-Decision-1.1**（`$0.042/1M` 输入、输出免费，支持文本/JSON/图片），先讲清 `/providers/microsoft/v1/systemone` 的 `choice`、`noul`、`score` 三大原语与四个生产模式，再用 102 项盲测第一的硬指标和获客成本降低 **7.2×**（`$13 → $1.81`）案例佐证，最后通过三个交互式 Demo 串联全流程。
 
 ## 快速开始
 

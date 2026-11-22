@@ -506,37 +506,8 @@ for i,(v,l,col_) in enumerate(facts):
 footer(s,'Sources: Achint Srivastava, Command Line — Microsoft-Decision-1 (Oct 2026) & Microsoft-Decision-1.1 GA (Nov 17, 2026)',17)
 note(s,'这正是微软专门研发并开放 Microsoft-Decision-1.1 的初衷。我们平时熟悉的生成式大模型，训练目标是把回答写得通顺完整、讨人喜欢；你让它做个简单的路由选择或者合规判断，它也得逐词生成一堆解释，不仅动辄大几百毫秒，遇到缺失信息还特别容易自信地乱拍板。\n刚刚正式发布的 Decision-1.1 从根上换了思路：它基于 Gemma 4 的混合专家架构，每次推理只激活 4B 参数，配上专门定制的单次前向决策引擎，不吐一句多余的客套话，直接读进文本、JSON 甚至界面和实物照片，返回严格校准过的概率分布。标准输入一百万 Token 只要 4.2 美分，输出 Token 完全免费，平均一百二十多毫秒就能拿回结果；哪怕你故意把选项顺序打乱或者换种问法，它的判断翻转率也只有 1.3%，稳得像一个确定性的软件模块。')
 
-# ---------- 17 DECISION-1.1 BENCHMARKS & INTERNAL WINS
+# ---------- 17 DECISION-1.1 THREE TYPED PRIMITIVES
 s=17
-header(s,'05 · MICROSOFT DECISION-1.1 · BENCHMARKS','#1 across 102 decision benchmarks')
-ix=M; iy=1540000; icw=5950000; ich=3400000
-rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
-img(s,'decision-aa-index.svg',ix+40000,iy+40000,icw-80000,ich-80000,'Vector SVG chart: Artificial Analysis Decision Index v2.1 vs Time per Task — Microsoft-Decision-1.1 scores 68 (+6 pts, 2.2x faster)',fit='contain')
-card_box(s,ix,5080000,icw,920000,[
-    {'text':'102-BENCHMARK BLIND EVAL  ·  385,246 QUESTIONS','sizePt':11,'bold':True,'color':CY,'spaceAfterPt':6},
-    {'text':'#1 overall (78.8%): Tools & agents 86.6 · Routing 81.7 · Safety 85.6 · Consistency 91.8','sizePt':12,'color':INK},
-],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=95000,font=MF)
-rx=ix+icw+240000; rw=W-M-rx
-card_box(s,rx,1540000,rw,1240000,[
-    {'text':'AA Decision Index v2.1: Score 68','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
-    {'text':'+6 pts & 2.2× faster than Decision-1; ahead of Jev 1.14 (66), Gemini Decision 1 (66) & GPT-6 Luna Decisions (60).','sizePt':12.4,'color':MUTED},
-],fill=CARD,pad_x=200000,pad_y=95000)
-card_box(s,rx,2900000,rw,1240000,[
-    {'text':'Generalizes Across 7 of 9 Domains','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
-    {'text':'Leads classification, routing, tool selection, grounded rules, judging, safety & consistency with zero training overlap.','sizePt':12.4,'color':MUTED},
-],fill=CARD,pad_x=200000,pad_y=95000)
-card_box(s,rx,4260000,rw,1740000,[
-    {'text':'Powering Microsoft & 4,000+ Customers','sizePt':15.2,'bold':True,'color':AMB,'spaceAfterPt':7},
-    {'text':'• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Cowork Auto effort + Foundry Evaluation judge','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':12.2,'color':INK},
-],fill=CARD,pad_x=200000,pad_y=90000)
-footer(s,'Sources: Artificial Analysis Decision Index v2.1 (Nov 16, 2026) & Microsoft 102-Benchmark Report (Nov 14, 2026)',18)
-note(s,'别看它每次激活的参数少、调用近乎零成本，专门拉到决策赛道上比拼硬实力，它是实打实的全场第一。在第三方机构 Artificial Analysis 的决策指数评测里，Decision-1.1 拿到了最高的 68 分，平均耗时才 123 毫秒左右，把一众专用决策模型和通用旗舰都甩在了后面。\n在完全没有训练集重叠的 102 项公开基准、超过 38.5 万道盲测题里，它在工具调用、路由分流、安全风控、质量评判和一致性等七个核心领域全部排在榜首。上线才五周就已经有四千多家企业接进了生产环境；在微软内部，前面聊到的 Copilot 聊天转长任务、Cowork 动态调推理力度、Foundry 评测打分，还有比旗舰模型快 14 倍、便宜 200 倍的 Xbox 研究分析管线，底层全靠它在驱动。')
-
-# ---------- 18 DECISION-1.1 THREE TYPED PRIMITIVES
-s=18
 header(s,'05 · MICROSOFT DECISION-1.1 · API PRIMITIVES','Three primitives: choice, noul, score')
 gap=180000; cw3=(CW-2*gap)/3; y0=1540000; ch=2360000
 prims=[
@@ -561,11 +532,11 @@ api_code=(
     '    "escalate": {"type": "noul",   "instructions": "Needs immediate human on-call?"} } }'
 )
 tb(s,M+220000,4460000,CW-440000,api_code,size=11.5,color=CODE,font=MF,cy=1420000)
-footer(s,'Source: Microsoft Learn — Deploy and use Microsoft-Decision-1.1 in Microsoft Foundry',19)
-note(s,'落到代码集成上，它的接口被起名叫 systemone，意思就是替你的系统做直觉式的毫秒级快判断。你只需要把当前的业务上下文塞进 state，针对这一份状态可以同时提好几个强类型问题，一共就三种基础原语：\n想在好几条路径里挑一条，比如决定调哪个模型、分给哪个支持团队，就用 choice，它会同时返回每个候选项的校准概率——一旦最高概率连 0.75 都不到，你的代码就可以立刻停下来先向用户追问，绝不硬着头皮瞎猜；想设一道是非安检门，比如查草稿有没有违规许诺退款、买家拍的包装盒破没破，就用 noul，拿回一个 0 到 1 的单值概率；想给工单紧急度或者生成质量排个高低档位，就用 score，它会在有序等级上算出概率加权的期望分。最省事的是，这三种问题可以装进同一个请求里一次拿回全部结果。')
+footer(s,'Source: Microsoft Learn — Deploy and use Microsoft-Decision-1.1 in Microsoft Foundry',18)
+note(s,'那这个专门做决策的模型，在代码里到底长什么样？它的接口起名叫 systemone，意思就是替你的系统做直觉式的毫秒级快判断。你只需要把当前的业务上下文塞进 state，针对这一份状态可以同时提好几个强类型问题，一共就三种基础原语：\n想在好几条路径里挑一条，比如决定调哪个模型、分给哪个支持团队，就用 choice，它会同时返回每个候选项的校准概率——一旦最高概率连 0.75 都不到，你的代码就可以立刻停下来先向用户追问，绝不硬着头皮瞎猜；想设一道是非安检门，比如查草稿有没有违规许诺退款、买家拍的包装盒破没破，就用 noul，拿回一个 0 到 1 的单值概率；想给工单紧急度或者生成质量排个高低档位，就用 score，它会在有序等级上算出概率加权的期望分。最省事的是，这三种问题可以装进同一个请求里一次拿回全部结果。')
 
-# ---------- 19 FOUR CONCRETE DECISION-1.1 EXAMPLES
-s=19
+# ---------- 18 FOUR CONCRETE DECISION-1.1 EXAMPLES
+s=18
 header(s,'05 · MICROSOFT DECISION-1.1 · EXAMPLES','Four production Decision-1.1 patterns')
 g=180000; tw=(CW-g)/2; th=2120000; y0=1540000
 examples=[
@@ -589,8 +560,37 @@ for i,(title_,st_,body_,col_) in enumerate(examples):
         {'text':st_,'sizePt':11.8,'bold':True,'color':CODE,'spaceAfterPt':7},
         {'text':body_,'sizePt':12.8,'color':INK},
     ],fill=CARD,pad_x=220000,pad_y=110000)
-footer(s,'Best practice: tune instructions/criteria on labeled dev examples, randomize option order, and lock thresholds on holdout',20)
-note(s,'有了这三个原语，平时写 Agent 最让人头疼的外围控制逻辑基本都能优雅解决。比如搭一套自己的模型路由器，用 choice 把轻快提取、常规编码、深度评审和“信息不全需追问”列成四个选项，遇到缺附件或指令含糊的情况直接停下来问清楚，省得白烧旗舰模型的算力。\n再比如做客服工单入口，一次请求同时跑 choice 分组和 score 定级，看到客户投诉“床架塌了扭伤了腰”，严重度直接打到接近满分的 2.94，系统当场绕过自动回复、直接呼叫真人专员。做电商售后时，把退货照片传进 assets 跑个 noul，破损概率超过八成自动秒批换货，拿不准的再转人工核赔。甚至在你的生成式大模型写好草稿、发给客户之前，还能并排挂几道独立的 noul 做出口把关——一旦测出草稿里居然出现了推荐竞品或者私自打折的表述，过半数直接扣下重审。')
+footer(s,'Best practice: tune instructions/criteria on labeled dev examples, randomize option order, and lock thresholds on holdout',19)
+note(s,'有了这三个基础原语，平时写 Agent 最让人头疼的外围控制逻辑基本都能优雅解决。比如搭一套自己的模型路由器，用 choice 把轻快提取、常规编码、深度评审和“信息不全需追问”列成四个选项，遇到缺附件或指令含糊的情况直接停下来问清楚，省得白烧旗舰模型的算力。\n再比如做客服工单入口，一次请求同时跑 choice 分组和 score 定级，看到客户投诉“床架塌了扭伤了腰”，严重度直接打到接近满分的 2.94，系统当场绕过自动回复、直接呼叫真人专员。做电商售后时，把退货照片传进 assets 跑个 noul，破损概率超过八成自动秒批换货，拿不准的再转人工核赔。甚至在你的生成式大模型写好草稿、发给客户之前，还能并排挂几道独立的 noul 做出口把关——一旦测出草稿里居然出现了推荐竞品或者私自打折的表述，过半数直接扣下重审。')
+
+# ---------- 19 DECISION-1.1 BENCHMARKS & INTERNAL WINS
+s=19
+header(s,'05 · MICROSOFT DECISION-1.1 · BENCHMARKS','#1 across 102 decision benchmarks')
+ix=M; iy=1540000; icw=5950000; ich=3400000
+rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
+img(s,'decision-aa-index.svg',ix+40000,iy+40000,icw-80000,ich-80000,'Vector SVG chart: Artificial Analysis Decision Index v2.1 vs Time per Task — Microsoft-Decision-1.1 scores 68 (+6 pts, 2.2x faster)',fit='contain')
+card_box(s,ix,5080000,icw,920000,[
+    {'text':'102-BENCHMARK BLIND EVAL  ·  385,246 QUESTIONS','sizePt':11,'bold':True,'color':CY,'spaceAfterPt':6},
+    {'text':'#1 overall (78.8%): Tools & agents 86.6 · Routing 81.7 · Safety 85.6 · Consistency 91.8','sizePt':12,'color':INK},
+],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=95000,font=MF)
+rx=ix+icw+240000; rw=W-M-rx
+card_box(s,rx,1540000,rw,1240000,[
+    {'text':'AA Decision Index v2.1: Score 68','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
+    {'text':'+6 pts & 2.2× faster than Decision-1; ahead of Jev 1.14 (66), Gemini Decision 1 (66) & GPT-6 Luna Decisions (60).','sizePt':12.4,'color':MUTED},
+],fill=CARD,pad_x=200000,pad_y=95000)
+card_box(s,rx,2900000,rw,1240000,[
+    {'text':'Generalizes Across 7 of 9 Domains','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
+    {'text':'Leads classification, routing, tool selection, grounded rules, judging, safety & consistency with zero training overlap.','sizePt':12.4,'color':MUTED},
+],fill=CARD,pad_x=200000,pad_y=95000)
+card_box(s,rx,4260000,rw,1740000,[
+    {'text':'Powering Microsoft & 4,000+ Customers','sizePt':15.2,'bold':True,'color':AMB,'spaceAfterPt':7},
+    {'text':'• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper','sizePt':12.2,'color':INK,'spaceAfterPt':5},
+    {'text':'• Cowork Auto effort + Foundry Evaluation judge','sizePt':12.2,'color':INK,'spaceAfterPt':5},
+    {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':12.2,'color':INK,'spaceAfterPt':5},
+    {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':12.2,'color':INK},
+],fill=CARD,pad_x=200000,pad_y=90000)
+footer(s,'Sources: Artificial Analysis Decision Index v2.1 (Nov 16, 2026) & Microsoft 102-Benchmark Report (Nov 14, 2026)',20)
+note(s,'看到接口这么轻巧、每次只激活 4B 参数、价格还只要几美分，大家心里肯定会问一句：它判断得够准吗？跟满血旗舰模型比会不会掉点？我们直接看硬指标。在第三方机构 Artificial Analysis 的决策指数评测里，Decision-1.1 拿到了全场最高的 68 分，平均耗时才 123 毫秒左右，把一众专用决策模型和通用旗舰都甩在了后面。\n在完全没有训练集重叠的 102 项公开基准、超过 38.5 万道盲测题里，它在工具调用、路由分流、安全风控、质量评判和一致性等七个核心领域全部排在榜首。上线才五周就已经有四千多家企业接进了生产环境；在微软内部，前面聊到的 Copilot 聊天转长任务、Cowork 动态调推理力度、Foundry 评测打分，还有比旗舰模型快 14 倍、便宜 200 倍的 Xbox 研究分析管线，底层全靠它在驱动。')
 
 # ---------- 20 CONTOSO 7.2X CAC CASE STUDY VECTOR SVG
 s=20
@@ -612,7 +612,7 @@ for i,(t,sub,desc,col_) in enumerate(steps_cac):
         {'text':desc,'sizePt':12.1,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
 footer(s,'Source: Microsoft Command Line Architecture Case Study ($10k/mo sales inbox model; Demo 3)',21)
-note(s,'这几道毫秒级的小关卡串进真实业务里，商业回报非常可观。我们看这个月预算一万美元的销售线索跟进测算：如果按传统粗放做法，每封客户回信都直接扔给昂贵的旗舰 Sol 模型写回复，再因为怕大模型乱说话安排全量人工复核，算下来处理一条线索要花 3 毛 1，每签下一单的获客成本高达 13 美元。\n把 Decision-1.1 放进去之后，先守住入口分流——在 32 类真实客户邮件测试里，手写正则只能认对 88%，而它做到了 100% 全对，先把 57% 像单纯说声谢谢或者退订的邮件用零成本规则直接处理掉，根本不惊动大模型；接着用 score 给高意向客户排优先级，最后在出口用 noul 拦住乱提竞品的草稿。这三道检查加在一块儿，每封信的决策成本还不到万分之二美元，却把需要人工介入复核的比例从 100% 降到了 8%。同样一万块钱月预算，能转化出来的客户数翻了七倍多，获客成本直接从 13 美元压到了 1.81 美元。')
+note(s,'既有接近满分的判断准度，单次调用又几乎不花钱，把它串进真实业务里能带来多大的商业回报？我们看这个月预算一万美元的销售线索跟进测算：如果按传统粗放做法，每封客户回信都直接扔给昂贵的旗舰 Sol 模型写回复，再因为怕大模型乱说话安排全量人工复核，算下来处理一条线索要花 3 毛 1，每签下一单的获客成本高达 13 美元。\n把 Decision-1.1 放进去之后，先守住入口分流——在 32 类真实客户邮件测试里，手写正则只能认对 88%，而它做到了 100% 全对，先把 57% 像单纯说声谢谢或者退订的邮件用零成本规则直接处理掉，根本不惊动大模型；接着用 score 给高意向客户排优先级，最后在出口用 noul 拦住乱提竞品的草稿。这三道检查加在一块儿，每封信的决策成本还不到万分之二美元，却把需要人工介入复核的比例从 100% 降到了 8%。同样一万块钱月预算，能转化出来的客户数翻了七倍多，获客成本直接从 13 美元压到了 1.81 美元。')
 
 # ---------- 21 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
 s=21
