@@ -114,7 +114,7 @@ tb(s,x,1340000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=14
 tb(s,x,2940000,cx,'Understand how the right model is selected automatically per task to balance quality, cost and latency — using a proper decision model and Microsoft Copilot as examples.',size=16.5,color=MUTED,cy=1340000)
 tb(s,x,4560000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.5,color=INK,bold=True,cy=380000)
 tb(s,x,5000000,cx,'November 2026  ·  45 minutes  ·  L300 → L400',size=13.5,color=MUTED,cy=340000)
-note(s,'欢迎大家。今天分享的主题是《Auto-routing LLMs》：如何根据每个任务的特征自动选择最合适的模型与执行模式，在质量、成本和延迟三者之间取得工程最优解。\n我们将沿着五个核心维度展开：第一，从模型能力分化出发（参考微软 Charles Lamanna 分享的 Copilot 多模型实践）；第二，从真实基准测试看成本与人工等待时间的巨大差异；第三，拆解 Microsoft Copilot、GitHub Copilot Fusion 与 Foundry Model Router 在生产中的真实截图与机制；第四，深入模型底层架构对比业界做法与微软 HyDRA 的创新；第五，重点介绍专为结构化控制而生的 Microsoft-Decision-1.1，并通过三个可交互回放的 Demo 串联完整落地路径。')
+note(s,'大家好，欢迎来到今天的分享。今天我们聊一个几乎所有做 AI 应用的团队都绕不开的问题：市面上的模型越来越多、换代越来越快，我们怎么在保证效果不掉的前提下，把调用成本和等待时间都压下来？答案就是自动路由 Auto-routing。\n接下来这 45 分钟，我会结合微软自己的工程实践，从大家熟悉的 Microsoft Copilot、GitHub Copilot Fusion 和 Foundry Model Router 讲起，拆开看看它们底层到底是怎么选模型的，再重点介绍微软专门为程序控制打造的决策模型 Microsoft-Decision-1.1，最后通过三组真实的交互 Demo，看看怎么把这套能力用到你自己的系统里。')
 
 # ---------- 1 AGENDA
 s=1
@@ -137,7 +137,7 @@ for i,(n,t,d) in enumerate(items):
     tb(s,cx0,3280000,bw,t,size=16,color=INK,bold=True,cy=620000)
     tb(s,cx0,3980000,bw,d,size=13.5,color=MUTED,cy=780000)
 footer(s,'Level: L300 → L400  ·  Press D anytime in web view to open Interactive Routing Studio',2)
-note(s,'这是今天 45 分钟的路线图。前两部分回答“为什么要自动路由”（能力专精化与 163 倍成本差距）；第三部分通过真实产品界面截图看微软三大核心产品怎么路由；第四部分剖析底层算法（传统二分类路由 vs 微软能力向量解耦架构）；第五和第六部分聚焦 Microsoft-Decision-1.1 模型原语与三个交互式回放 Demo。')
+note(s,'这是今天整场分享的脉络。我们先聊明白为什么要做自动路由——一方面没有哪个模型样样通吃，另一方面不同模型干同一件活儿成本能差出一百多倍，而且这里面还藏着一条很容易踩坑的前缀缓存铁律。接着我们看微软自家的几款核心产品是怎么在生产环境里做调度的，再往下深挖一层，对比业界常见的路由算法和微软 HyDRA 架构的思路差异。后半程我们聚焦在 Microsoft-Decision-1.1 的三个控制原语上，并现场跑完三组真实链路。')
 
 # ---------- 2 PART 1: NO SINGLE BEST MODEL (CHARLES LAMANNA)
 s=2
@@ -163,7 +163,7 @@ card_box(s,rx,cyy,cw_,ch,[
 rect(s,M+cw_+180000,cyy+ch/2-260000,W-2*M-2*cw_-360000,520000,fill=CY,preset='rightArrow')
 tb(s,M,5480000,CW,'Shift from “which model is #1 overall?” to “which model fits this sub-task right now?”',size=19,bold=True,color=INK,cy=500000)
 footer(s,'Source: Charles Lamanna (Microsoft), Whiteboarding Auto in Copilot, LinkedIn, Nov 2026',3)
-note(s,'我们先从模型功能维度看为什么静态选模型已经过时。微软 Business & Industry Copilot 负责人 Charles Lamanna 在白板拆解中指出：今天已经不存在一个在所有任务上都排第一的万能模型。有的模型擅长深度推理与 Excel 建模，有的擅长高视觉表现力的幻灯片，有的专精图像生成，而检索邮件和提取字段用小模型（SLM）就能同样出色且快得多。\n更重要的是，在真实企业场景中，超过 90% 的 Microsoft Copilot 请求都已经通过 Auto 动态路由完成——模型选择不再是每次提问前强加给用户的心理负担，而变成了受企业合规策略约束的运行时调度系统。')
+note(s,'先问大家一个很现实的问题：你们团队现在用大模型，是不是还在挑一个综合表现最好的型号，然后所有请求从头绑到尾？如果全程绑死最贵的旗舰模型，账单翻几倍不说，连最简单的提取摘要也得跟着等半天；可要是全换成轻量小模型，稍微绕一点的逻辑推理又撑不住。更常见的是，大家为了查一个疑难杂症手动切到了最强模型，问题解决完根本想不起来切回去，后面一礼拜干杂活都在烧最贵的算力。\n微软 Copilot 负责人 Charles Lamanna 分享过一个很实在的判断：今天已经没有哪个模型能在所有任务上都排第一了，有的强在深度推理和算表，有的强在视觉生图，而翻邮件提字段用小模型又快又省。所以在今天的 Microsoft Copilot 里，超过九成的请求都已经交给了后台的 Auto，在企业管理员划定的合规范围里，按每一步子任务自动挑最合适的模型。')
 
 # ---------- 3 ONE PROMPT -> FOUR SPECIALIZED JOBS (LAMANNA WHITEBOARD)
 s=3
@@ -187,7 +187,7 @@ for i,(kicker,model,desc,badge,col_) in enumerate(jobs):
     tb(s,x+180000,y0+1140000,cw4-360000,desc,size=13.5,color=MUTED,cy=1460000)
     rect(s,x+200000,y0+ch-580000,cw4-400000,380000,fill=col_,preset='roundRect',text=badge,size=12,bold=True,color=BG)
 footer(s,'Adapted from Charles Lamanna’s renewal proposal walkthrough: OpenAI image synthesis + Claude reasoning + SLM retrieval',4)
-note(s,'以 Charles Lamanna 演示的周四客户续约提案为例：“我该扩购、维持原价还是给折扣？帮我做一份汇报 PPT。”\n请求进入 Auto 后，首先经过组织管理员设定的供应商、子处理者与地域边界过滤；随后分类器基于大规模评测计分卡选出主循环模型（如 Claude Opus 5.5）。但第一次选型不是唯一选型：查找邮件纪要交给极快的 SLM；深度客户研究与幻灯片结构复用已经缓存上下文的 Claude Opus 5.5；而视觉配图则分派给图像生成最强的 GPT Image 2.5。跨实验室强强联合，每个子任务都跑在最擅长的模型上。')
+note(s,'我们拿一个真实办公场景来看看什么叫按子任务分工。假设周二下午你跟 Copilot 说：“周四要谈客户续约了，帮我算算该推扩购、维持原价还是给折扣，再做一份汇报用的 PPT。”\n这句话进了 Auto 之后，系统先按企业的供应商白名单和数据驻留要求过一道合规筛子，然后把整件事拆成了四棒接力：先派响应极快的小模型去邮件、会议纪要和老合同里把关键背景捞出来；接着把真正烧脑的续约经济账交给擅长深度推理的 Claude Opus 5.5 去算，顺手把整套上下文热缓存在那儿；等需要给方案配定制插图的时候，文字模型干不了这活，系统就自动切给专门做图的 GPT Image 2.5；最后汇总生成整套幻灯片，再回到刚才缓存还热着的 Opus 5.5 一气呵成，不用把几万字资料重读一遍。')
 
 # ---------- 4 PART 2: 163X COST COMPRESSION & RIGHT-SIZING
 s=4
@@ -208,7 +208,7 @@ for i,(head_t,desc,col_) in enumerate(stats):
         {'text':desc,'sizePt':13.1,'color':MUTED},
     ],fill=CARD,pad_x=220000,pad_y=115000)
 footer(s,'Source: blog.genisisiq.com/github-copilot-creative-and-multimodal-benchmark (28 models × 8 tasks = 224 runs)',5)
-note(s,'再看第二个核心维度：成本与延迟。这张帕累托前沿图来自 28 个模型 × 8 类多模态工程任务的 224 次实测。\n结论非常直接：第一，排名前 14 的模型综合质量高度压缩在 86.2 到 90.4 分之间（仅差 4.2 分），但完成同样 8 个任务的成本从 auto 的 9 美分、Haiku 5.5 的 23 美分一直跨度到 14.75 美元，相差整整 163 倍；第二，简单或流程化任务根本没必要动用昂贵旗舰，例如轻量级 Haiku 5.5 在 KPI 数据看板上甚至拿到全场第一；第三，只有遇到深度架构或复杂边界条件时，才需要升级到旗舰推理模型，避免弱模型陷入反复重试。按任务难度自动分流，才能同时守住质量下限与成本上限。')
+note(s,'除了能力各有专攻，更直接的动力来自成本和延迟的巨大剪刀差。这项基准评测拿 28 个主流模型跑了 8 类多模态工程任务，一共实测了 224 轮。\n跑出来的数据非常震撼：排在最前面的 14 个模型，综合质量分全都挤在 86.2 到 90.4 这短短 4.2 分里，日常体验差距其实微乎其微；但跑完同样这组任务的账单，从自动路由的 9 美分、Haiku 5.5 的 23 美分，一直拉到 Opus 5 的 14.75 美元，足足差出了 163 倍。实际上，绝大多数常规编码和结构化任务，轻量模型完全拿得下，像 Haiku 5.5 在数据看板任务上甚至拿了全场第一；只有碰到需求极其绕、弱模型容易陷进死循环反复重试的复杂架构题，才真正值得把重型推理模型请出来兜底。')
 
 # ---------- 5 PREFIX CACHE LAW
 s=5
@@ -227,7 +227,7 @@ for i,(t,d,col_) in enumerate(cache_cards):
         {'text':d,'sizePt':13.6,'color':MUTED},
     ],fill=CARD,pad_x=240000,pad_y=120000)
 footer(s,'Sources: Charles Lamanna (M365 Copilot Auto) & Joe Binder (GitHub Copilot cache-aware routing, Jun 2026)',6)
-note(s,'在进入产品拆解前，必须强调一个极易被忽视的工程陷阱：Prompt Prefix Cache（前缀缓存）。\n无论在 Microsoft Copilot 还是 GitHub Copilot 中，主模型在第一轮读入合同、邮件、代码库和数十个 MCP 工具定义后，缓存命中的读取价格通常只有原价的十分之一（快且省 10–20 倍）。如果你在第 4 轮为了一句简单追问把模型切到另一个家族，缓存立刻失效，新模型必须全价重读几万个 Token，反而更慢更贵！因此微软的路由器遵循一条铁律：只在自然缓存边界（首轮、上下文压缩重置后、独立子 Agent、或复杂度剧变时）切换模型。')
+note(s,'看到成本差出一百多倍，很多工程师的第一反应往往是：那我每一轮对话都实时算一下难度，哪句话简单就立刻切去便宜模型，岂不是省到极致？千万别这么干——这是做自动路由最容易踩的大坑，叫打碎前缀缓存。\n现在的 Agent 在第一轮启动时，往往已经把几万字的合同、代码库文件和七八十个工具定义全喂给了主模型。只要后续轮次继续留在这个模型家族，命中前缀缓存的读取单价通常只有原价的十分之一，延迟也低得多。要是你在第五轮为了省一句简单追问的钱，中途切到了别家的所谓便宜模型，缓存当场失效，新模型得按全价把那五万多个 Token 重新预填充一遍，算下来反而更慢、更贵。所以真正成熟的路由器都守着一条铁律：只在会话首轮、上下文压缩重置之后、派发独立子 Agent，或者任务难度发生剧变这些自然边界上才切换模型。')
 
 # ---------- 6 PART 3: MICROSOFT ROUTING LANDSCAPE (4 CARDS + APPEAR)
 s=6
@@ -247,7 +247,7 @@ for i,(prod,tag_,desc) in enumerate(surfaces):
     tb(s,x+200000,y0+1280000,cw4-400000,prod,size=18.5,bold=True,color=INK,cy=680000)
     tb(s,x+200000,y0+2060000,cw4-400000,desc,size=14,color=MUTED,cy=2060000)
 footer(s,'“Auto” is a product promise, not a single monolithic backend — each surface optimizes for its workload',7)
-note(s,'接下来我们看微软自己的产品是如何落地的。虽然界面上都叫 Auto 或 Router，但微软针对四类不同场景构建了各司其职的调度层：\n1. Microsoft 365 Copilot 与 Cowork：面向知识工作者，统筹体验切换（Chat 转 Cowork）、跨厂商主模型选择与多子任务协同；\n2. GitHub Copilot Auto 与 Fusion：面向软件工程，不仅选模型，还动态选择 Single、Cascade 或 Critique 工作流；\n3. Foundry Model Router：面向云原生应用 API，在 45 个模型池中按请求排序并优先消化企业已购买的 PTU 容量；\n4. Microsoft-Decision-1.1：把微软内部同款决策模型直接开放给开发者，嵌入你自己的业务代码。')
+note(s,'把能力分工和缓存铁律放进微软自己的产品体系里，你会发现虽然前台看着都很像一个 Auto 选项，但针对不同场景，微软在底层其实搭了四套各有专攻的调度系统。\n面向日常办公的 M365 Copilot 和 Cowork，核心管的是什么时候从普通聊天转入多步长任务、怎么在合规范围内跨厂商挑模型和派子任务；面向研发写代码的 GitHub Copilot Fusion，不仅挑模型，还会按题目轻重动态切换单跑、级联和并行互审这几种协作阵型；面向企业云端接口调用的 Foundry Model Router，在 45 个模型池里做 20 毫秒级的极速排序，顺带帮你优先消化买好的 PTU 容量并自动做限流容灾；而最右边的 Microsoft-Decision-1.1，则是把这套做分流、做风控的专用决策大脑直接做成开放接口，让你嵌进自家的业务代码里。')
 
 # ---------- 7 MICROSOFT COPILOT HOME SCREENSHOT
 s=7
@@ -269,7 +269,7 @@ for i,(t,d,col_) in enumerate(m365_pts):
         {'text':d,'sizePt':13,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
 footer(s,'Sources: Microsoft Ignite 2026 Copilot Blog & Command Line Decision-1.1 GA (84% cheaper than standalone Claude per GigaOm)',8)
-note(s,'这是 Microsoft Copilot 全新 Home 界面的官方截图。以前用户要在不同入口切换，现在一个由 Auto 驱动的统一输入框就能承接所有工作。\n它在后台做了三层自动决策：第一，由 Microsoft-Decision-1.1 判断这是一个快速问答还是多步骤长任务，必要时建议从 Chat 无缝移交给 Cowork（用户确认后流转，比用通用大模型判断快 2.2 倍、省 4.4 倍成本）；第二，严格在租户管理员允许的模型池（如欧盟数据边界或 Anthropic 开关）中选路；第三，结合 Work IQ 精准裁剪邮件与文档上下文，并在支持的 Windows 设备上将合适任务卸载至本地模型。')
+note(s,'我们先看办公侧的 Microsoft Copilot 主界面。以前用户经常拿不准一件事该在聊天框里随口问，还是专门开个长任务工作区；现在一个统一的 Auto 输入框全接住了。\n当你发出一句话，后台其实在百毫秒内做完了三件事：先用 Microsoft-Decision-1.1 判断这是个快问快答，还是需要拆解执行的多步长任务，如果是后者就主动建议移交给 Cowork，比拿通用大模型做判断快了 2.2 倍、省下四分之三以上的成本；接着严格在企业管理员勾选的模型开关和欧盟数据边界之内挑人选；同时靠 Work IQ 从海量的企业邮件文档里只捞最相关的上下文，在支持的 Windows 电脑上甚至能把合适的轻活儿直接分给本地小模型处理。')
 
 # ---------- 8 COPILOT COWORK AUTO SCREENSHOT
 s=8
@@ -297,7 +297,7 @@ for i,(t,d,col_) in enumerate(cw_pts):
         {'text':d,'sizePt':12.8,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
 footer(s,'Source: Microsoft Learn, Choose a model for Copilot Cowork (updated Nov 18, 2026)',9)
-note(s,'进入 Copilot Cowork 后（目前近 80% 的财富 500 强已在使用），Auto 的工作机制在官方文档中定义得非常清晰：\n第一，首轮锁定策略：Cowork 分析会话的第一条消息属于快速邮件、日程协调、跨表财务分析还是代码构建，从组织启用的 GPT 6.1 Sol、GPT 6 Astra、Claude Opus 5.5、Sonnet 5.5、Fable 5.2 或 Grok 4.7 中选出最匹配的主模型，并在后续轮次保持该模型以保护上下文缓存；用户随时可通过回复上的 Model Badge 查看实际服务模型。\n第二，Microsoft-Decision-1.1 动态调节推理投入档位（Light 到 Max），做到简事快办、难事深思。')
+note(s,'任务一旦进入多步执行的 Copilot Cowork，它的调度设计就非常典型地体现了缓存保护。系统会先分析你开口的第一条需求到底是写封快信、协调日程，还是要跨好几张财务报表做深度测算，然后从企业开通的 GPT 6.1 Sol、GPT 6 Astra、Opus 5.5、Sonnet 5.5 或 Grok 4.7 里挑出最契合的主模型，接下来整场会话就稳稳锁住它，绝不轻易换人把热缓存废掉；用户在每条回复的小标签上都能清楚看到当前是哪个模型在干活。\n主模型锁定了，怎么兼顾快慢呢？靠的是每一轮用 Decision-1.1 动态调节推理力度，从最轻快的 Light 一路调到深度思考的 Max，简单步骤秒回，碰到硬骨头再给足思考预算，外面再由 Agent 365 守住团队的整体花费上限。')
 
 # ---------- 9 GITHUB COPILOT FUSION COMPOSER SCREENSHOT
 s=9
@@ -319,7 +319,7 @@ for i,(t,d,col_) in enumerate(fus_cards):
         {'text':d,'sizePt':12.8,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
 footer(s,'Sources: GitHub Changelog (Oct 28, 2026) & GitHub Docs — About GitHub Copilot Fusion (Demo 1)',10)
-note(s,'再看开发者每天使用的 GitHub Copilot Fusion（在 VS Code、Copilot CLI、GitHub App 与 JetBrains 中全面 GA）。这张官方截图展示了它的核心交互变革：你不再纠结选哪个具体模型，而是打开 Copilot Fusion 并选择努力档位（Standard、High、Max）。\n在 Artificial Analysis 编码 Agent 指数中，Fusion Max 拿到 60 分（距满血单跑 Opus 5.5 Max 仅 2 分），但平均每任务 API 成本降低约 50%、Token 消耗减半、耗时缩短约 40%！AT&T 工程团队反馈它彻底解决了“修复杂 Bug 切到大模型后忘了切回来”的普遍浪费；Standard 档甚至支持自动卸载到本机安装的 MAI Code 1.1 Flash。')
+note(s,'再看研发每天泡在里面的 GitHub Copilot Fusion。以前大家在编辑器里点开模型菜单，面对一长串不断更新的模型名字很容易选择困难；Fusion 直接把交互改成了选投入档位：Standard、High 和 Max。\n跑出来的实测账本非常漂亮：在 Artificial Analysis 的编程 Agent 评测里，Fusion Max 拿到了 60 分，紧咬着全程单跑最贵旗舰 Opus 5.5 Max 的水平，但平均每个任务省下了大概一半的接口费用，连端到端耗时都缩短了四成。之前 AT&T 的研发团队就吐槽过，工程师为了修一个难缠的 Bug 切到大模型，之后写普通业务代码就再也没切回来过；现在交给 Fusion 自动按需伸缩，日常简单任务甚至能顺滑落到本机装好的 MAI Code 1.1 Flash 上。')
 
 # ---------- 10 COPILOT FUSION EXECUTION PATTERNS SCREENSHOT
 s=10
@@ -340,7 +340,7 @@ for i,(t,d,col_) in enumerate(pat_cards):
         {'text':d,'sizePt':13.4,'color':MUTED},
     ],fill=CARD,pad_x=220000,pad_y=110000)
 footer(s,'Source: GitHub Copilot Fusion architecture — patterns can change prompt-by-prompt within one session',11)
-note(s,'这张官方架构图揭示了 Copilot Fusion 为什么既省钱又高质：它把“选模型”升级成了“选模型 + 选协作拓扑”。\n1. Single：直接任务只调一个高性价比模型，绝不浪费评审费；\n2. Cascade（级联短路）：先让高效模型打头阵，再由次级 Judge 检查——如果已经做对就直接采纳（短路省钱），只有遇到硬骨头才升级给更强的 Repair 模型重做；\n3. Critique（并行独立评审）：主模型起草后，多个只读 Critic 模型并行挑刺（注意 Critic 被严格限制为只读，不能直接改代码以免冲突），最后由主模型汇总反馈完成修订。我们稍后在 Demo 1 会完整回放这三种模式。')
+note(s,'Fusion 凭什么能做到质量不掉、成本砍半？关键在于它把“选哪个模型”升级成了“选哪套多模型协作方式”，而且同一场对话里每一句提问都可以动态换阵型。\n日常查配置、改个小函数，它直接走 Single 单模型路线，派个轻快模型一步到位，不花一分钱额外评审费。遇到常规功能开发，它走 Cascade 级联：先让高性价比模型把代码改出来、单测跑通，再请一个裁判模型做复核——没问题就直接放行省下算力，只有真抓出隐患时，才升级请重型模型从头修干净。而到了高风险的复杂架构设计，它会切到 Critique 模式：主模型起草方案的同时，拉起多个不同厂商的只读评审模型并行挑刺，因为限制了只读权限所以绝不会把文件改乱，最后由主模型汇总各方盲点拿出一版扎实的设计。')
 
 # ---------- 11 FOUNDRY MODEL ROUTER: HOW IT RANKS & CACHES
 s=11
@@ -369,7 +369,7 @@ for i,(t,d,col_) in enumerate(fo_cards):
         {'text':d,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=105000)
 footer(s,'Source: Microsoft Learn, How model router works in Microsoft Foundry ($0.14/1M input routing fee, $0 output)',12)
-note(s,'进入 Microsoft Foundry Model Router，重点看它内部到底是怎么工作的（model: "auto" 只是免部署体验别名，底层跑的是完全同一套引擎）：\n第一，它本身不是大语言模型，而是在数十亿次问答、编码、数学推理与工具调用交互上训练出来的极速机器学习排序模型（耗时约 20 毫秒，绝不存储用户 Prompt）。它会同时读取系统提示词、多轮对话历史与工具定义（最新一轮权重最高），当企业配置了自定义模型子集时，它还会针对该子集动态重新校准预测分布。\n第二，质量带选路：先算出当前请求的第 1 名基准分，Balanced 模式在距第 1 名 1–2% 的高质候选里选最便宜的模型，Cost 放宽到 5–6%，Quality 直接选第 1 名。\n第三，Adaptive 会话亲和：通过会话 ID、previous_response_id 或历史消息指纹识别同一次多轮对话——只要前序消息未变（缓存仍热）且上一轮模型仍在当前质量带内，就自动保留原模型（retain）吃满前缀缓存折扣！')
+note(s,'如果你们团队不是直接用现成的 Copilot，而是自己调云端接口开发 AI 应用，那最趁手的就是 Microsoft Foundry 里的 Model Router——顺带一提，接口里直接写 model 为 auto 调的也是完全同一套底座。\n很多人好奇路由器自己会不会很慢，其实它本身根本不是大语言模型，而是在几十亿次真实问答、编码和工具调用记录上专门训练出来的机器学习排序器。它把系统提示词、历史对话和工具定义全扫一遍只要大约 20 毫秒，而且不存储客户的提示词内容。打完分之后怎么挑呢？默认的 Balanced 模式会在紧贴第一名 1% 到 2% 分差的第一梯队里选最便宜的模型，Cost 模式会把容忍度放宽到 5% 到 6%；而在多轮对话里，它会通过会话标识或历史消息指纹开启自适应亲和——只要前文没变、缓存还热，且上一轮模型没掉出当前质量带，就继续留用原模型吃满缓存红利。')
 
 # ---------- 12 FOUNDRY ROUTER: GATES, PARAMS & FAILOVER
 s=12
@@ -398,7 +398,7 @@ for i,(t,d,col_) in enumerate(f_cards):
         {'text':d,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=105000)
 footer(s,'Source: Microsoft Learn, How model router works — Eligibility, Parameter Adaptation & Two-Tier Failover (Demo 2)',13)
-note(s,'再看请求在 Foundry Model Router 里的完整工程执行流水线（左上官方六步图）：\n1. 排序前硬性资格过滤：先按区域、安全团队审批的模型白名单子集、是否支持函数工具/JSON Schema/图像输入以及特定 reasoning_effort 档位（如 xhigh）剔除不合格模型；\n2. 跨厂商参数自适应适配：不同模型支持的参数千差万别！选定模型后，路由器会自动剥离推理模型不支持的 temperature/stop，或剥离非推理模型不支持的 reasoning_effort，甚至把 developer 角色自动改写为 system 角色，保证跨 7 大厂商路由绝不报错（若需严格校验可设 require_parameters: true 提前过滤）；\n3. 两级容量瀑布与故障转移：选中第 1 名模型后，先依次尝试你的自有 OpenAI PTU（零额外模型费）→ 自有 PAYG → 平台托管容量；只有同一模型的三级容量全部触发 429/5xx 可重试错误时，才自动切换到白名单子集内的第 2 顺位模型（故障转移优先级高于会话亲和，且绝不越出你的合规子集）。')
+note(s,'自己写过跨厂商模型接入的同学肯定深有体会，打分选型只是第一步，真正让人掉头发的全是工程兼容和线上限流。Foundry Model Router 把这几件脏活全包在了管线里。\n打分之前它会先过一道硬门槛，按所在区域、安全团队审批的模型白名单、还有这次请求带没带工具定义、JSON Schema 或图片，把不具备资格的模型提前剔除。选完模型之后还有一层自动参数适配：比如推理模型不认 temperature 和 stop，非推理模型不认 reasoning_effort，系统角色有的叫 developer 有的叫 system，路由器在转发时会自动帮你转换或剥离，彻底告别莫名其妙的 400 报错。最后是容量消化与无感容灾：选中首选模型后，先优先消耗你自己买好的零模型费预留 PTU，不够再走按量付费和托管容量；万一遇上突发高峰连吃 429 限流，几十毫秒内就会自动切到白名单里的第二顺位模型，业务代码连重试都不用自己写。')
 
 # ---------- 13 PART 4: INDUSTRY ROUTING ARCHITECTURES (GENERAL APPROACHES)
 s=13
@@ -422,7 +422,7 @@ for a,lat,how,lim,col_ in approaches:
     tb(s,c4+150000,y+80000,w4-180000,lim,size=13.2,color=AMB if col_==AMB else MUTED,cy=rh-160000)
     y+=rh+95000
 footer(s,'Industry evolution: Semantic Router → RouteLLM (ICLR 2025) → FrugalGPT Cascades → Catalog-decoupled & Decision models',14)
-note(s,'进入第四部分：从模型与算法层面看，自动路由到底是怎么实现的？业界主要有四类通用做法：\n1. 规则与语义向量路由（如 Semantic Router）：算句向量与模板的距离，只需几毫秒，但它分不清“写个冒泡排序”和“写个无锁并发队列”在推理深度上的天壤之别；\n2. 二分类偏好路由（如开源代表 RouteLLM）：训练分类器预测“强模型赢弱模型的概率”，但致命痛点是模型身份写死在权重里——如今每个月都有新模型发布，模型池一换就得重训；\n3. 级联（FrugalGPT）：先跑小模型再验质量，缺点是难任务要串行跑两次；\n4. 通用大模型当路由：提示词零样本就能跑，但延迟高达几百到两千毫秒，而且生成式模型受 RLHF 奖励影响天生过度自信，概率严重失准。')
+note(s,'看完了产品实践，我们往算法底层退一步看：业界做模型路由大体走过四条技术路线，每条都有很明显的局限。\n最早大家爱用正则规则或者句向量相似度匹配，几毫秒就能跑完，但它只看表面字眼，根本分不清“写个简单排序”和“写个无锁并发环形队列”在推理难度上的天壤之别。后来像开源界很有名的 RouteLLM，改用矩阵分解或 BERT 训练二分类器去预测强模型赢过弱模型的概率，准度上去了，但把具体模型名字焊死在了分类器权重里——现在几乎每个月都有新模型发布，候选池一换就得重采数据重训。第三种 FrugalGPT 式的串行级联，一碰到难题就得白交一次小模型的试错延迟。至于直接拿通用大模型写提示词当路由，动辄多等一两秒不说，经过人类偏好强化学习的大模型天生爱装自信，给出的概率校准度很差，很难拿来做精准的工程阈值。')
 
 # ---------- 14 MICROSOFT'S APPROACH: GITHUB HYDRA (ARXIV:2605.17106)
 s=14
@@ -447,7 +447,7 @@ for i,(t,d,col_) in enumerate(hy_cards):
         {'text':d,'sizePt':13,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
 footer(s,'Source: Garg et al., HyDRA: Hybrid Dynamic Routing Architecture for Heterogeneous LLM Pools (arXiv:2605.17106, Jun 2026)',15)
-note(s,'那微软是怎么解决“新模型频繁迭代导致路由器重训”这个行业难题的？来看看支撑 GitHub Copilot 的论文《HyDRA》（arXiv:2605.17106）：\n微软没有让分类器直接预测“选模型 A 还是模型 B”，而是用轻量级 ModernBERT 挂载 4 个独立的 Sigmoid 头，在 CPU 上仅用 86 毫秒中位延迟，预测当前请求在“推理深度、代码生成、调试难度、工具编排”四个维度的能力需求向量 d(q)！\n接着通过 Shortfall Matching（短板匹配算法），将需求向量与配置文件中定义的各模型能力画像比对，选出满足阈值 τ 且实时健康的最便宜模型。新模型上线只需改一行配置，零重训！在 SWE-Bench Verified 上，等质量下节省 54.1% 成本（是上一代二分类路由器的 6 倍），Peak 档甚至超越单跑 Sonnet 4.6（75.4% vs 74.2%）同时省钱 12.9%。')
+note(s,'那微软是怎么解开“模型月月换、路由器总不能月月重训”这个死结的？答案就在支撑 GitHub Copilot 的这篇 HyDRA 架构论文里：把“判断这道题需要什么能力”和“手头现在有哪些模型”彻底拆开。\n它在底层用了一个很轻巧的 ModernBERT 编码器，上面挂四个独立的预测头，在普通 CPU 上跑一次中位耗时只要 86 毫秒。注意它的输出不是某个模型的名字，而是当前请求在推理深度、代码生成、调试难度和工具编排这四个维度上的能力需求分。与此同时，候选池里每个模型的四维能力长短板和调用单价都写在一份静态配置表里，运行时只要算一下哪些模型的短板在安全阈值之内，挑最便宜且健康的那个就行。明天就算上线了全新的 GPT-6，改一行配置立刻生效，完全不用重新训练模型。在 SWE-Bench 实测里，这套办法在同等解决率下省掉了 54.1% 的成本，省钱效率是传统二分类路由的六倍。')
 
 # ---------- 15 MICROSOFT'S THREE-LAYER ROUTING STACK
 s=15
@@ -469,7 +469,7 @@ for i,(t,d,col_) in enumerate(layers):
     if i<2:
         rect(s,rx+rw/2-100000,yy+ch_+45000,200000,170000,fill=CY if i==0 else AMB,preset='downArrow')
 footer(s,'Core principle: models score bounded options; deterministic code enforces policy gates, thresholds, and fallbacks',16)
-note(s,'把 M365 Copilot、GitHub Copilot Fusion 和 Foundry 放在一起，微软在模型路由上的工程哲学可以浓缩为这三层蓝图：\n第一层永远是确定性代码守门：租户合规边界、数据驻留、必需参数支持以及前缀缓存状态，绝不让模型去猜权限；\n第二层是毫秒级专用评分器（86–180 ms）：无论是内部多头能力编码器 HyDRA，还是开放给开发者的 Microsoft-Decision-1.1，只对合法候选做快速、校准过的打分；\n第三层是执行拓扑与后置验证：根据分差决定走单模型、级联还是并行评审，并在返回用户前完成结构与合规校验。那么，开发者如何把第二层和第三层的同款大脑装进自己的系统？这就引出了 Microsoft-Decision-1.1。')
+note(s,'把前面聊的所有产品和底层算法放到一张图上，微软做路由的工程哲学其实非常统一，就是清晰的三层分工。\n最上面永远是确定性的硬代码，管租户权限、数据驻留、接口能力门槛和前缀缓存状态，合规红线绝不交给概率模型去猜；中间这一层是百毫秒级的专用评估器，只管在合法的候选集里给出校准过的客观打分；最下面再根据分差决定走单模型、级联还是并行评审，并在结果发出去之前做好格式与安全校验。\n讲到这儿，大家自然会问：微软内部有 HyDRA 和专用排序器，那我们自己写业务 Agent 的时候，去哪儿找中间这一层又快、又便宜、概率还准的控制大脑呢？')
 
 # ---------- 16 PART 5: MEET MICROSOFT-DECISION-1.1
 s=16
@@ -504,7 +504,7 @@ for i,(v,l,col_) in enumerate(facts):
         {'text':l,'sizePt':12.8,'color':INK},
     ],fill=CODEBG,line=EDGE,lw=12700,pad_x=180000,pad_y=120000)
 footer(s,'Sources: Achint Srivastava, Command Line — Microsoft-Decision-1 (Oct 2026) & Microsoft-Decision-1.1 GA (Nov 17, 2026)',17)
-note(s,'为什么微软要专门造一类新模型——Decision Model（决策模型）？\n生成式大模型是为了“写完回答、听起来自信”而训练的，逐个生成推理 Token 既慢又贵，而且面对信息缺失时倾向于自信地瞎猜。Microsoft-Decision-1（基于 Qwen3.5-9B 后训练）及其正式版 Microsoft-Decision-1.1（2026 年 11 月 17 日 GA，基于 Gemma 4 26B-A4B 混合专家架构，仅 4B 激活参数，配合定制单次前向决策推理引擎）彻底改变了范式：\n它不生成废话，直接对文本、JSON 甚至图片截图输出经过严格概率校准的结构化决策！Global Standard 输入仅 $0.042/百万 Token，输出 Token 完全免费，速度比上一代再快 2.2 倍，选项打乱或改写时翻转率仅 1.3%。')
+note(s,'这正是微软专门研发并开放 Microsoft-Decision-1.1 的初衷。我们平时熟悉的生成式大模型，训练目标是把回答写得通顺完整、讨人喜欢；你让它做个简单的路由选择或者合规判断，它也得逐词生成一堆解释，不仅动辄大几百毫秒，遇到缺失信息还特别容易自信地乱拍板。\n刚刚正式发布的 Decision-1.1 从根上换了思路：它基于 Gemma 4 的混合专家架构，每次推理只激活 4B 参数，配上专门定制的单次前向决策引擎，不吐一句多余的客套话，直接读进文本、JSON 甚至界面和实物照片，返回严格校准过的概率分布。标准输入一百万 Token 只要 4.2 美分，输出 Token 完全免费，平均一百二十多毫秒就能拿回结果；哪怕你故意把选项顺序打乱或者换种问法，它的判断翻转率也只有 1.3%，稳得像一个确定性的软件模块。')
 
 # ---------- 17 DECISION-1.1 BENCHMARKS & INTERNAL WINS
 s=17
@@ -533,7 +533,7 @@ card_box(s,rx,4260000,rw,1740000,[
     {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':12.2,'color':INK},
 ],fill=CARD,pad_x=200000,pad_y=90000)
 footer(s,'Sources: Artificial Analysis Decision Index v2.1 (Nov 16, 2026) & Microsoft 102-Benchmark Report (Nov 14, 2026)',18)
-note(s,'左边是从微软官方发布页提取的 Artificial Analysis Decision Index v2.1 实测散点图：横轴是单任务耗时（对数坐标），纵轴是综合质量与校准指数。Microsoft-Decision-1.1 跃升至 68 分，耗时仅约 123 ms，稳居左上角黄金象限，超越 Google Gemini Decision 1、Jev 1.14 和 OpenAI GPT-6 Luna Decisions。\n在包含 38.5 万道盲测题的 102 个基准测试中，它以 78.8% 的平均准确率夺冠，并在 9 个能力维度中的 7 个排名第一（工具与 Agent 达 86.6%、路由分类 81.7%、一致性 91.8%）。上线仅五周已有超 4000 家企业采用；在微软内部，它支撑了 Copilot 体验分流、Cowork 动态推理档位、Foundry 评估裁判，以及 Xbox Research（比 GPT-6 Sol 快 14 倍、便宜 200 倍）。')
+note(s,'别看它每次激活的参数少、调用近乎零成本，专门拉到决策赛道上比拼硬实力，它是实打实的全场第一。在第三方机构 Artificial Analysis 的决策指数评测里，Decision-1.1 拿到了最高的 68 分，平均耗时才 123 毫秒左右，把一众专用决策模型和通用旗舰都甩在了后面。\n在完全没有训练集重叠的 102 项公开基准、超过 38.5 万道盲测题里，它在工具调用、路由分流、安全风控、质量评判和一致性等七个核心领域全部排在榜首。上线才五周就已经有四千多家企业接进了生产环境；在微软内部，前面聊到的 Copilot 聊天转长任务、Cowork 动态调推理力度、Foundry 评测打分，还有比旗舰模型快 14 倍、便宜 200 倍的 Xbox 研究分析管线，底层全靠它在驱动。')
 
 # ---------- 18 DECISION-1.1 THREE TYPED PRIMITIVES
 s=18
@@ -562,7 +562,7 @@ api_code=(
 )
 tb(s,M+220000,4460000,CW-440000,api_code,size=11.5,color=CODE,font=MF,cy=1420000)
 footer(s,'Source: Microsoft Learn — Deploy and use Microsoft-Decision-1.1 in Microsoft Foundry',19)
-note(s,'它的 API 设计极度干净，被命名为 systemone（对应人类直觉快思考 System 1）：向 `/providers/microsoft/v1/systemone` 发送一个 `state`（文本、JSON 或引用 base64 图片）和一组强类型 `questions`，支持三种原语：\n1. `choice`（多选一）：返回选中标签及每个候选的概率分布，最适合做模型路由——如果最高概率低于你设定的阈值（如 0.75），代码直接升级或转人工；\n2. `noul`（二元真假门）：返回 0 到 1 的单值概率，最适合做前置/后置护栏（是否承诺退款、是否包含注入、快递照片是否破损）；\n3. `score`（有序量表打分）：对 `0..N-1` 等级计算概率加权期望分，最适合排工单优先级或给大模型输出打分。\n最棒的是：同一个 `state` 可以把这三个问题打包在一次请求里同时返回！')
+note(s,'落到代码集成上，它的接口被起名叫 systemone，意思就是替你的系统做直觉式的毫秒级快判断。你只需要把当前的业务上下文塞进 state，针对这一份状态可以同时提好几个强类型问题，一共就三种基础原语：\n想在好几条路径里挑一条，比如决定调哪个模型、分给哪个支持团队，就用 choice，它会同时返回每个候选项的校准概率——一旦最高概率连 0.75 都不到，你的代码就可以立刻停下来先向用户追问，绝不硬着头皮瞎猜；想设一道是非安检门，比如查草稿有没有违规许诺退款、买家拍的包装盒破没破，就用 noul，拿回一个 0 到 1 的单值概率；想给工单紧急度或者生成质量排个高低档位，就用 score，它会在有序等级上算出概率加权的期望分。最省事的是，这三种问题可以装进同一个请求里一次拿回全部结果。')
 
 # ---------- 19 FOUR CONCRETE DECISION-1.1 EXAMPLES
 s=19
@@ -590,7 +590,7 @@ for i,(title_,st_,body_,col_) in enumerate(examples):
         {'text':body_,'sizePt':12.8,'color':INK},
     ],fill=CARD,pad_x=220000,pad_y=110000)
 footer(s,'Best practice: tune instructions/criteria on labeled dev examples, randomize option order, and lock thresholds on holdout',20)
-note(s,'这里给出四个可直接抄进生产架构的 Microsoft-Decision-1.1 实战例子：\n例 1（自定义大模型路由器）：用 `choice` 把请求分流到轻量 Flash、常规 Sonnet、深度 Critique 或“缺少信息需追问”，当最高置信度低于 0.75 时先追问，不白烧大模型算力；\n例 2（多问题合一客服分诊）：一次请求同时用 `choice` 分团队、用 `score` 定 P0–P3 紧急度，遇到人身伤害风险直接跳过 Bot 呼叫人工；\n例 3（多模态图片判定）：利用 1.1 新增的 `assets` 图片输入能力，毫秒级判断退货快递照片是否破损，或辅助 Computer Use 选下一步按钮；\n例 4（大模型出站合规网）：在生成式 Agent 回复发给客户前，用一组独立的 `noul` 规则检查是否提到了竞品、违规承诺折扣或医疗建议，任一达到 50% 即拦截转审。')
+note(s,'有了这三个原语，平时写 Agent 最让人头疼的外围控制逻辑基本都能优雅解决。比如搭一套自己的模型路由器，用 choice 把轻快提取、常规编码、深度评审和“信息不全需追问”列成四个选项，遇到缺附件或指令含糊的情况直接停下来问清楚，省得白烧旗舰模型的算力。\n再比如做客服工单入口，一次请求同时跑 choice 分组和 score 定级，看到客户投诉“床架塌了扭伤了腰”，严重度直接打到接近满分的 2.94，系统当场绕过自动回复、直接呼叫真人专员。做电商售后时，把退货照片传进 assets 跑个 noul，破损概率超过八成自动秒批换货，拿不准的再转人工核赔。甚至在你的生成式大模型写好草稿、发给客户之前，还能并排挂几道独立的 noul 做出口把关——一旦测出草稿里居然出现了推荐竞品或者私自打折的表述，过半数直接扣下重审。')
 
 # ---------- 20 CONTOSO 7.2X CAC CASE STUDY VECTOR SVG
 s=20
@@ -612,7 +612,7 @@ for i,(t,sub,desc,col_) in enumerate(steps_cac):
         {'text':desc,'sizePt':12.2,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
 footer(s,'Source: Microsoft Command Line Interactive Architecture Demo (Illustrative Contoso $10k/mo sales agent model; Demo 3)',21)
-note(s,'左边是我们运行微软官方 Decision-1.1 交互架构演示并截取的实况画面：在 32 条客户邮件分流测试中，手写关键词正则准确率只有 88%，而 Microsoft-Decision-1.1 达到 100% 准确率，P50 延迟 180 ms，跑完全部 32 条总计只花了 0.0004 美元！\n把三道检查串成流水线后，商业账本发生了质变：原本每条回复都调昂贵的 Sol 模型且 100% 人工复核，单线索成本 $0.31，获客成本（CAC）高达 $13；加上 Decision-1.1 的路由（省掉 57% 大模型调用）、优先级调度和竞品合规拦截后，三道决策检查加起来每条仅花 $0.000189，人工复核比例从 100% 降到 8%，同样 1 万美元月预算获客数从 764 飙升到 5,511，CAC 暴降 7.2 倍至 $1.81！')
+note(s,'这几道毫秒级的小关卡串进真实业务里，商业回报非常可观。我们看这个月预算一万美元的销售线索跟进测算：如果按传统粗放做法，每封客户回信都直接扔给昂贵的旗舰 Sol 模型写回复，再因为怕大模型乱说话安排全量人工复核，算下来处理一条线索要花 3 毛 1，每签下一单的获客成本高达 13 美元。\n把 Decision-1.1 放进去之后，先守住入口分流——在 32 类真实客户邮件测试里，手写正则只能认对 88%，而它做到了 100% 全对，先把 57% 像单纯说声谢谢或者退订的邮件用零成本规则直接处理掉，根本不惊动大模型；接着用 score 给高意向客户排优先级，最后在出口用 noul 拦住乱提竞品的草稿。这三道检查加在一块儿，每封信的决策成本还不到万分之二美元，却把需要人工介入复核的比例从 100% 降到了 8%。同样一万块钱月预算，能转化出来的客户数翻了七倍多，获客成本直接从 13 美元压到了 1.81 美元。')
 
 # ---------- 21 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
 s=21
@@ -648,7 +648,7 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
 footer(s,'Click “Launch Demo 1” (top right) or press D in web view to step through all 5 Copilot Fusion traces',22)
-note(s,'现在进入激动人心的交互演示环节！在网页版点击右上角按钮（或按键盘 D 键），即可打开内置的 Interactive Routing Studio。\nDemo 1 回放我们在本机捕获的 GitHub Copilot CLI Auto 与 Copilot Fusion 五步完整轨迹：第 1 步简单提取命中 MAI Code 2 Flash 仅花 0.08 Credits；第 2 步常规改造走 Cascade 被 Judge 直接放行省下 52% 费用；第 3 步并发死锁被 Judge 精准识破并升级给 GPT-6.1 Sol 修复；第 4 步高优架构设计触发并行只读 Critique 揪出两个分布式隐患；第 5 步验证多轮前缀缓存保护（复用 64.2k Token，立省 90%）。')
+note(s,'账算清楚了，接下来我们通过三组真实的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 回放的是我们在本机实测录下来的 GitHub Copilot 完整轨迹。最开始只是去配置文件里捞个默认端口号，HyDRA 花 86 毫秒打完能力需求分，发现轻量模型完全够用，直接走 Single 通道在 1.8 秒内搞定，只花了 0.08 个点数；接着做常规代码修改加单测走 Cascade，小模型改完测试全过，裁判扫一眼确认没毛病当场放行，省下一半点数；再往下遇到隐蔽的并发锁顺序死锁，虽然普通单测侥幸过了，但裁判敏锐抓出了锁反转风险，果断升级请出 GPT-6.1 Sol 重修并通过五百次压测；到了五万并发的限流架构设计，两个只读评审模型并行挑出了时钟漂移和热点分片两个盲区；最后追问监控指标时，系统稳稳留用刚才缓存了 6.4 万 Token 的主模型，拿满了九折以上的缓存优惠。')
 
 # ---------- 22 LIVE DEMO 2: MICROSOFT COPILOT & FOUNDRY MODEL ROUTER
 s=22
@@ -688,7 +688,7 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
 footer(s,'Click “Launch Demo 2” (top right) — or run npm --prefix demo run demo:web for live Foundry bridge',23)
-note(s,'Demo 2 串联了云端 API 层的 Foundry Model Router 实测抓包与应用层的 Microsoft 365 Copilot 多模型协同：\n第 1 步检查租户数据边界与 PTU 容量优先级；第 2 步发送简单发票 JSON 提取，实测路由耗时仅 23 毫秒，自动落到零推理开销的 DeepSeek-V4.1-Flash；第 3 步换成高难度 Rust 无锁环形缓冲区 ABA 形式化分析，20 毫秒内自动升级至推理模型 gpt-5.6-luna；第 4 步完整回放 Microsoft Copilot 续约提案的四子任务跨模型接力；第 5 步演示主模型触发 429 限流时，19 毫秒无缝切至次优合格模型返回 200 OK。')
+note(s,'第二个 Demo 串联了云端 Foundry Model Router 的真实抓包和企业办公的跨模型接力。我们先看六阶段管线怎么在打分前筛掉不合规模型、自动抹平不同厂商的参数差异，并把预购的零模型费 PTU 排在最前面消化。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器只花 23 毫秒就挑中了零推理开销的 DeepSeek Flash；换成 Rust 无锁环形缓冲区的 ABA 形式化证明时，20 毫秒内立刻切换到推理模型 gpt-5.6-luna，并且在追问时保持缓存亲和。随后我们完整重现周四客户续约提案的四棒跨模型协作；最后模拟首选模型突遇 429 限流，看路由器怎么在 19 毫秒内无感切到白名单里的备选模型，给业务端稳稳返回 200 成功结果。')
 
 # ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
 s=23
@@ -729,7 +729,7 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
 footer(s,'Click “Launch Demo 3” (top right) — and type your own custom prompt in the Studio input bar!',24)
-note(s,'Demo 3 带大家亲手体验 Microsoft-Decision-1.1 如何作为 Agent 架构的控制中枢：\n第 1 步连续请求 5 次验证 0.0 pt 波动与 180 ms 极速响应；第 2 步用 `choice` 把致谢、退订、常规问答与复杂导购精准分流，省去 57% 昂贵大模型调用；第 3 步在单次请求中同时返回部门路由、P3 受伤紧急度打分（2.94）与重复联系判断；第 4 步用 `noul`（0.964）当场拦下大模型把客户推荐给竞品 Fabrikam 的翻车回复；第 5 步演示缺失合同附件时的低置信度安全弃权与 7.2 倍获客成本下降。此外，你还可以在 Studio 底部输入框现场输入任意自定义句子测试路由结果！')
+note(s,'第三个 Demo 带大家看 Microsoft-Decision-1.1 怎么在代码里当好 Agent 的控制中枢。我们先拿同一封邮件连测五次，验证它的概率输出零抖动、延迟稳在 180 毫秒上下；接着看 choice 怎么把致谢、退订、普通咨询和深度导购精准分流，省掉大半昂贵的大模型调用；再看一次接口调用怎么同时拿回团队路由、2.94 分的人身受伤高危评分和重复催办判断，直接跳过机器人触发人工紧急接管；随后用 noul 打出 0.964 的高概率，把一段差点把客户推给竞品 Fabrikam 的回复草稿当场拦下；最后模拟客户要求按附件 B 重算报价却忘了传附件，模型看到最高置信度掉到阈值以下，主动选择停下来追问而不是硬编数字。待会儿在演示台里，我们也可以现场随便敲几句业务输入，直接看它怎么打分。')
 
 # ---------- 24 CLOSER: KEY TAKEAWAYS
 s=24
@@ -750,7 +750,7 @@ tb(s,x,4660000,cx,None,paras=[
 ],size=12.5,color=CY,font=MF,cy=720000)
 tb(s,x,5540000,cx,'Thank you  ·  Q&A',size=24,color=INK,font=HF,bold=True,cy=480000)
 footer(s,'',25)
-note(s,'最后总结四条可直接带回团队落地的建议：\n第一，告别“全公司绑死一个最强模型”的旧习惯，按子任务能力专长做多模型编排；\n第二，算总账（算力 Credits + 工程师等待时间），并严格在首轮或压缩等自然缓存边界路由，避免打碎 10 倍省钱的前缀缓存；\n第三，优先用好现成平台能力：日常办公开 Microsoft Copilot Auto，写代码开 GitHub Copilot Fusion，调云端推理用 Foundry Model Router；\n第四，当你的业务代码需要确定性的分类、分流、优先级调度或合规拦截时，用专门训练、毫秒级响应且概率校准的 Microsoft-Decision-1.1 替代缓慢昂贵的生成式提示词路由。感谢大家，欢迎提问！')
+note(s,'回到我们一开场提的问题：模型这么多、变化这么快，大家带回团队到底该怎么动手？其实抓住四件事就够了。\n别再试图找一个包打天下的模型从头绑到尾，按子任务的能力要求去拆解分工；算成本账的时候一定要把等待时间和前缀缓存算进去，守住首轮和独立子任务这些自然边界，千万别在对话半路乱切模型把十分之一价格的热缓存打碎；现成的平台能力优先用起来，日常办公打开 Copilot Auto，研发写代码用好 Copilot Fusion，调云端推理接口直接挂上 Foundry Model Router；而当你在自己的业务代码里需要做精准分流、排优先级或者加出站合规护栏时，试试把百毫秒级、概率校准过的 Microsoft-Decision-1.1 当成标准控制组件嵌进去。今天的内容就分享到这里，谢谢大家，看看大家有什么问题！')
 
 # ---------- 25 APPENDIX: PUBLIC REFERENCES
 s=25
@@ -773,7 +773,7 @@ for i,(t,sub,links,col_) in enumerate(app_cols):
         for label,url in links
     ],cy=ch-1460000)
 footer(s,'All links above are clickable in both PowerPoint and the standalone HTML edition.',26)
-note(s,'附录汇总了本次演讲引用的全部公开资料链接，包括 Charles Lamanna 的白板分享、GenisisIQ 的 28 模型创意与真实成本基准评测、Microsoft 365 Copilot Ignite 2026 公告与 Cowork 文档、GitHub Copilot Fusion 与 HyDRA 论文、Foundry Model Router 机制文档，以及 Microsoft-Decision-1.1 官方教程与开源评测集仓库。')
+note(s,'最后这一页把今天聊到的所有公开评测报告、产品机制文档、HyDRA 架构论文以及 Decision-1.1 的接入教程和开源基准库都汇总在了一起，在 PPT 和网页里都可以直接点开，方便大家回去对照查阅。')
 
 
 # ===================== BUILD-TIME LAYOUT VALIDATOR =====================
