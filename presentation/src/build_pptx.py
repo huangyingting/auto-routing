@@ -99,15 +99,24 @@ def footer(s,src,num,x=M,cx=CW):
     tb(s,x+cx-800000,6260000,800000,f'{num:02d}',size=11.5,color=FOOT,align='right',cy=340000,name='footer_num')
 def note(s,t): notes[s]=t
 
-def card_box(s,x,y,cx,cy,paras,fill=CARD,line=None,lw=19050,pad_x=240000,pad_y=120000,font=BF,space_after=6.5,align='left'):
+def card_box(s,x,y,cx,cy,paras,fill=CARD,line=EDGE,lw=12700,pad_x=240000,pad_y=120000,font=BF,space_after=6.5,align='left'):
     rect(s,x,y,cx,cy,fill=fill,line=line,lw=lw if line else None)
     tb(s,x+pad_x,y+pad_y,cx-2*pad_x,None,paras=paras,font=font,align=align,cy=cy-2*pad_y,space_after=space_after)
+
+def banner_box(s,x,y,cx,cy,text,line=EDGE,lw=12700,fill=CODEBG,color=INK,size=15.5,bold=True,align='left'):
+    rect(s,x,y,cx,cy,fill=fill,line=line,lw=lw)
+    tb(s,x+240000,y,cx-480000,text,size=size,bold=bold,color=color,align=align,cy=cy)
+
+def medallion(s,cx_mid,cy_mid,diam=360000,glyph='→',fill=CY,color=BG,size=14):
+    r=diam//2
+    rect(s,cx_mid-r,cy_mid-r,diam,diam,fill=fill,preset='ellipse',text=glyph,size=size,bold=True,color=color,font=MF)
 
 # ===================== SLIDES ====================
 # ---------- 0 COVER
 s=0
 img(s,'hd-fork.jpg',W-M-5100000,1580000,5100000,3400000,'Hand-drawn illustration: robot dispatcher at a fork choosing between a fast courier bike and a heavy cargo van')
 x=M+80000; cx=5800000
+rect(s,x,740000,560000,40000,fill=CY,preset='roundRect')
 tb(s,x,860000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=0.9,cy=280000)
 tb(s,x,1220000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=1460000)
 tb(s,x,2800000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16.5,color=MUTED,cy=1300000)
@@ -120,46 +129,54 @@ header(s,'AGENDA','Our journey today')
 items=[
     ('01','Capability gap','No single model wins all'),
     ('02','Cost & cache','163× gap & prefix cache'),
-    ('03','MS products','Copilot, Fusion, Foundry'),
+    ('03','MS products','Copilot, Fusion & Foundry'),
     ('04','Under the hood','Industry vs. MS HyDRA'),
     ('05','Decision-1.1','Fast, calibrated control'),
-    ('06','Live demos','Fusion, Foundry, Decision'),
+    ('06','Live demos','Fusion, Foundry & Decision'),
     ('07','Takeaways','Ship your own router'),
 ]
-col=CW/7; ry=2960000
-rect(s,M,ry-19050,CW,38100,fill=EDGE)
+gap_a=115000; cw7=(CW-6*gap_a)/7; y0_a=1960000; ch_a=3260000
+rect(s,M+200000,1680000,CW-400000,26000,fill=EDGE,preset='roundRect')
 for i,(n,t,d) in enumerate(items):
-    cx0=M+col*i; bw=col-75000
-    tb(s,cx0,1920000,bw,n,size=28,color=CY,font=HF,bold=True,cy=580000)
-    rect(s,cx0+60000,ry-120000,240000,240000,fill=CY if i!=4 else AMB,preset='ellipse')
-    tb(s,cx0,3280000,bw,t,size=16,color=INK,bold=True,cy=620000)
-    tb(s,cx0,3980000,bw,d,size=13.5,color=MUTED,cy=780000)
+    cx0=M+i*(cw7+gap_a)
+    acc=AMB if i in (4,5) else CY
+    rect(s,cx0+cw7/2-70000,1623000,140000,140000,fill=acc,preset='ellipse')
+    rect(s,cx0,y0_a,cw7,ch_a,fill=CARD,line=acc if i==4 else EDGE,lw=19050 if i==4 else 12700)
+    pad_a=135000
+    rect(s,cx0+pad_a,y0_a+210000,660000,300000,fill=acc if i==4 else CODEBG,line=None if i==4 else EDGE,lw=12700,preset='roundRect',text=n,size=12,bold=True,color=BG if i==4 else acc,font=MF)
+    tb(s,cx0+pad_a,y0_a+660000,cw7-2*pad_a,t,size=16,color=INK,bold=True,cy=780000)
+    rect(s,cx0+pad_a,y0_a+1520000,cw7-2*pad_a,14000,fill=EDGE)
+    tb(s,cx0+pad_a,y0_a+1640000,cw7-2*pad_a,d,size=13.2,color=MUTED,cy=1240000)
 footer(s,'',2)
 note(s,'这是今天整场分享的脉络。我们先聊明白为什么要做自动路由——一方面没有哪个模型样样通吃，另一方面不同模型干同一件活儿成本能差出一百多倍，而且这里面还藏着一条很容易踩坑的前缀缓存铁律。接着我们看微软自家的几款核心产品是怎么在生产环境里做调度的，再往下深挖一层，对比业界常见的路由算法和微软 HyDRA 架构的思路差异。后半程我们聚焦在 Microsoft-Decision-1.1 的三个控制原语上，并现场跑完三组真实链路。')
 
 # ---------- 2 PART 1: NO SINGLE BEST MODEL (CHARLES LAMANNA)
 s=2
 header(s,'01 · CAPABILITY SPECIALIZATION','No single model is best at everything')
-cw_=4950000; cyy=1540000; ch=3800000
-card_box(s,M,cyy,cw_,ch,[
-    {'text':'Static single-model mindset','sizePt':20.5,'bold':True,'color':MUTED,'spaceAfterPt':7},
-    {'text':'One model forced onto every turn','sizePt':14,'bold':True,'color':CY,'spaceAfterPt':11},
-    {'text':'• Biggest model always → pay 2.5×–5× more & wait longer','sizePt':14,'color':MUTED,'spaceAfterPt':8},
-    {'text':'• Small model always → fail when reasoning gets hard','sizePt':14,'color':MUTED,'spaceAfterPt':8},
-    {'text':'• Users switch for one hard bug and forget to switch back','sizePt':14,'color':MUTED,'spaceAfterPt':8},
-    {'text':'• Text-only models cannot generate diagrams or visuals','sizePt':14,'color':MUTED},
-],fill=CARD,pad_x=250000,pad_y=140000)
-rx=W-M-cw_
-card_box(s,rx,cyy,cw_,ch,[
-    {'text':'Task-routed multi-model Auto','sizePt':20.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'>90% of Microsoft Copilot queries today','sizePt':14,'bold':True,'color':CY,'spaceAfterPt':11},
-    {'text':'• Enforces tenant admin rules, subprocessors & geography','sizePt':14,'color':INK,'spaceAfterPt':8},
-    {'text':'• Classifier matches sub-tasks via live eval scorecards','sizePt':14,'color':INK,'spaceAfterPt':8},
-    {'text':'• Adopts newly shipped frontier models automatically','sizePt':14,'color':INK,'spaceAfterPt':8},
-    {'text':'• Combines SLMs, reasoning LLMs & image models in one job','sizePt':14,'color':INK},
-],fill=CARD2,line=CY,lw=25400,pad_x=250000,pad_y=140000)
-rect(s,M+cw_+180000,cyy+ch/2-260000,W-2*M-2*cw_-360000,520000,fill=CY,preset='rightArrow')
-tb(s,M,5480000,CW,'Shift from “which model is #1 overall?” to “which model fits this sub-task right now?”',size=19,bold=True,color=INK,cy=500000)
+cw_=5180000; cyy=1540000; ch=3680000
+for idx_m,(xx,badge,title_m,sub_m,bullets,is_auto) in enumerate([
+    (M,'PINNED MODEL','Static single-model mindset','One model forced onto every turn',[
+        '• Biggest model always → pay 2.5×–5× more & wait longer',
+        '• Small model always → fail when reasoning gets hard',
+        '• Users switch for one hard bug & forget to switch back',
+        '• Text-only models cannot generate diagrams or visuals',
+    ],False),
+    (W-M-cw_,'DYNAMIC ROUTING','Task-routed multi-model Auto','>90% of Microsoft Copilot queries today',[
+        '• Enforces tenant admin rules, subprocessors & geography',
+        '• Classifier matches sub-tasks via live eval scorecards',
+        '• Adopts newly shipped frontier models automatically',
+        '• Combines SLMs, reasoning LLMs & image models in one job',
+    ],True),
+]):
+    rect(s,xx,cyy,cw_,ch,fill=CARD2 if is_auto else CARD,line=CY if is_auto else EDGE,lw=22000 if is_auto else 12700)
+    pad=240000
+    rect(s,xx+pad,cyy+210000,1920000,280000,fill=CY if is_auto else CODEBG,line=None if is_auto else EDGE,lw=12700,preset='roundRect',text=badge,size=10,bold=True,color=BG if is_auto else MUTED,font=MF)
+    tb(s,xx+pad,cyy+590000,cw_-2*pad,title_m,size=21,bold=True,color=INK if is_auto else MUTED,font=HF,cy=420000)
+    tb(s,xx+pad,cyy+1030000,cw_-2*pad,sub_m,size=13.8,bold=True,color=CY,cy=320000)
+    rect(s,xx+pad,cyy+1420000,cw_-2*pad,14000,fill=EDGE)
+    tb(s,xx+pad,cyy+1540000,cw_-2*pad,None,paras=[{'text':b,'spaceAfterPt':7.5} for b in bullets],size=13.8,color=INK if is_auto else MUTED,cy=1980000)
+medallion(s,W//2,cyy+ch//2,diam=460000,glyph='→',fill=CY,size=18)
+banner_box(s,M,5420000,CW,600000,'Shift from “which model is #1 overall?” to “which model fits this sub-task right now?”',line=CY,lw=15875,size=16.5,align='center')
 footer(s,'',3)
 note(s,'先问大家一个很现实的问题：你们团队现在用大模型，是不是还在挑一个综合表现最好的型号，然后所有请求从头绑到尾？如果全程绑死最贵的旗舰模型，账单翻几倍不说，连最简单的提取摘要也得跟着等半天；可要是全换成轻量小模型，稍微绕一点的逻辑推理又撑不住。更常见的是，大家为了查一个疑难杂症手动切到了最强模型，问题解决完根本想不起来切回去，后面一礼拜干杂活都在烧最贵的算力。\n微软 Copilot 负责人 Charles Lamanna 分享过一个很实在的判断：今天已经没有哪个模型能在所有任务上都排第一了，有的强在深度推理和算表，有的强在视觉生图，而翻邮件提字段用小模型又快又省。所以在今天的 Microsoft Copilot 里，超过九成的请求都已经交给了后台的 Auto，在企业管理员划定的合规范围里，按每一步子任务自动挑最合适的模型。')
 
@@ -179,11 +196,12 @@ jobs=[
 ]
 for i,(kicker,model,desc,badge,col_) in enumerate(jobs):
     x=M+i*(cw4+gap)
-    rect(s,x,y0,cw4,ch,fill=CARD)
-    tb(s,x+180000,y0+160000,cw4-360000,kicker,size=11,color=col_,font=HF,bold=True,ls=1,cy=280000)
-    tb(s,x+180000,y0+500000,cw4-360000,model,size=18.5,bold=True,color=INK,cy=580000)
-    tb(s,x+180000,y0+1140000,cw4-360000,desc,size=13.5,color=MUTED,cy=1460000)
-    rect(s,x+200000,y0+ch-580000,cw4-400000,380000,fill=col_,preset='roundRect',text=badge,size=12,bold=True,color=BG)
+    rect(s,x,y0,cw4,ch,fill=CARD,line=col_ if i==2 else EDGE,lw=15875 if i==2 else 12700)
+    rect(s,x+180000,y0+180000,cw4-360000,270000,fill=CODEBG,line=EDGE,lw=12700,preset='roundRect',text=kicker,size=10,bold=True,color=col_,font=MF)
+    tb(s,x+180000,y0+560000,cw4-360000,model,size=18.2,bold=True,color=INK,cy=520000)
+    rect(s,x+180000,y0+1140000,cw4-360000,14000,fill=EDGE)
+    tb(s,x+180000,y0+1240000,cw4-360000,desc,size=13.4,color=MUTED,cy=1440000)
+    rect(s,x+200000,y0+ch-560000,cw4-400000,360000,fill=col_,preset='roundRect',text=badge,size=11.5,bold=True,color=BG,font=MF)
 footer(s,'',4)
 note(s,'我们拿一个真实办公场景来看看什么叫按子任务分工。假设周二下午你跟 Copilot 说：“周四要谈客户续约了，帮我算算该推扩购、维持原价还是给折扣，再做一份汇报用的 PPT。”\n这句话进了 Auto 之后，系统先按企业的供应商白名单和数据驻留要求过一道合规筛子，然后把整件事拆成了四棒接力：先派响应极快的小模型去邮件、会议纪要和老合同里把关键背景捞出来；接着把真正烧脑的续约经济账交给擅长深度推理的 Claude Opus 5.5 去算，顺手把整套上下文热缓存在那儿；等需要给方案配定制插图的时候，文字模型干不了这活，系统就自动切给专门做图的 GPT Image 2.5；最后汇总生成整套幻灯片，再回到刚才缓存还热着的 Opus 5.5 一气呵成，不用把几万字资料重读一遍。')
 
@@ -211,7 +229,8 @@ note(s,'除了能力各有专攻，更直接的动力来自成本和延迟的巨
 # ---------- 5 PREFIX CACHE LAW
 s=5
 header(s,'02 · COST & LATENCY ECONOMICS','Don’t break a warm prefix cache')
-img(s,'hd-tradeoff.jpg',M,1740000,5040000,3360000,'Hand-drawn robot balancing stopwatch, coin, and quality checkmark')
+img(s,'hd-tradeoff.jpg',M,1540000,5040000,3360000,'Hand-drawn robot balancing stopwatch, coin, and quality checkmark')
+banner_box(s,M,5060000,5040000,860000,'Rule of thumb: switch models only at Turn 1, after compaction, or on isolated sub-agents.',line=EDGE,lw=12700,size=13)
 rx=M+5040000+340000; rw=W-M-rx
 cache_cards=[
     ('Warm prefix cache = 10×–20× cheaper','Once a main model caches contracts, emails, repo files and 80+ tool schemas, follow-up turns pay ~10% cache-read rates.',CY),
@@ -223,7 +242,7 @@ for i,(t,d,col_) in enumerate(cache_cards):
     card_box(s,rx,yy,rw,1380000,[
         {'text':t,'sizePt':17,'bold':True,'color':col_,'spaceAfterPt':7},
         {'text':d,'sizePt':13.6,'color':MUTED},
-    ],fill=CARD,pad_x=240000,pad_y=120000)
+    ],fill=CARD,line=AMB if col_==AMB else EDGE,lw=15875 if col_==AMB else 12700,pad_x=240000,pad_y=120000)
 footer(s,'',6)
 note(s,'看到成本差出一百多倍，很多工程师的第一反应往往是：那我每一轮对话都实时算一下难度，哪句话简单就立刻切去便宜模型，岂不是省到极致？千万别这么干——这是做自动路由最容易踩的大坑，叫打碎前缀缓存。\n现在的 Agent 在第一轮启动时，往往已经把几万字的合同、代码库文件和七八十个工具定义全喂给了主模型。只要后续轮次继续留在这个模型家族，命中前缀缓存的读取单价通常只有原价的十分之一，延迟也低得多。要是你在第五轮为了省一句简单追问的钱，中途切到了别家的所谓便宜模型，缓存当场失效，新模型得按全价把那五万多个 Token 重新预填充一遍，算下来反而更慢、更贵。所以真正成熟的路由器都守着一条铁律：只在会话首轮、上下文压缩重置之后、派发独立子 Agent，或者任务难度发生剧变这些自然边界上才切换模型。\n\n参考来源：Charles Lamanna（M365 Copilot Auto）与 Joe Binder（GitHub Blog 前缀缓存感知路由技术解析）。')
 
@@ -239,11 +258,13 @@ surfaces=[
 ]
 for i,(prod,tag_,desc) in enumerate(surfaces):
     x=M+i*(cw4+gap)
-    rect(s,x,y0,cw4,ch,fill=CARD)
-    rect(s,x+200000,y0+240000,cw4-400000,380000,fill=EDGE,preset='roundRect',text=tag_,size=12,bold=True,color=INK)
-    tb(s,x+200000,y0+760000,cw4-400000,f'0{i+1}',size=26,color=AMB if i==3 else CY,font=HF,bold=True,cy=460000)
-    tb(s,x+200000,y0+1280000,cw4-400000,prod,size=18.5,bold=True,color=INK,cy=680000)
-    tb(s,x+200000,y0+2060000,cw4-400000,desc,size=14,color=MUTED,cy=2060000)
+    acc=AMB if i==3 else CY
+    rect(s,x,y0,cw4,ch,fill=CARD,line=acc if i==3 else EDGE,lw=19050 if i==3 else 12700)
+    rect(s,x+200000,y0+230000,620000,300000,fill=acc,preset='roundRect',text=f'0{i+1}',size=11.5,bold=True,color=BG,font=MF)
+    rect(s,x+890000,y0+230000,cw4-1090000,300000,fill=CODEBG,line=EDGE,lw=12700,preset='roundRect',text=tag_,size=10.5,bold=True,color=INK,font=MF)
+    tb(s,x+200000,y0+700000,cw4-400000,prod,size=18.5,bold=True,color=INK,cy=680000)
+    rect(s,x+200000,y0+1480000,cw4-400000,14000,fill=EDGE)
+    tb(s,x+200000,y0+1620000,cw4-400000,desc,size=13.8,color=MUTED,cy=2480000)
 footer(s,'',7)
 note(s,'把能力分工和缓存铁律放进微软自己的产品体系里，你会发现虽然前台看着都很像一个 Auto 选项，但针对不同场景，微软在底层其实搭了四套各有专攻的调度系统。\n面向日常办公的 M365 Copilot 和 Cowork，核心管的是什么时候从普通聊天转入多步长任务、怎么在合规范围内跨厂商挑模型和派子任务；面向研发写代码的 GitHub Copilot Fusion，不仅挑模型，还会按题目轻重动态切换单跑、级联和并行互审这几种协作阵型；面向企业云端接口调用的 Foundry Model Router，在 45 个模型池里做 20 毫秒级的极速排序，顺带帮你优先消化买好的 PTU 容量并自动做限流容灾；而最右边的 Microsoft-Decision-1.1，则是把这套做分流、做风控的专用决策大脑直接做成开放接口，让你嵌进自家的业务代码里。')
 
@@ -253,7 +274,7 @@ header(s,'03 · MICROSOFT PRODUCTS · MICROSOFT COPILOT','Microsoft Copilot Home
 ix=M; iy=1540000; icw=6400000; ich=3600000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'m365-copilot-home.png',ix+50000,iy+50000,icw-100000,ich-100000,'Official Microsoft screenshot: Microsoft Copilot Home composer unifying Chat and Cowork with Auto',fit='contain')
-tb(s,ix,5260000,icw,'One unified prompt box: Auto answers quick questions in Chat or hands off multi-step work to Cowork.',size=12.8,color=MUTED,cy=580000)
+banner_box(s,ix,5260000,icw,700000,'One unified prompt box: Auto answers quick questions in Chat or hands off multi-step work to Cowork.',line=EDGE,lw=12700,size=12.8)
 rx=ix+icw+280000; rw=W-M-rx
 m365_pts=[
     ('1 · Chat → Cowork handoff','Decision-1.1 detects when a prompt needs multi-step execution and suggests Cowork (2.2× faster, 4.4× cheaper).',CY),
@@ -303,7 +324,7 @@ header(s,'03 · MICROSOFT PRODUCTS · GITHUB COPILOT FUSION','Copilot Fusion: pi
 ix=M; iy=1540000; icw=6200000; ich=3592000
 rect(s,ix,iy,icw,ich,fill='11161D',line=EDGE,lw=12700)
 img(s,'fusion-picker.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official GitHub screenshot: Copilot Fusion composer menu showing Standard, High, and Max effort levels',fit='contain')
-tb(s,ix,5260000,icw,'Pick Standard, High, or Max effort — hover the badge on any reply to see which models ran.',size=12.8,color=MUTED,cy=580000)
+banner_box(s,ix,5260000,icw,700000,'Pick Standard, High, or Max effort — hover the badge on any reply to see which models ran.',line=EDGE,lw=12700,size=12.8)
 rx=ix+icw+280000; rw=W-M-rx
 fus_cards=[
     ('Standard · High · Max (+ Fast)','Standard routes 1 model per task (including local MAI Code 1.1 Flash / Qwen3.8 Flash); High & Max unlock orchestration.',CY),
@@ -401,24 +422,25 @@ note(s,'自己写过跨厂商模型接入的同学肯定深有体会，打分选
 # ---------- 13 PART 4: INDUSTRY ROUTING ARCHITECTURES (GENERAL APPROACHES)
 s=13
 header(s,'04 · MODEL-LEVEL IMPLEMENTATION','Four general routing architectures')
-c1=M; w1=2650000; c2=c1+w1+110000; w2=1600000; c3=c2+w2+110000; w3=3350000; c4=c3+w3+110000; w4=W-M-c4
-hy=1480000
+c1=M; w1=2650000; c2=c1+w1+110000; w2=1650000; c3=c2+w2+110000; w3=3300000; c4=c3+w3+110000; w4=W-M-c4
+hy=1460000
+rect(s,M,hy,CW,400000,fill=CODEBG,line=EDGE,lw=12700)
 for xx,ww,tt in [(c1,w1,'ARCHITECTURE'),(c2,w2,'OVERHEAD'),(c3,w3,'HOW IT WORKS'),(c4,w4,'KEY LIMITATION')]:
-    tb(s,xx+150000,hy,ww-150000,tt,size=11.5,color=CY,font=HF,bold=True,ls=1,cy=280000)
+    tb(s,xx+150000,hy,ww-160000,tt,size=10.8,color=CY,font=MF,bold=True,ls=0.8,cy=400000)
 approaches=[
     ('1 · Heuristic & Semantic','2 – 15 ms','Regex, token count, or embedding k-NN (e.g., Aurelio Semantic Router) against anchor prompts.','Surface topics ≠ reasoning difficulty; misses subtle traps.',CY),
     ('2 · Binary Preference','20 – 90 ms','Matrix factorization / BERT classifier (e.g., RouteLLM) predicting P(Strong beats Weak).','Coupled to fixed model IDs — must retrain when catalog changes!',CY),
     ('3 · Cascade (FrugalGPT)','+1× draft','Run cheap model first; a verifier scores the draft and escalates to strong if low.','Pays double latency on hard tasks; correlated judge blind spots.',INK),
     ('4 · Generative LLM Router','400 – 2000 ms','Prompt a general LLM to pick a tool/model and explain its reasoning in JSON/text.','Slow, expensive, and overconfident — RLHF hurts calibration!',AMB),
 ]
-y=1840000; rh=960000
+y=1960000; rh=940000
 for a,lat,how,lim,col_ in approaches:
-    rect(s,M,y,CW,rh,fill=CARD)
+    rect(s,M,y,CW,rh,fill=CARD,line=AMB if col_==AMB else EDGE,lw=15875 if col_==AMB else 12700)
     tb(s,c1+160000,y+80000,w1-180000,a,size=15,bold=True,color=col_,cy=rh-160000)
-    tb(s,c2+140000,y+80000,w2-160000,lat,size=13.5,bold=True,color=INK,font=MF,cy=rh-160000)
+    rect(s,c2+120000,y+rh//2-170000,w2-200000,340000,fill=CODEBG,line=EDGE,lw=12700,preset='roundRect',text=lat,size=12.5,bold=True,color=INK,font=MF)
     tb(s,c3+150000,y+80000,w3-180000,how,size=13.2,color=INK,cy=rh-160000)
     tb(s,c4+150000,y+80000,w4-180000,lim,size=13.2,color=AMB if col_==AMB else MUTED,cy=rh-160000)
-    y+=rh+95000
+    y+=rh+90000
 footer(s,'',14)
 note(s,'看完了产品实践，我们往算法底层退一步看：业界做模型路由大体走过四条技术路线，每条都有很明显的局限。\n最早大家爱用正则规则或者句向量相似度匹配，几毫秒就能跑完，但它只看表面字眼，根本分不清“写个简单排序”和“写个无锁并发环形队列”在推理难度上的天壤之别。后来像开源界很有名的 RouteLLM，改用矩阵分解或 BERT 训练二分类器去预测强模型赢过弱模型的概率，准度上去了，但把具体模型名字焊死在了分类器权重里——现在几乎每个月都有新模型发布，候选池一换就得重采数据重训。第三种 FrugalGPT 式的串行级联，一碰到难题就得白交一次小模型的试错延迟。至于直接拿通用大模型写提示词当路由，动辄多等一两秒不说，经过人类偏好强化学习的大模型天生爱装自信，给出的概率校准度很差，很难拿来做精准的工程阈值。')
 
@@ -450,22 +472,23 @@ note(s,'那微软是怎么解开“模型月月换、路由器总不能月月重
 # ---------- 15 MICROSOFT'S THREE-LAYER ROUTING STACK
 s=15
 header(s,'04 · MICROSOFT’S ARCHITECTURE · BLUEPRINT','Microsoft’s three-layer routing stack')
-img(s,'hd-sorter.jpg',M,1780000,4980000,3320000,'Hand-drawn robot sorting incoming tasks into three policy-governed trays')
+img(s,'hd-sorter.jpg',M,1520000,4980000,3320000,'Hand-drawn robot sorting incoming tasks into three policy-governed trays')
+banner_box(s,M,5020000,4980000,980000,'Models score bounded options; deterministic code enforces policy gates, thresholds & fallbacks.',line=EDGE,lw=12700,size=13)
 rx=M+4980000+320000; rw=W-M-rx
 layers=[
     ('Layer 1 · Deterministic Policy & Cache Gate','Hard code filters tenant-allowed providers, data zones, required tool/schema capabilities, and warm prefix-cache state.',CY),
     ('Layer 2 · Fast Scorer / Decision Model (<180 ms)','Purpose-built encoder (HyDRA / Foundry ML ranker) or Microsoft-Decision-1.1 produces calibrated scores over allowed options.',CY),
     ('Layer 3 · Workflow Pattern & Output Verifier','Executes Single, Cascade or Critique, then runs deterministic schema, citation or policy safety checks before acting.',AMB),
 ]
-ch_=1320000; gap_=260000; y0_=1520000
+ch_=1300000; gap_=290000; y0_=1520000
 for i,(t,d,col_) in enumerate(layers):
     yy=y0_+i*(ch_+gap_)
     card_box(s,rx,yy,rw,ch_,[
-        {'text':t,'sizePt':16.5,'bold':True,'color':col_,'spaceAfterPt':7},
-        {'text':d,'sizePt':13.2,'color':MUTED},
-    ],fill=CARD,pad_x=220000,pad_y=95000)
+        {'text':t,'sizePt':16.2,'bold':True,'color':col_,'spaceAfterPt':6},
+        {'text':d,'sizePt':13.1,'color':MUTED},
+    ],fill=CARD,line=col_ if i==2 else EDGE,lw=15875 if i==2 else 12700,pad_x=220000,pad_y=95000)
     if i<2:
-        rect(s,rx+rw/2-100000,yy+ch_+45000,200000,170000,fill=CY if i==0 else AMB,preset='downArrow')
+        medallion(s,rx+rw//2,yy+ch_+gap_//2,diam=230000,glyph='↓',fill=CY if i==0 else AMB,size=11)
 footer(s,'',16)
 note(s,'把前面聊的所有产品和底层算法放到一张图上，微软做路由的工程哲学其实非常统一，就是清晰的三层分工。\n最上面永远是确定性的硬代码，管租户权限、数据驻留、接口能力门槛和前缀缓存状态，合规红线绝不交给概率模型去猜；中间这一层是百毫秒级的专用评估器，只管在合法的候选集里给出校准过的客观打分；最下面再根据分差决定走单模型、级联还是并行评审，并在结果发出去之前做好格式与安全校验。\n讲到这儿，大家自然会问：微软内部有 HyDRA 和专用排序器，那我们自己写业务 Agent 的时候，去哪儿找中间这一层又快、又便宜、概率还准的控制大脑呢？')
 
@@ -521,7 +544,8 @@ for i,(k,sub,desc,col_) in enumerate(prims):
         {'text':desc,'sizePt':12.8,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
 rect(s,M,4060000,CW,1920000,fill=CODEBG,line=EDGE,lw=12700)
-tb(s,M+220000,4150000,CW-440000,'POST <foundry-endpoint>/providers/microsoft/v1/systemone   ·   Ask all 3 in ONE call',size=11,color=FOOT,font=MF,cy=260000)
+tb(s,M+220000,4140000,CW-440000,'POST <foundry-endpoint>/providers/microsoft/v1/systemone   ·   Ask all 3 in ONE call',size=11,color=FOOT,font=MF,cy=260000)
+rect(s,M+220000,4430000,CW-440000,14000,fill=EDGE)
 api_code=(
     '{ "model": "microsoft-decision-1.1", "state": {"msg": "Checkout is down in EU (3rd ping).", "contacts": 3},\n'
     '  "questions": {\n'
@@ -617,7 +641,8 @@ s=21
 header(s,'06 · LIVE DEMO 1','Copilot CLI Auto & multi-agent',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
-tb(s,M+220000,cy0+140000,cx_-440000,'copilot --output-format json  ·  Live CLI telemetry',size=11,color=FOOT,font=MF,cy=280000)
+tb(s,M+220000,cy0+130000,cx_-440000,'copilot --output-format json  ·  Live CLI telemetry',size=11,color=FOOT,font=MF,cy=280000)
+rect(s,M+220000,cy0+440000,cx_-440000,14000,fill=EDGE)
 d1_code=(
     '$ copilot -p "Read config.ts..." --model auto \\\n'
     '    --output-format json --usage-output-file usage.json\n'
@@ -644,7 +669,7 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.6,'color':MUTED},
-    ],fill=CARD,pad_x=200000,pad_y=95000)
+    ],fill=CARD,line=col_,lw=15875,pad_x=200000,pad_y=95000)
 footer(s,'',22)
 note(s,'账算清楚了，接下来我们通过三组 100% 真实跑通并抓包的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 直接调用本机 GitHub Copilot CLI 的 JSONL 事件流。第一步去配置文件里读默认端口，从原始日志的 auto_mode_resolved 事件里能直接看到四个维度的打分全在 0.1 以下，自动命中轻量的 MAI Code 2 Flash；第二步做代码修改，小模型改完跑过本机三项 Node 单测，只读裁判复核放行，省掉重型返工；第三步面对隐蔽的并发双锁死锁，只读裁判当场抓出加锁顺序反转并触发升级，由 GPT-6.1 Terra 修复并通过五百次并发压测；第四步两个只读评审模型并行挑出限流方案的故障切换和分片热点漏洞；第五步用 resume 追问监控指标，usage.json 显示高达 96% 的输入 Token 直接命中热缓存。')
 
@@ -653,7 +678,8 @@ s=22
 header(s,'06 · LIVE DEMO 2','Foundry Model Router live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
-tb(s,M+220000,cy0+140000,cx_-440000,'foundry-v1preview.http  ·  ModelRouterControls=V1Preview',size=11,color=FOOT,font=MF,cy=280000)
+tb(s,M+220000,cy0+130000,cx_-440000,'foundry-v1preview.http  ·  ModelRouterControls=V1Preview',size=11,color=FOOT,font=MF,cy=280000)
+rect(s,M+220000,cy0+440000,cx_-440000,14000,fill=EDGE)
 d2_code=(
     'POST /openai/v1/chat/completions\n'
     'Foundry-Features: ModelRouterControls=V1Preview\n'
@@ -684,7 +710,7 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.6,'color':MUTED},
-    ],fill=CARD,pad_x=200000,pad_y=95000)
+    ],fill=CARD,line=col_,lw=15875,pad_x=200000,pad_y=95000)
 footer(s,'',23)
 note(s,'第二个 Demo 全部来自云端 Foundry Model Router 的真实接口抓包。第一步带上 developer 角色和 JSON 模式请求，验证参数自动归一并在 27 毫秒内完成路由。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器花 28 毫秒挑中了零推理开销的 DeepSeek-V4.1-Flash；换成 Rust 无锁队列的形式化证明时，27 毫秒内自动升级到 gpt-6-luna，并且在第二轮追问时通过消息指纹返回 retain 锁住热缓存。第四步演示怎么把续约分析拆成两棒实测调用：第一棒设成 cost 模式让 grok-4-1-fast 便宜捞出关键数字，第二棒设成 quality 模式交给 gpt-5.6-terra 做博弈策略推演。最后拉起真实主备服务，模拟主节点返回 429 限流并自动切到备选节点拿回 200 成功响应。')
 
@@ -693,8 +719,9 @@ s=23
 header(s,'06 · LIVE DEMO 3','Decision-1.1 agent controller',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
-rect(s,M+cx_-1480000,cy0+130000,1240000,320000,fill=CY,preset='roundRect',text='GA · Nov 2026',size=10.5,bold=True,color=BG)
-tb(s,M+220000,cy0+130000,cx_-1800000,'decision-controller.ts  ·  /v1/systemone',size=11,color=FOOT,font=MF,cy=320000)
+rect(s,M+cx_-1480000,cy0+120000,1240000,300000,fill=CY,preset='roundRect',text='GA · Nov 2026',size=10.5,bold=True,color=BG,font=MF)
+tb(s,M+220000,cy0+120000,cx_-1800000,'decision-controller.ts  ·  /v1/systemone',size=11,color=FOOT,font=MF,cy=300000)
+rect(s,M+220000,cy0+450000,cx_-440000,14000,fill=EDGE)
 d3_code=(
     'const res = await systemOne({\n'
     '  model: "microsoft-decision-1.1",\n'
@@ -725,7 +752,7 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.4,'color':MUTED},
-    ],fill=CARD,pad_x=200000,pad_y=95000)
+    ],fill=CARD,line=col_,lw=15875,pad_x=200000,pad_y=95000)
 footer(s,'',24)
 note(s,'第三个 Demo 展示 Microsoft-Decision-1.1 在真实云端接口上的五组实测表现。第一步拿同一封询价邮件连调五次，实测五次全部精准返回 0.9835、极差为零；第二步对致谢、退订、促销咨询和复杂质保对比四条消息做前置分流，四条全部以接近满分的置信度命中对应通道，直接帮大模型省掉四分之三的开销；第三步在一次三百多毫秒的请求里同时塞进团队分类、紧急度打分和重复投诉判断三个问题，识别出床架坍塌伤人事件后当场阻断机器人回复并转交人工；第四步用 noul 打出 0.970 的高概率，把一段推荐竞品 Fabrikam 的回复草稿在发出前稳稳拦下；第五步模拟上下文里只挂了合同 A 却漏了附件 B，模型以 0.9999 的概率精准选择停下来向用户追问缺失文件，彻底杜绝瞎编条款。')
 
@@ -733,6 +760,7 @@ note(s,'第三个 Demo 展示 Microsoft-Decision-1.1 在真实云端接口上的
 s=24
 img(s,'hd-review.jpg',W-M-5040000,1620000,5040000,3360000,'Hand-drawn illustration: two friendly robots reviewing and approving a routed workflow together')
 x=M+80000; cx=5850000
+rect(s,x,330000,520000,38000,fill=CY,preset='roundRect')
 tb(s,x,420000,cx,'SUMMARY · KEY TAKEAWAYS',size=12,color=CY,font=HF,bold=True,ls=0.9,cy=260000)
 tb(s,x,740000,cx,'Right-size the model,\nkeep the control',size=36,color=INK,font=HF,bold=True,cy=1200000)
 tk=[
@@ -741,11 +769,11 @@ tk=[
     '3   Adopt Copilot Auto, Copilot Fusion & Foundry Router first.',
     '4   Use Microsoft-Decision-1.1 for fast routing, priority & safety gates.',
 ]
-tb(s,x,2100000,cx,None,paras=[{'text':t,'spaceAfterPt':10} for t in tk],size=14.2,color=INK,cy=2380000)
-tb(s,x,4660000,cx,None,paras=[
-    {'text':'aka.ms/decision-1.1  ·  blog.genisisiq.com','spaceAfterPt':7},
-    {'text':'github.com/microsoftconnect/Decision-Benchmarks'},
-],size=12.5,color=CY,font=MF,cy=720000)
+tb(s,x,2080000,cx,None,paras=[{'text':t,'spaceAfterPt':10} for t in tk],size=14.4,color=INK,cy=2320000)
+card_box(s,x,4560000,cx,820000,[
+    {'text':'aka.ms/decision-1.1  ·  blog.genisisiq.com','sizePt':12.5,'bold':True,'color':CY,'spaceAfterPt':5},
+    {'text':'github.com/microsoftconnect/Decision-Benchmarks','sizePt':12.5,'bold':True,'color':CY},
+],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=90000,font=MF)
 tb(s,x,5540000,cx,'Thank you  ·  Q&A',size=24,color=INK,font=HF,bold=True,cy=480000)
 footer(s,'',25)
 note(s,'回到我们一开场提的问题：模型这么多、变化这么快，大家带回团队到底该怎么动手？其实抓住四件事就够了。\n别再试图找一个包打天下的模型从头绑到尾，按子任务的能力要求去拆解分工；算成本账的时候一定要把等待时间和前缀缓存算进去，守住首轮和独立子任务这些自然边界，千万别在对话半路乱切模型把十分之一价格的热缓存打碎；现成的平台能力优先用起来，日常办公打开 Copilot Auto，研发写代码用好 Copilot Fusion，调云端推理接口直接挂上 Foundry Model Router；而当你在自己的业务代码里需要做精准分流、排优先级或者加出站合规护栏时，试试把百毫秒级、概率校准过的 Microsoft-Decision-1.1 当成标准控制组件嵌进去。今天的内容就分享到这里，谢谢大家，看看大家有什么问题！')
@@ -760,7 +788,7 @@ app_cols=[
 ]
 for i,(t,sub,links,col_) in enumerate(app_cols):
     xx=M+i*(colw+gap)
-    rect(s,xx,cy0,colw,ch,fill=CARD)
+    rect(s,xx,cy0,colw,ch,fill=CARD,line=col_,lw=15875)
     tb(s,xx+240000,cy0+140000,colw-480000,None,paras=[
         {'text':t,'sizePt':18.5,'bold':True,'color':col_,'spaceAfterPt':6},
         {'text':sub,'sizePt':13,'color':MUTED},
@@ -932,9 +960,9 @@ def build(out,img_dir):
                 if 'text' in o: write_text(sh.text_frame,o)
                 rendered.append(sh)
         if k==3:
-            add_appear_animation(sl,[rendered[start:start+5] for start in (4,9,14,19)])
+            add_appear_animation(sl,[rendered[start:start+6] for start in (4,10,16,22)])
         elif k==6:
-            add_appear_animation(sl,[rendered[start:start+5] for start in (2,7,12,17)])
+            add_appear_animation(sl,[rendered[start:start+6] for start in (2,8,14,20)])
         if k in notes: sl.notes_slide.notes_text_frame.text=notes[k]
     prs.save(out); print(f'Saved {out}  ({len(prs.slides)} slides)')
 
