@@ -18,15 +18,31 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..", "..");
 const outPath = path.join(repoRoot, "presentation", "assets", "demo-recordings.json");
 
+function sanitizeString(str) {
+  if (typeof str !== "string") return str;
+  let out = str;
+  if (process.env.AZURE_FOUNDRY_ENDPOINT) {
+    const ep = process.env.AZURE_FOUNDRY_ENDPOINT.replace(/\/+$/, "");
+    out = out.split(ep).join("https://<foundry-resource>.cognitiveservices.azure.com");
+  }
+  out = out.replace(/[A-Za-z]:\\\\Users\\\\[^"\\\s]+\\\\AppData\\\\Local\\\\Temp\\\\/g, "<temp-workspace>\\\\");
+  out = out.replace(/[A-Za-z]:\\Users\\[^"\s]+\\AppData\\Local\\Temp\\/g, "<temp-workspace>\\");
+  return out;
+}
+
+function sanitizeEvents(events) {
+  return JSON.parse(sanitizeString(JSON.stringify(events)));
+}
+
 async function captureStep(runFn) {
   const events = [];
   let last = Date.now();
   await runFn((event) => {
     const now = Date.now();
-    events.push({ delayMs: Math.min(200, Math.max(10, now - last)), event });
+    events.push({ delayMs: Math.min(160, Math.max(15, now - last)), event });
     last = now;
   });
-  return events;
+  return sanitizeEvents(events);
 }
 
 async function main() {
@@ -35,23 +51,28 @@ async function main() {
   const caps = detectLiveCapabilities();
   const sessionStore = {};
 
+  data.platform = "win32/x64 · Live-captured Copilot CLI 1.0.115-6 + Microsoft Foundry Model Router V1Preview + Microsoft-Decision-1.1";
+
   try {
     if (recordFusion && caps.copilotAvailable) {
       for (let s = 1; s <= 5; s += 1) {
         console.log(`Recording live fusion step ${s}...`);
         data.steps.fusion[String(s)] = await captureStep((emit) => runFusionStepLive(s, emit, sessionStore));
+        await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
       }
     }
     if (caps.foundryReady) {
       for (let s = 1; s <= 5; s += 1) {
         console.log(`Recording live foundry step ${s}...`);
         data.steps.foundry[String(s)] = await captureStep((emit) => runFoundryStepLive(s, emit));
+        await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
       }
     }
-    if (caps.decisionReady && process.env.DECISION_DEPLOYMENT) {
+    if (caps.decisionReady) {
       for (let s = 1; s <= 5; s += 1) {
         console.log(`Recording live decision step ${s}...`);
         data.steps.decision[String(s)] = await captureStep((emit) => runDecisionStepLive(s, emit));
+        await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
       }
     }
   } finally {

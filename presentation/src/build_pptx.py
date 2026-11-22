@@ -616,29 +616,29 @@ note(s,'既有接近满分的判断准度，单次调用又几乎不花钱，把
 
 # ---------- 21 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
 s=21
-header(s,'06 · LIVE DEMO 1','Copilot Auto & Fusion replay',cx=CW-3400000)
+header(s,'06 · LIVE DEMO 1','Copilot CLI Auto & multi-agent',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
-tb(s,M+220000,cy0+140000,cx_-440000,'copilot-fusion-trace.jsonl  ·  HyDRA + Fusion',size=11,color=FOOT,font=MF,cy=280000)
+tb(s,M+220000,cy0+140000,cx_-440000,'copilot --output-format json  ·  Live CLI telemetry',size=11,color=FOOT,font=MF,cy=280000)
 d1_code=(
-    '$ copilot -p "Extract default port" --model auto\n'
-    '-> MAI Code 2 Flash (0.08 cr · 1.8s · Single)\n\n'
-    '$ copilot -p "Fix deadlock in refill()" \\\n'
-    '    --model copilot-fusion --reasoning-effort high\n'
-    '-> Primary: gpt-5.6-luna\n'
-    '-> Judge  : claude-sonnet-5.5 (ESCALATE)\n'
-    '-> Repair : gpt-6.1-sol (500× stress PASS)'
+    '$ copilot -p "Read config.ts..." --model auto \\\n'
+    '    --output-format json --usage-output-file usage.json\n'
+    '-> session.auto_mode_resolved: mai-code-2-flash (0.019 AIU)\n\n'
+    '// Cascade & Critique harness over live Copilot CLI:\n'
+    '-> Judge (--deny-tool write): ESCALATE lock inversion\n'
+    '-> Repair (gpt-6.1-terra)   : 500/500 stress PASS\n'
+    '-> --resume <sid>           : 96% cacheReadTokens hit!'
 )
-tb(s,M+220000,cy0+480000,cx_-440000,d1_code,size=12,color=CODE,font=MF,cy=2600000)
+tb(s,M+220000,cy0+480000,cx_-440000,d1_code,size=11.5,color=CODE,font=MF,cy=2600000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
-    {'text':'PS> npm --prefix demo run demo:fusion','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Single → Cascade → Critique → Warm Cache','sizePt':11,'color':CY},
+    {'text':'PS> npm --prefix demo run demo:fusion:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
+    {'text':'Single → Cascade → Escalate → Critique → 96% Cache','sizePt':11,'color':CY},
 ],fill=CARD2,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d1_cards=[
-    ('✓  Single & Cascade short-circuit','MAI Flash (0.08 cr) & Haiku + Judge','Simple lookups and clean unit-tested patches finish fast at 52%–94% lower credit cost.',CY),
-    ('↗  Judge-triggered escalation','Cascade Repair on subtle concurrency bug','When lock ordering is inverted, Judge escalates to GPT-6.1 Sol for a clean fresh-start repair.',AMB),
-    ('⇄  Parallel Critique + Warm Cache','Read-only Critics & 90% cache_read discount','50k-RPS design audited by 2 Critics; follow-up turn stays on cached model (10× cheaper).',CY),
+    ('✓  Single & Cascade short-circuit','MAI Code 2 Flash (0.019 AIU) + node --test','Real session.auto_mode_resolved scores route easy lookups & clean patches to Flash without heavy repair.',CY),
+    ('↗  Judge-triggered escalation','Catches ABBA lock inversion in token-bucket.ts','Read-only Judge flags refill()/close() deadlock; GPT-6.1 Terra fixes it and passes 500× concurrent stress.',AMB),
+    ('⇄  Parallel Critique + 96% Cache','2× read-only Critics & --resume warm prefix','Parallel --deny-tool write Critics audit 50k-RPS design; follow-up turn hits 96% cacheReadTokens.',CY),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d1_cards):
     yy=1540000+idx*1520000
@@ -647,12 +647,12 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'GitHub Copilot CLI & Copilot Fusion  ·  5 recorded traces in Auto-Routing Studio',22)
-note(s,'账算清楚了，接下来我们通过三组真实的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 回放的是我们在本机实测录下来的 GitHub Copilot 完整轨迹。最开始只是去配置文件里捞个默认端口号，HyDRA 花 86 毫秒打完能力需求分，发现轻量模型完全够用，直接走 Single 通道在 1.8 秒内搞定，只花了 0.08 个点数；接着做常规代码修改加单测走 Cascade，小模型改完测试全过，裁判扫一眼确认没毛病当场放行，省下一半点数；再往下遇到隐蔽的并发锁顺序死锁，虽然普通单测侥幸过了，但裁判敏锐抓出了锁反转风险，果断升级请出 GPT-6.1 Sol 重修并通过五百次压测；到了五万并发的限流架构设计，两个只读评审模型并行挑出了时钟漂移和热点分片两个盲区；最后追问监控指标时，系统稳稳留用刚才缓存了 6.4 万 Token 的主模型，拿满了九折以上的缓存优惠。')
+footer(s,'GitHub Copilot CLI 1.0.115  ·  5 live-captured JSONL & usage.json traces in Studio',22)
+note(s,'账算清楚了，接下来我们通过三组 100% 真实跑通并抓包的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 直接调用本机 GitHub Copilot CLI 的 JSONL 事件流。第一步去配置文件里读默认端口，从原始日志的 auto_mode_resolved 事件里能直接看到四个维度的打分全在 0.1 以下，自动命中轻量的 MAI Code 2 Flash；第二步做代码修改，小模型改完跑过本机三项 Node 单测，只读裁判复核放行，省掉重型返工；第三步面对隐蔽的并发双锁死锁，只读裁判当场抓出加锁顺序反转并触发升级，由 GPT-6.1 Terra 修复并通过五百次并发压测；第四步两个只读评审模型并行挑出限流方案的故障切换和分片热点漏洞；第五步用 resume 追问监控指标，usage.json 显示高达 96% 的输入 Token 直接命中热缓存。')
 
-# ---------- 22 LIVE DEMO 2: MICROSOFT COPILOT & FOUNDRY MODEL ROUTER
+# ---------- 22 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
 s=22
-header(s,'06 · LIVE DEMO 2','Foundry Router & Copilot replay',cx=CW-3400000)
+header(s,'06 · LIVE DEMO 2','Foundry Model Router live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
 tb(s,M+220000,cy0+140000,cx_-440000,'foundry-v1preview.http  ·  ModelRouterControls=V1Preview',size=11,color=FOOT,font=MF,cy=280000)
@@ -660,25 +660,25 @@ d2_code=(
     'POST /openai/v1/chat/completions\n'
     'Foundry-Features: ModelRouterControls=V1Preview\n'
     '{\n'
-    '  "model": "model-router",\n'
+    '  "model": "auto",\n'
     '  "routing_config": {\n'
     '    "mode": "balanced",\n'
     '    "session_affinity": { "strategy": "adaptive" }\n'
     '  }\n'
     '}\n'
-    '// Simple JSON -> DeepSeek-V4.1-Flash (23 ms)\n'
-    '// Rust ABA    -> gpt-5.6-luna        (20 ms)'
+    '// Invoice JSON -> DeepSeek-V4.1-Flash (28 ms)\n'
+    '// Rust MPMC    -> gpt-6-luna          (27 ms, retain)'
 )
 tb(s,M+220000,cy0+480000,cx_-440000,d2_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
-    {'text':'PS> npm --prefix demo run demo:foundry','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Live Foundry endpoint or instant verified replay','sizePt':11,'color':CY},
+    {'text':'PS> npm --prefix demo run demo:foundry:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
+    {'text':'Live Foundry V1Preview traces + 429→200 failover','sizePt':11,'color':CY},
 ],fill=CARD2,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d2_cards=[
-    ('✓  20–23 ms ML routing overhead','DeepSeek-V4.1-Flash vs. gpt-5.6-luna','Real Foundry V1Preview traces show ~21 ms routing overhead separating simple JSON from formal proofs.',CY),
-    ('⇄  M365 Copilot 4-job orchestration','Decision-1.1 + SLM + Opus 5.5 + GPT Image 2.5','Replays the full Thursday customer renewal workflow across retrieval, reasoning, visuals & deck.',CY),
-    ('↺  Transparent 429 → 200 failover','PTU → PAYG → Managed → Next-ranked model','Simulates a rate-limit burst on gpt-6-sol and verifies 19 ms automatic failover to gpt-5.6-sol.',AMB),
+    ('✓  27–28 ms ML routing & affinity','DeepSeek-V4.1-Flash vs. gpt-6-luna','Live V1Preview traces route simple JSON to Flash (0 reason tok) and escalate Rust proofs to Luna with retain affinity.',CY),
+    ('⇄  Two-stage cost → quality routing','grok-4-1-fast (cost) → gpt-5.6-terra (quality)','Splits renewal analysis into two live calls: cheap extraction in cost mode followed by strategy in quality mode.',CY),
+    ('↺  Transparent HTTP 429 → 200 failover','Primary 429 burst → live fallback 200 OK','Fires a real HTTP 429 on primary and verifies automatic failover to the next approved model with zero caller error.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d2_cards):
     yy=1540000+idx*1520000
@@ -687,8 +687,8 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'Foundry Model Router V1Preview & M365 Copilot  ·  5 steps in Auto-Routing Studio',23)
-note(s,'第二个 Demo 串联了云端 Foundry Model Router 的真实抓包和企业办公的跨模型接力。我们先看六阶段管线怎么在打分前筛掉不合规模型、自动抹平不同厂商的参数差异，并把预购的零模型费 PTU 排在最前面消化。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器只花 23 毫秒就挑中了零推理开销的 DeepSeek Flash；换成 Rust 无锁环形缓冲区的 ABA 形式化证明时，20 毫秒内立刻切换到推理模型 gpt-5.6-luna，并且在追问时保持缓存亲和。随后我们完整重现周四客户续约提案的四棒跨模型协作；最后模拟首选模型突遇 429 限流，看路由器怎么在 19 毫秒内无感切到白名单里的备选模型，给业务端稳稳返回 200 成功结果。')
+footer(s,'Microsoft Foundry Model Router V1Preview  ·  5 live-captured HTTP JSON traces in Studio',23)
+note(s,'第二个 Demo 全部来自云端 Foundry Model Router 的真实接口抓包。第一步带上 developer 角色和 JSON 模式请求，验证参数自动归一并在 27 毫秒内完成路由。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器花 28 毫秒挑中了零推理开销的 DeepSeek-V4.1-Flash；换成 Rust 无锁队列的形式化证明时，27 毫秒内自动升级到 gpt-6-luna，并且在第二轮追问时通过消息指纹返回 retain 锁住热缓存。第四步演示怎么把续约分析拆成两棒实测调用：第一棒设成 cost 模式让 grok-4-1-fast 便宜捞出关键数字，第二棒设成 quality 模式交给 gpt-5.6-terra 做博弈策略推演。最后拉起真实主备服务，模拟主节点返回 429 限流并自动切到备选节点拿回 200 成功响应。')
 
 # ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
 s=23
@@ -702,24 +702,24 @@ d3_code=(
     '  model: "microsoft-decision-1.1",\n'
     '  state: { customer_msg, draft_reply },\n'
     '  questions: {\n'
-    '    route:    { type: "choice", criteria: ROUTES },\n'
+    '    team:     { type: "choice", criteria: TEAMS },\n'
     '    priority: { type: "score",  criteria: P0_TO_P3 },\n'
     '    rival:    { type: "noul",   instructions: "Names rival?" }\n'
     '  }\n'
     '});\n'
-    'if (res.priority.score >= 2.5) return pageHumanP3();\n'
-    'if (res.rival.noul >= 0.50)    return holdDraft();'
+    'if (res.team.choice === "safety_support") return pageHuman();\n'
+    'if (res.rival.noul >= 0.50)               return holdDraft();'
 )
 tb(s,M+220000,cy0+490000,cx_-440000,d3_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
-    {'text':'PS> npm --prefix demo run demo:decision','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Preset traces + live custom prompt tester in Studio','sizePt':11,'color':CY},
+    {'text':'PS> npm --prefix demo run demo:decision:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
+    {'text':'5 live /v1/systemone traces + custom prompt tester','sizePt':11,'color':CY},
 ],fill=CARD2,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d3_cards=[
-    ('✓  Repeatable routing (choice)','180 ms median · $0.000013/call · zero variance','5/5 identical runs and 100% inbox triage accuracy (vs. 88% regex), skipping 57% of frontier LLM calls.',CY),
-    ('!  Multi-question priority (score)','Route + P0–P3 severity + repeat check in 1 call','“Bed frame collapsed, hurt back” scores 2.94 / 3.0 — bypassing the bot to page an immediate human.',AMB),
-    ('✕  Outbound guardrail & abstain (noul)','Blocks competitor promo (0.964) & missing files','Holds a draft recommending rival Fabrikam (≥0.50), and asks to clarify when a referenced file is missing.',CY),
+    ('✓  Zero-spread routing (choice & noul)','5/5 identical 0.9835 · 4/4 inbox p=1.00','5 consecutive live calls return 0.00 pt spread; 3 of 4 routine inbox messages skip the frontier LLM.',CY),
+    ('!  3-in-1 safety triage (choice+score+noul)','safety_support (0.998) + score 1.97 + repeat 1.00','One 348 ms call classifies injury risk, scores urgency & flags 3rd repeat contact — blocking bot reply.',AMB),
+    ('✕  Outbound guardrail & missing-doc abstain','Rival promo noul=0.970 & missing Exhibit B p=0.9999','Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.',CY),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d3_cards):
     yy=1540000+idx*1520000
@@ -728,8 +728,8 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.4,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'Microsoft-Decision-1.1 /v1/systemone  ·  5 steps + custom prompt tester in Studio',24)
-note(s,'第三个 Demo 带大家看 Microsoft-Decision-1.1 怎么在代码里当好 Agent 的控制中枢。我们先拿同一封邮件连测五次，验证它的概率输出零抖动、延迟稳在 180 毫秒上下；接着看 choice 怎么把致谢、退订、普通咨询和深度导购精准分流，省掉大半昂贵的大模型调用；再看一次接口调用怎么同时拿回团队路由、2.94 分的人身受伤高危评分和重复催办判断，直接跳过机器人触发人工紧急接管；随后用 noul 打出 0.964 的高概率，把一段差点把客户推给竞品 Fabrikam 的回复草稿当场拦下；最后模拟客户要求按附件 B 重算报价却忘了传附件，模型看到最高置信度掉到阈值以下，主动选择停下来追问而不是硬编数字。待会儿在演示台里，我们也可以现场随便敲几句业务输入，直接看它怎么打分。')
+footer(s,'Microsoft-Decision-1.1 /v1/systemone  ·  5 live-captured HTTP JSON traces in Studio',24)
+note(s,'第三个 Demo 展示 Microsoft-Decision-1.1 在真实云端接口上的五组实测表现。第一步拿同一封询价邮件连调五次，实测五次全部精准返回 0.9835、极差为零；第二步对致谢、退订、促销咨询和复杂质保对比四条消息做前置分流，四条全部以接近满分的置信度命中对应通道，直接帮大模型省掉四分之三的开销；第三步在一次三百多毫秒的请求里同时塞进团队分类、紧急度打分和重复投诉判断三个问题，识别出床架坍塌伤人事件后当场阻断机器人回复并转交人工；第四步用 noul 打出 0.970 的高概率，把一段推荐竞品 Fabrikam 的回复草稿在发出前稳稳拦下；第五步模拟上下文里只挂了合同 A 却漏了附件 B，模型以 0.9999 的概率精准选择停下来向用户追问缺失文件，彻底杜绝瞎编条款。')
 
 # ---------- 24 CLOSER: KEY TAKEAWAYS
 s=24

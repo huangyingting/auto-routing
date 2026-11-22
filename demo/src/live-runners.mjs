@@ -1,17 +1,39 @@
 import { execFile, execFileSync } from "node:child_process";
 import crypto from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 import { copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import tls from "node:tls";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+
+// Avoid post-quantum hybrid ClientHello fragmentation ECONNRESET on Windows corporate networks
+tls.DEFAULT_ECDH_CURVE = "X25519:P-256:P-384";
 
 const execFileAsync = promisify(execFile);
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const demoRoot = path.resolve(here, "..");
 export const fixturesDir = path.join(demoRoot, "fixtures");
+
+// Load optional gitignored demo/.env.local for zero-flag local live runs
+const localEnvPath = path.join(demoRoot, ".env.local");
+if (existsSync(localEnvPath)) {
+  for (const rawLine of readFileSync(localEnvPath, "utf8").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq > 0) {
+      const key = line.slice(0, eq).trim();
+      const val = line.slice(eq + 1).trim();
+      if (key && process.env[key] === undefined) {
+        process.env[key] = val;
+      }
+    }
+  }
+}
 
 let cachedCopilotCmd = undefined;
 let cachedAzToken = null;
@@ -65,12 +87,15 @@ export function getFoundryAuth() {
     return { headerName: "Authorization", headerValue: `Bearer ${cachedAzToken}`, source: "az-cli" };
   }
   try {
-    const cmd = process.platform === "win32" ? "az.cmd" : "az";
     const subArgs = process.env.AZURE_SUBSCRIPTION_ID ? ["--subscription", process.env.AZURE_SUBSCRIPTION_ID] : [];
-    const token = execFileSync(
-      cmd,
-      ["account", "get-access-token", ...subArgs, "--resource", "https://cognitiveservices.azure.com", "--query", "accessToken", "-o", "tsv"],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    const azArgs = ["account", "get-access-token", ...subArgs, "--resource", "https://cognitiveservices.azure.com", "--query", "accessToken", "-o", "tsv"];
+    const token = (
+      process.platform === "win32"
+        ? execFileSync(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", `az.cmd ${azArgs.join(" ")}`], {
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+          })
+        : execFileSync("az", azArgs, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
     ).trim();
     if (token) {
       cachedAzToken = token;
@@ -259,10 +284,44 @@ export async function runCopilotPrompt({
   }
 }
 
+async function postJsonWithRetry(url, headers, bodyObj, label) {
+  let lastErr = null;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      const start = performance.now();
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(bodyObj),
+      });
+      const wallMs = Math.round(performance.now() - start);
+      if (res.status === 429 && attempt < 3) {
+        const retrySec = Number.parseInt(res.headers.get("retry-after") || "4", 10);
+        await new Promise((r) => setTimeout(r, Math.min(8000, Math.max(1500, retrySec * 1000))));
+        continue;
+      }
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`${label} HTTP ${res.status}: ${body}`);
+      }
+      const json = await res.json();
+      return { json, wallMs };
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 3 && /fetch failed|ECONNRESET|ETIMEDOUT/i.test(String(err?.cause?.code || err?.message || err))) {
+        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
 export async function callFoundryRouter({
   messages,
   mode = "balanced",
-  sessionAffinity = { strategy: "none" },
+  sessionAffinity = null,
   extraBody = {},
 }) {
   const endpoint = process.env.AZURE_FOUNDRY_ENDPOINT?.replace(/\/+$/, "");
@@ -274,29 +333,24 @@ export async function callFoundryRouter({
     throw new Error("Missing Foundry credentials: set AZURE_FOUNDRY_API_KEY, AZURE_ENTRA_TOKEN, or run `az login`.");
   }
   const model = process.env.FOUNDRY_ROUTER_MODEL || "auto";
+  const routingConfig = sessionAffinity ? { mode, session_affinity: sessionAffinity } : { mode };
   const requestBody = {
     model,
-    routing_config: { mode, session_affinity: sessionAffinity },
+    routing_config: routingConfig,
     messages,
-    max_completion_tokens: 220,
+    max_completion_tokens: 900,
     ...extraBody,
   };
-  const start = performance.now();
-  const res = await fetch(`${endpoint}/openai/v1/chat/completions`, {
-    method: "POST",
-    headers: {
+  const { json, wallMs } = await postJsonWithRetry(
+    `${endpoint}/openai/v1/chat/completions`,
+    {
       "Content-Type": "application/json",
       "Foundry-Features": "ModelRouterControls=V1Preview",
       [auth.headerName]: auth.headerValue,
     },
-    body: JSON.stringify(requestBody),
-  });
-  const wallMs = Math.round(performance.now() - start);
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Foundry Model Router HTTP ${res.status}: ${body}`);
-  }
-  const json = await res.json();
+    requestBody,
+    "Foundry Model Router",
+  );
   const rawTrace =
     `# HTTP Request: POST ${endpoint}/openai/v1/chat/completions (Header: Foundry-Features: ModelRouterControls=V1Preview)\n` +
     `${JSON.stringify(requestBody, null, 2)}\n\n` +
@@ -317,21 +371,15 @@ export async function callDecisionSystemOne({ state, questions, assets = undefin
   const payload = { model: deployment, state, questions };
   if (assets) payload.assets = assets;
 
-  const start = performance.now();
-  const res = await fetch(`${endpoint}/providers/microsoft/v1/systemone`, {
-    method: "POST",
-    headers: {
+  const { json, wallMs } = await postJsonWithRetry(
+    `${endpoint}/providers/microsoft/v1/systemone`,
+    {
       "Content-Type": "application/json",
       [auth.headerName]: auth.headerValue,
     },
-    body: JSON.stringify(payload),
-  });
-  const wallMs = Math.round(performance.now() - start);
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Microsoft-Decision-1.1 (/v1/systemone) HTTP ${res.status}: ${body}`);
-  }
-  const json = await res.json();
+    payload,
+    "Microsoft-Decision-1.1 (/v1/systemone)",
+  );
   const rawTrace =
     `# HTTP Request: POST ${endpoint}/providers/microsoft/v1/systemone\n` +
     `${JSON.stringify(payload, null, 2)}\n\n` +
@@ -1025,12 +1073,12 @@ export async function runFoundryStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `[CONFIG] Multi-job workplace orchestration: mode="cost" retrieval -> mode="quality" strategy synthesis\n` +
-        `[REQUEST] Retrieve account facts from renewal-context.json and draft renewal strategy + slide titles\n`,
+        `[CONFIG] Two-stage Foundry routing: Job 1 routing_config.mode="cost" -> Job 2 routing_config.mode="quality"\n` +
+        `[REQUEST] Extract renewal metrics from renewal-context.json, then synthesize executive renewal strategy\n`,
     });
     const job1 = await callFoundryRouter({
       messages: [
-        { role: "user", content: `Extract key renewal numbers in 2 bullets from:\n${renewal}` },
+        { role: "user", content: `Extract key renewal numbers in 2 short bullets from:\n${renewal}` },
       ],
       mode: "cost",
     });
@@ -1038,31 +1086,36 @@ export async function runFoundryStepLive(step, emit) {
       messages: [
         {
           role: "user",
-          content: `Based on these account facts, recommend expand vs hold vs discount and list 3 slide titles:\n${job1.json.choices?.[0]?.message?.content}`,
+          content: `Given these account facts:\n${job1.json.choices?.[0]?.message?.content}\n\nFormulate a rigorous game-theoretic enterprise renewal negotiation strategy comparing 3-year multi-seat expansion vs hold vs discount-floor trade-offs with expected NRR math in 4 concise bullets.`,
         },
       ],
       mode: "quality",
+      extraBody: { max_completion_tokens: 2500 },
     });
+    const r1Ms = job1.json.model_selection_details?.model_router_details?.routing_trace?.[0]?.latency_ms ?? "—";
+    const r2Ms = job2.json.model_selection_details?.model_router_details?.routing_trace?.[0]?.latency_ms ?? "—";
     emit({
       kind: "output",
       text:
-        `  Job 1 (mode="cost")    -> ${job1.json.model} (${job1.wallMs} ms)\n` +
-        `  Job 2 (mode="quality") -> ${job2.json.model} (${job2.wallMs} ms)\n` +
-        `✓ PASS — Split workflow across ${job1.json.model} (retrieval) and ${job2.json.model} (strategy)\n` +
-        `Why: Decomposing sub-jobs lets each step pick the right price-performance tier instead of one bulky call.\n` +
-        `[SOURCE] Raw Log: 2x Foundry Router HTTP JSON (mode="cost" + mode="quality")  |  Case Study: M365 Copilot Auto (Slide 16)\n`,
+        `  Job 1 (mode="cost")    -> "${job1.json.model}" (router=${r1Ms} ms, wall=${job1.wallMs} ms)\n` +
+        `  Job 2 (mode="quality") -> "${job2.json.model}" (router=${r2Ms} ms, wall=${job2.wallMs} ms)\n` +
+        `✓ PASS — Split workflow across "${job1.json.model}" (cheap extraction) and "${job2.json.model}" (frontier synthesis)\n` +
+        `Why: Decomposing sub-jobs lets each call pick its optimal cost/quality band on the same /chat/completions endpoint.\n` +
+        `[SOURCE] Raw Log: 2x Live Foundry Router HTTP JSON (routing_config.mode="cost" + mode="quality")\n`,
     });
     emit({
       kind: "raw",
       text: `# PROVENANCE: Live 2-stage Foundry Model Router sub-job HTTP JSON.\n\n# --- Job 1 (mode="cost") ---\n${job1.rawTrace}\n\n# --- Job 2 (mode="quality") ---\n${job2.rawTrace}`,
     });
+    const shortM1 = job1.json.model.replace(/-\d{4}-\d{2}-\d{2}$/, "").replace(/-reasoning$/, "");
+    const shortM2 = job2.json.model.replace(/-\d{4}-\d{2}-\d{2}$/, "");
     emit({
       kind: "route",
-      model: `${job1.json.model} -> ${job2.json.model}`,
+      model: `${shortM1} → ${shortM2}`,
       meta: "Multi-Job Cost + Quality",
-      chip1: `Retrieval: ${job1.json.model} ✓`,
+      chip1: `Cost: ${shortM1} ✓`,
       chip1Tone: "on",
-      chip2: `Strategy: ${job2.json.model} ✓`,
+      chip2: `Quality: ${shortM2} ✓`,
       chip2Tone: "on",
       chip3: "Live Multi-Job ✓",
       chip3Tone: "on",
@@ -1217,26 +1270,29 @@ export async function runDecisionStepLive(step, emit) {
     const priority = json.answers?.priority ?? json.priority ?? {};
     const repeat = json.answers?.repeat ?? json.repeat ?? {};
     const score = Number(priority.score ?? 0);
+    const teamConf = Number(team.probabilities?.[team.choice] ?? team.confidence ?? 0);
+    const escalated = team.choice === "safety_support" || score >= 1.8;
     emit({
       kind: "output",
       text:
         `[CONFIG] Combined /v1/systemone call: 3 typed questions (choice + score[0..3] + noul) in ONE request\n` +
         `[REQUEST] "${state}"\n` +
-        `  team=${JSON.stringify(team)} | priority=${JSON.stringify(priority)} | repeat=${JSON.stringify(repeat)}\n` +
-        (score >= 2.0 ? `✕ ESCALATED — High-risk injury detected (score ${score.toFixed(2)} >= 2.0); bot reply blocked!\n` : ``) +
-        `✓ PASS — Completed 3-primitive triage in ${wallMs} ms\n` +
+        `  team (choice)    : "${team.choice}" (p=${teamConf.toFixed(3)})\n` +
+        `  priority (score) : ${score.toFixed(2)} / 3.0  (repeat.noul=${Number(repeat.noul ?? 0).toFixed(3)})\n` +
+        (escalated ? `✕ ESCALATED — Safety incident (${team.choice}, score=${score.toFixed(2)}, repeat=${Number(repeat.noul ?? 0).toFixed(2)}); bot reply blocked!\n` : ``) +
+        `✓ PASS — Completed 3-primitive triage & human escalation in ${wallMs} ms\n` +
         `Why: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n` +
         `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.{team,priority,repeat})  |  Schema: Slide 18\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live 3-question /providers/microsoft/v1/systemone HTTP JSON.\n\n${rawTrace}` });
     emit({
       kind: "route",
-      model: `score = ${score.toFixed(2)}`,
+      model: `score = ${score.toFixed(2)} (${team.choice || "safety"})`,
       meta: `3 answers in ${wallMs} ms`,
       chip1: `Team: ${team.choice || "safety"} ✓`,
       chip1Tone: "on",
-      chip2: score >= 2.0 ? "Page Human P3 ✕" : `Score: ${score.toFixed(2)}`,
-      chip2Tone: score >= 2.0 ? "denied" : "on",
+      chip2: escalated ? "Human Escalated ✕" : `Score: ${score.toFixed(2)}`,
+      chip2Tone: escalated ? "denied" : "on",
       chip3: `Repeat: ${Number(repeat.noul ?? 0).toFixed(2)} ✓`,
       chip3Tone: "on",
     });

@@ -50,7 +50,7 @@ npm --prefix demo run demo:replay
 - **HTML**：`dist/html/index.html`（同时复制到 `docs/index.html`）
 - **网页集成可视化 Auto-Routing Studio**：
   - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭；翻页同步备注，打开 Studio 自动收起；`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF（不含工具栏和备注）。
-  - **GitHub Pages / 静态离线回放**：直接打开 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（或任意页按 `D`），即可在分色路由工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · Copilot Fusion）**、**Demo 2（Cloud API · Foundry Model Router）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1）**——左侧主视图同步展示路由拓扑与分色执行日志（蓝色 `[CONFIG]`、琥珀色 `[REQUEST]`、绿色 `✓ PASS`、红色 `✕ ESCALATED / BLOCKED`、紫色 `[SOURCE]` 数据出处），终端右上角支持一键切换 **`Summary` | `{ } Raw Log`** 查看原始 CLI JSONL（如 `session.auto_mode_resolved` 的 `categoryScores` 与 `--usage-output-file`）/ HTTP JSON 报文及架构参数出处说明；CLI 下也可附加 `--raw` 输出完整原始 JSON。
+  - **GitHub Pages / 静态离线回放**：直接打开 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（或任意页按 `D`），即可在分色路由工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · Copilot CLI Auto & 多模型协同）**、**Demo 2（Cloud API · Foundry Model Router）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1）**——全部 15 个步骤的回放数据均由本机真实调用实测抓包生成（零模拟报文），终端右上角支持一键切换 **`Summary` | `{ } Raw Log`** 查看完整原始 CLI JSONL（`session.auto_mode_resolved` + `usage.json`）/ HTTP JSON 响应与数据出处。
   - **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`，会自动检测并驱动本机 `copilot` CLI（真实运行 Demo 1 全部 5 步及自定义 Prompt 探测）、本机 `429 -> 200` HTTP 故障转移测试台（Demo 2 第 5 步），以及在配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`）后真实请求云端 Foundry Model Router 与 `/providers/microsoft/v1/systemone`。
 
 ## 视觉系统
