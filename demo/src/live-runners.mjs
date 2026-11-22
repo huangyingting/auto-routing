@@ -336,10 +336,6 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step1-"));
     try {
       await copyFile(path.join(fixturesDir, "config.ts"), path.join(ws, "config.ts"));
-      emit({
-        kind: "output",
-        text: `$ copilot -p "Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)" --model auto\n`,
-      });
       const res = await runCopilotPrompt({
         prompt: "Read config.ts and reply on a single line in exact format: DEFAULT_PORT=<number> (<env_var_name>)",
         cwd: ws,
@@ -354,11 +350,13 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       emit({
         kind: "output",
         text:
-          `[LIVE Copilot CLI · --model auto]\n` +
-          `  Selected model : ${res.usage.displayName} (${res.usage.modelId})\n` +
-          `  Token telemetry: input=${res.usage.inputTokens.toLocaleString()} (cacheRead=${res.usage.cacheReadTokens.toLocaleString()}) · output=${res.usage.outputTokens} · reasoning=${res.usage.reasoningTokens}\n` +
-          `  AI Credits     : ${cr} cr · wall=${sec}s (api=${(res.usage.apiMs / 1000).toFixed(1)}s)\n` +
-          `  Output         : ${res.stdout}\n[LIVE_FUSION_STEP_1_VERIFIED]\n`,
+          `[CONFIG] copilot --model auto  (HyDRA 4-head capability router · single-turn fast path)\n` +
+          `[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n` +
+          `  selected : ${res.usage.displayName} (${res.usage.modelId})\n` +
+          `  tokens   : input=${res.usage.inputTokens.toLocaleString()} (cacheRead=${res.usage.cacheReadTokens.toLocaleString()}) · output=${res.usage.outputTokens} · reasoning=${res.usage.reasoningTokens}\n` +
+          `  output   : ${res.stdout}\n` +
+          `✓ PASS — Routed to lightweight ${res.usage.displayName} (${cr} AI Credits, ${sec}s)\n` +
+          `Why: Low reasoning/debug demand fits Flash capability profile with zero judge overhead.\n`,
       });
       emit({
         kind: "route",
@@ -385,7 +383,9 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       await copyFile(path.join(fixturesDir, "format.test.mjs"), path.join(ws, "format.test.mjs"));
       emit({
         kind: "output",
-        text: `[Cascade Step 2 · Primary Draft -> node --test -> Secondary Judge]\n`,
+        text:
+          `[CONFIG] Cascade workflow: Primary Draft -> node --test -> Read-Only Judge (skip Repair if clean)\n` +
+          `[REQUEST] Fix greetingFormatter() in format.mjs to trim tabs & Unicode NBSP (\\u00A0)\n`,
       });
       const draft = await runCopilotPrompt({
         prompt:
@@ -418,9 +418,10 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         kind: "output",
         text:
           `  1. Primary (${draft.usage.displayName}): patched format.mjs (${draft.usage.credits.toFixed(3)} cr)\n` +
-          `  2. Host Test Runner: node --test format.test.mjs -> PASS (${testRun.stdout.split(/\r?\n/).filter((l) => l.includes("pass")).pop() || "3/3 tests passed"})\n` +
-          `  3. Secondary Judge (${judge.usage.displayName}): ${verdictLine}\n` +
-          `  4. Repair Pass: SKIPPED (short-circuited at ${totalCr} total AI Credits)\n[LIVE_FUSION_STEP_2_VERIFIED]\n`,
+          `  2. Host Test: node --test format.test.mjs -> ${testRun.stdout.split(/\r?\n/).filter((l) => l.includes("pass")).pop() || "3/3 pass"}\n` +
+          `  3. Judge (${judge.usage.displayName}): ${verdictLine}\n` +
+          `✓ PASS — Judge ACCEPTED draft; heavy Frontier Repair skipped (total ${totalCr} cr)\n` +
+          `Why: Cascade lets a fast model try first and only pays for a heavy repair model when Judge finds a flaw.\n`,
       });
       emit({
         kind: "route",
@@ -447,7 +448,9 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       await writeFile(path.join(ws, "token-bucket.ts"), buggyTs, "utf8");
       emit({
         kind: "output",
-        text: `[Cascade Step 3 · Concurrency Audit -> Judge Escalation -> Repair]\n`,
+        text:
+          `[CONFIG] Cascade safety net: Judge audits concurrency invariants -> escalates to Repair if unsafe\n` +
+          `[REQUEST] Fix intermittent deadlock when TokenBucket.refill() races with close()\n`,
       });
       const judge = await runCopilotPrompt({
         prompt:
@@ -480,9 +483,10 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       emit({
         kind: "output",
         text:
-          `  1. Judge Gate (${judge.usage.displayName}): ${judge.stdout.replace(/\s+/g, " ")}\n` +
-          `  2. Escalated Repair (${repair.usage.displayName}): ${repair.stdout.replace(/\s+/g, " ")}\n` +
-          `  3. Host Concurrency Verification: ${stressRuns}/500 interleaved refill()+close() runs PASS (zero deadlock)\n[LIVE_FUSION_STEP_3_VERIFIED]\n`,
+          `✕ ESCALATED — Judge (${judge.usage.displayName}) rejected draft: ${judge.stdout.replace(/\s+/g, " ")}\n` +
+          `  repair (${repair.usage.displayName}): ${repair.stdout.replace(/\s+/g, " ")}\n` +
+          `✓ PASS — Escalated repair verified by ${stressRuns}/500 concurrent refill()+close() runs (0 deadlocks)\n` +
+          `Why: Naive unit tests miss race conditions; Judge catches inverted lock order and escalates to a strong model.\n`,
       });
       emit({
         kind: "route",
@@ -514,7 +518,9 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
 
     emit({
       kind: "output",
-      text: `[Critique Step 4 · Primary Draft + 2 Parallel Read-Only Critics + Revision]\n`,
+      text:
+        `[CONFIG] Critique topology: Primary Draft + 2 Parallel Read-Only Critics (--deny-tool write) + Revision\n` +
+        `[REQUEST] Design multi-region Redis sliding-window limiter for 50k RPS (<2ms p99)\n`,
     });
     const draft = await runCopilotPrompt({
       prompt:
@@ -562,9 +568,10 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       kind: "output",
       text:
         `  1. Primary Draft (${draft.usage.displayName})\n` +
-        `  2. Critic A [Read-Only · ${criticA.usage.displayName}]: ${criticA.stdout.replace(/\s+/g, " ")}\n` +
-        `  3. Critic B [Read-Only · ${criticB.usage.displayName}]: ${criticB.stdout.replace(/\s+/g, " ")}\n` +
-        `  4. Revised Synthesis (${revision.usage.displayName} · cacheRead=${revision.usage.cacheReadTokens.toLocaleString()} tok):\n     ${revision.stdout.replace(/\n+/g, "\n     ")}\n[LIVE_FUSION_STEP_4_VERIFIED]\n`,
+        `✕ CRITIC A [${criticA.usage.displayName} · read-only]: ${criticA.stdout.replace(/\s+/g, " ")}\n` +
+        `✕ CRITIC B [${criticB.usage.displayName} · read-only]: ${criticB.stdout.replace(/\s+/g, " ")}\n` +
+        `✓ PASS — Primary (${revision.usage.displayName}) synthesized both fixes (cacheRead=${revision.usage.cacheReadTokens.toLocaleString()} tok)\n` +
+        `Why: Read-only Critics uncover architectural blind spots in parallel without conflicting file edits.\n`,
     });
     emit({
       kind: "route",
@@ -605,7 +612,9 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
 
     emit({
       kind: "output",
-      text: `$ copilot --resume ${sid.slice(0, 8)}… -p "Export Prometheus counter names lease_hits_total and fallback_open_total" --model auto\n`,
+      text:
+        `[CONFIG] Cache-boundary guard: copilot --resume ${sid.slice(0, 8)}… --model auto\n` +
+        `[REQUEST] Export Prometheus counter names lease_hits_total and fallback_open_total\n`,
     });
     const follow = await runCopilotPrompt({
       prompt: "Output ONLY two Prometheus metric lines (# TYPE ...) for lease_hits_total and fallback_open_total.",
@@ -623,11 +632,11 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     emit({
       kind: "output",
       text:
-        `[LIVE Prefix-Cache Telemetry]\n` +
-        `  Retained model    : ${follow.usage.displayName} (${follow.usage.modelId})\n` +
-        `  Warm cache read   : ${follow.usage.cacheReadTokens.toLocaleString()} / ${follow.usage.inputTokens.toLocaleString()} input tokens (${hitPct}% cache hit!)\n` +
-        `  Turn delta credits: ${follow.usage.credits.toFixed(3)} cr · API time=${sec}s\n` +
-        `  Output            :\n    ${follow.stdout.replace(/\n+/g, "\n    ")}\n[LIVE_FUSION_STEP_5_VERIFIED]\n`,
+        `  retained model  : ${follow.usage.displayName} (${follow.usage.modelId})\n` +
+        `  warm cache read : ${follow.usage.cacheReadTokens.toLocaleString()} / ${follow.usage.inputTokens.toLocaleString()} tokens (${hitPct}% cache hit)\n` +
+        `  output          : ${follow.stdout.replace(/\n+/g, " | ")}\n` +
+        `✓ PASS — Retained warm ${follow.usage.displayName} (${hitPct}% cache hit · ${follow.usage.credits.toFixed(3)} cr · ${sec}s)\n` +
+        `Why: Switching to a cold model mid-session breaks the prefix cache and forces a 10x pricier full re-read.\n`,
     });
     emit({
       kind: "route",
@@ -701,10 +710,11 @@ export async function runLocalFailoverStep(emit, useLiveSecondary = false) {
     emit({
       kind: "output",
       text:
-        `[LIVE HTTP Failover Harness · ${baseUrl}]\n` +
-        `  Attempt 1 -> ${attempts[0].deployment}: HTTP ${attempts[0].status} Too Many Requests\n` +
-        `  Attempt 2 -> ${attempts[1].deployment}: HTTP ${attempts[1].status} OK (served by ${finalBody.servedModel})\n` +
-        `  End-to-end failover time: ${elapsedMs} ms · Caller received clean 200 OK\n[LIVE_FOUNDRY_STEP_5_VERIFIED]\n`,
+        `[CONFIG] Two-tier failover policy: Primary deployment -> Next-ranked model inside approved subset\n` +
+        `[REQUEST] POST ${baseUrl}/primary/chat/completions  (peak traffic burst)\n` +
+        `✕ BLOCKED — Attempt 1 (${attempts[0].deployment}) failed with HTTP ${attempts[0].status} Too Many Requests\n` +
+        `✓ PASS — Automatic failover to ${attempts[1].deployment} succeeded with HTTP ${attempts[1].status} OK in ${elapsedMs} ms\n` +
+        `Why: Router absorbs 429 rate-limit bursts inside your compliance allow-list so callers see zero errors.\n`,
     });
     emit({
       kind: "route",
@@ -735,7 +745,9 @@ export async function runFoundryStepLive(step, emit) {
   if (step === 1) {
     emit({
       kind: "output",
-      text: `[LIVE Foundry Eligibility & Parameter-Adaptation Probe]\n  POST ${process.env.AZURE_FOUNDRY_ENDPOINT}/openai/v1/chat/completions (json_object + temperature=0.2)\n`,
+      text:
+        `[CONFIG] Foundry Model Router: approved subset + json_object gate + parameter auto-adapter\n` +
+        `[REQUEST] POST ${process.env.AZURE_FOUNDRY_ENDPOINT}/openai/v1/chat/completions (role="developer", temperature=0.2)\n`,
     });
     const { json, wallMs } = await callFoundryRouter({
       messages: [
@@ -750,8 +762,9 @@ export async function runFoundryStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `  HTTP 200 OK · served by "${json.model}" (wall=${wallMs} ms, router=${rMs} ms)\n` +
-        `  Response: ${json.choices?.[0]?.message?.content?.trim()}\n[LIVE_FOUNDRY_STEP_1_VERIFIED]\n`,
+        `  response: ${json.choices?.[0]?.message?.content?.trim()}\n` +
+        `✓ PASS — HTTP 200 OK served by "${json.model}" (router=${rMs} ms, wall=${wallMs} ms)\n` +
+        `Why: One cloud endpoint normalizes incompatible cross-provider parameters and drains pre-paid PTU first.\n`,
     });
     emit({
       kind: "route",
@@ -772,7 +785,9 @@ export async function runFoundryStepLive(step, emit) {
     const renewal = JSON.parse(await readFile(path.join(fixturesDir, "renewal-context.json"), "utf8"));
     emit({
       kind: "output",
-      text: `POST /openai/v1/chat/completions (mode="balanced")\n  Prompt: Extract invoice_id and currency as JSON from "${renewal.invoiceSample}"\n`,
+      text:
+        `[CONFIG] POST /openai/v1/chat/completions · model="auto" · routing_config.mode="balanced" (1–2% band)\n` +
+        `[REQUEST] Extract invoice_id and currency as JSON from "${renewal.invoiceSample}"\n`,
     });
     const { json, wallMs } = await callFoundryRouter({
       messages: [
@@ -792,9 +807,10 @@ export async function runFoundryStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `  HTTP 200 OK · served by "${json.model}" (router=${rMs} ms, wall=${wallMs} ms)\n` +
-        `  usage: prompt=${json.usage?.prompt_tokens}, completion=${json.usage?.completion_tokens}, reasoning=${reasonTok}\n` +
-        `  output: ${JSON.stringify(parsed)}\n[LIVE_FOUNDRY_STEP_2_VERIFIED]\n`,
+        `  usage : prompt=${json.usage?.prompt_tokens}, completion=${json.usage?.completion_tokens}, reasoning=${reasonTok}\n` +
+        `  output: ${JSON.stringify(parsed)}\n` +
+        `✓ PASS — Served valid JSON via "${json.model}" (router=${rMs} ms, wall=${wallMs} ms)\n` +
+        `Why: Easy JSON extraction lands in the top 1–2% quality band, so Balanced mode picks the cheapest fast model.\n`,
     });
     emit({
       kind: "route",
@@ -821,7 +837,9 @@ export async function runFoundryStepLive(step, emit) {
     ];
     emit({
       kind: "output",
-      text: `POST /openai/v1/chat/completions (mode="balanced", session_affinity="adaptive")\n`,
+      text:
+        `[CONFIG] Same endpoint · model="auto" · mode="balanced" · session_affinity="adaptive"\n` +
+        `[REQUEST] Design lock-free Rust MPMC ring buffer with Acquire/Release & ABA proofs (+ Turn 2 follow-up)\n`,
     });
     const turn1 = await callFoundryRouter({
       messages: msgs,
@@ -845,8 +863,10 @@ export async function runFoundryStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `  Turn 1 served by "${turn1.json.model}" (router=${rMs} ms, wall=${turn1.wallMs} ms)\n` +
-        `  Turn 2 served by "${turn2.json.model}" (session_affinity=${affinityDecision}, wall=${turn2.wallMs} ms)\n[LIVE_FOUNDRY_STEP_3_VERIFIED]\n`,
+        `  Turn 1: "${turn1.json.model}" (router=${rMs} ms, wall=${turn1.wallMs} ms)\n` +
+        `  Turn 2: "${turn2.json.model}" (session_affinity=${affinityDecision}, wall=${turn2.wallMs} ms)\n` +
+        `✓ PASS — Escalated hard concurrency proof to "${turn1.json.model}" and applied ${affinityDecision} affinity on Turn 2\n` +
+        `Why: Formal proofs drop lightweight Flash below the 1–2% band, triggering automatic escalation.\n`,
     });
     emit({
       kind: "route",
@@ -867,7 +887,9 @@ export async function runFoundryStepLive(step, emit) {
     const renewal = await readFile(path.join(fixturesDir, "renewal-context.json"), "utf8");
     emit({
       kind: "output",
-      text: `[LIVE Multi-Job Renewal Workflow over fixtures/renewal-context.json]\n`,
+      text:
+        `[CONFIG] Multi-job workplace orchestration: mode="cost" retrieval -> mode="quality" strategy synthesis\n` +
+        `[REQUEST] Retrieve account facts from renewal-context.json and draft renewal strategy + slide titles\n`,
     });
     const job1 = await callFoundryRouter({
       messages: [
@@ -887,9 +909,10 @@ export async function runFoundryStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `  Job 1 · Fast Signal Retrieval (mode="cost")   -> ${job1.json.model} (${job1.wallMs} ms)\n` +
-        `  Job 2 · Renewal Strategy & Deck (mode="quality") -> ${job2.json.model} (${job2.wallMs} ms)\n` +
-        `  Summary:\n    ${(job2.json.choices?.[0]?.message?.content || "").trim().replace(/\n+/g, "\n    ")}\n[LIVE_FOUNDRY_STEP_4_VERIFIED]\n`,
+        `  Job 1 (mode="cost")    -> ${job1.json.model} (${job1.wallMs} ms)\n` +
+        `  Job 2 (mode="quality") -> ${job2.json.model} (${job2.wallMs} ms)\n` +
+        `✓ PASS — Split workflow across ${job1.json.model} (retrieval) and ${job2.json.model} (strategy)\n` +
+        `Why: Decomposing sub-jobs lets each step pick the right price-performance tier instead of one bulky call.\n`,
     });
     emit({
       kind: "route",
@@ -922,7 +945,9 @@ export async function runDecisionStepLive(step, emit) {
     };
     emit({
       kind: "output",
-      text: `POST /providers/microsoft/v1/systemone (5x live consistency & latency probe)\n  state: "${state}"\n`,
+      text:
+        `[CONFIG] POST /providers/microsoft/v1/systemone · model="microsoft-decision-1.1" ($0.042/1M in, $0 out)\n` +
+        `[REQUEST] 5x consistency probe (noul: ready_to_buy) on "${state}"\n`,
     });
     const probs = [];
     const times = [];
@@ -938,8 +963,9 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `  Runs: ${probs.map((p, idx) => `#${idx + 1}=${p.toFixed(4)} (${times[idx]}ms)`).join(" | ")}\n` +
-        `  Spread: ${spread.toFixed(2)} pts · p50 latency: ${p50} ms\n[LIVE_DECISION_STEP_1_VERIFIED]\n`,
+        `  runs: ${probs.map((p, idx) => `#${idx + 1}=${p.toFixed(4)} (${times[idx]}ms)`).join(" | ")}\n` +
+        `✓ PASS — 5/5 calibrated probability (${probs[0].toFixed(4)}, spread=${spread.toFixed(2)} pts, p50=${p50} ms)\n` +
+        `Why: Single-pass decision engine returns deterministic probabilities with $0 output-token cost.\n`,
     });
     emit({
       kind: "route",
@@ -975,7 +1001,12 @@ export async function runDecisionStepLive(step, emit) {
         },
       },
     };
-    emit({ kind: "output", text: `[LIVE Decision-1.1 Inbox Router · 4 calls]\n` });
+    emit({
+      kind: "output",
+      text:
+        `[CONFIG] Decision-1.1 pre-LLM router · type="choice" · criteria={no_reply, code_template, fast_slm, frontier_sol}\n` +
+        `[REQUEST] Triage 4 incoming customer inbox messages before calling generative LLMs\n`,
+    });
     let skipped = 0;
     for (const msg of inbox) {
       const { json, wallMs } = await callDecisionSystemOne({ state: msg, questions });
@@ -988,7 +1019,12 @@ export async function runDecisionStepLive(step, emit) {
         text: `  "${msg}" -> choice="${choice}" (p=${Number(conf).toFixed(2)}, ${wallMs} ms)\n`,
       });
     }
-    emit({ kind: "output", text: `[LIVE_DECISION_STEP_2_VERIFIED]\n` });
+    emit({
+      kind: "output",
+      text:
+        `✓ PASS — Routed 4/4 messages live; ${skipped}/4 skipped the expensive frontier LLM\n` +
+        `Why: Spending $0.000013 up front filters out routine messages that never needed a frontier LLM call.\n`,
+    });
     emit({
       kind: "route",
       model: `choice · ${skipped}/4 skip Frontier`,
@@ -1034,10 +1070,12 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `[LIVE Combined Call · ${wallMs} ms]\n` +
-        `  team     = ${JSON.stringify(team)}\n` +
-        `  priority = ${JSON.stringify(priority)}\n` +
-        `  repeat   = ${JSON.stringify(repeat)}\n[LIVE_DECISION_STEP_3_VERIFIED]\n`,
+        `[CONFIG] Combined /v1/systemone call: 3 typed questions (choice + score[0..3] + noul) in ONE request\n` +
+        `[REQUEST] "${state}"\n` +
+        `  team=${JSON.stringify(team)} | priority=${JSON.stringify(priority)} | repeat=${JSON.stringify(repeat)}\n` +
+        (score >= 2.0 ? `✕ ESCALATED — High-risk injury detected (score ${score.toFixed(2)} >= 2.0); bot reply blocked!\n` : ``) +
+        `✓ PASS — Completed 3-primitive triage in ${wallMs} ms\n` +
+        `Why: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n`,
     });
     emit({
       kind: "route",
@@ -1076,10 +1114,12 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `[LIVE Outbound Guardrail · ${wallMs} ms]\n` +
-        `  mentions_competitor.noul          = ${comp.toFixed(3)}\n` +
-        `  promises_unapproved_discount.noul = ${disc.toFixed(3)}\n` +
-        `  Verdict: ${held ? "DRAFT HELD BEFORE SEND" : "ALLOWED"}\n[LIVE_DECISION_STEP_4_VERIFIED]\n`,
+        `[CONFIG] Outbound policy guardrail · type="noul" · hold draft if mentions_competitor >= 0.50\n` +
+        `[REQUEST] Screen LLM draft: "${state.agent_draft_reply}"\n` +
+        `  mentions_competitor.noul=${comp.toFixed(3)} | promises_unapproved_discount.noul=${disc.toFixed(3)}\n` +
+        (held ? `✕ BLOCKED — Outbound draft HELD before send (competitor leak p=${comp.toFixed(3)})\n` : ``) +
+        `✓ PASS — Outbound guardrail evaluated in ${wallMs} ms\n` +
+        `Why: Pre-send noul gates catch policy leaks for $0.00006 so safe drafts auto-send without human review.\n`,
     });
     emit({
       kind: "route",
@@ -1122,9 +1162,12 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "output",
       text:
-        `[LIVE Abstention Gate · ${wallMs} ms]\n` +
+        `[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75 or missing document)\n` +
+        `[REQUEST] "${state.user_query}"  (Exhibit B missing from attached_documents!)\n` +
         `  choice="${ans.choice}" · probabilities=${JSON.stringify(probs)}\n` +
-        `  Gate: ${abstained ? "ABSTAIN & ask user to attach Exhibit B" : "PROCEED"}\n[LIVE_DECISION_STEP_5_VERIFIED]\n`,
+        (abstained ? `✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n` : ``) +
+        `✓ PASS — Safeguard evaluated in ${wallMs} ms (${abstained ? "asked user for Exhibit B" : "proceeded"})\n` +
+        `Why: Calibrated probabilities let software know when to stop and ask instead of guessing.\n`,
     });
     emit({
       kind: "route",

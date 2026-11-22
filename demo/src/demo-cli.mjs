@@ -69,11 +69,26 @@ export async function tryLiveDecisionCall(state, questions) {
   return json;
 }
 
+function colorizeCliText(text) {
+  if (!process.stdout.isTTY || process.env.NO_COLOR) return text;
+  return String(text)
+    .split("\n")
+    .map((line) => {
+      if (/^\[CONFIG\]/.test(line)) return `\x1b[36;1m${line}\x1b[0m`;
+      if (/^\[REQUEST\]/.test(line)) return `\x1b[33;1m${line}\x1b[0m`;
+      if (/^✓ /.test(line)) return `\x1b[32;1m${line}\x1b[0m`;
+      if (/^✕ /.test(line)) return `\x1b[31;1m${line}\x1b[0m`;
+      if (/^Why:/.test(line)) return `\x1b[2m${line}\x1b[0m`;
+      return line;
+    })
+    .join("\n");
+}
+
 function cliEmitter(event) {
   if (event.kind === "step-start") {
     console.log(`\n--- [${event.demo.toUpperCase()} · Step ${event.step}] ---`);
   } else if (event.kind === "output") {
-    process.stdout.write(event.text);
+    process.stdout.write(colorizeCliText(event.text));
   }
 }
 
@@ -86,7 +101,7 @@ async function replayStep(recordings, kind, stepNum, reason = null) {
   }
   for (const item of seq) {
     if (item.event.kind === "output") {
-      process.stdout.write(item.event.text);
+      process.stdout.write(colorizeCliText(item.event.text));
     }
   }
 }

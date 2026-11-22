@@ -9,116 +9,713 @@
   "steps": {
     "fusion": {
       "1": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "fusion", "step": 1 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "$ copilot -p \"Extract the default port and env var from config.ts\" --model auto\n" } },
-        { "delayMs": 140, "event": { "kind": "output", "text": "[HyDRA Capability Scorer · 86 ms CPU]\n  reasoning=0.11  codegen=0.14  debug=0.06  tool_use=0.28  (shortfall τ=0.05)\n  execution_pattern = SINGLE  |  cache_boundary = turn_1\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "[Selected] MAI Code 2 Flash (mai-code-2-flash) · 0.08 AI Credits ($0.0008)\n  inputTokens=27,740 (cacheRead=5,632) · outputTokens=24 · ttft=720ms · total=1.8s\n  -> DEFAULT_PORT=8787 (env: AUTO_DEMO_PORT)\n[FUSION_STEP_1_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "MAI Code 2 Flash", "meta": "Single · 0.08 cr", "chip1": "Pattern: Single ✓", "chip1Tone": "on", "chip2": "Latency: 1.8 s ✓", "chip2Tone": "on", "chip3": "Cost: -94% vs Opus ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "fusion", "step": 1, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "fusion",
+            "step": 1
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] copilot --model auto  (HyDRA 4-head capability scorer · 86 ms CPU · threshold τ=0.05)\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n  demands  : reasoning=0.11, codegen=0.14, debug=0.06, tool_use=0.28 -> fits Flash\n  output   : DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\n✓ PASS — Routed to MAI Code 2 Flash in Single pass (0.08 AI Credits · 1.8s)\nWhy: Simple lookup fits a lightweight model, saving 94% of flagship credits with zero judge delay.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "MAI Code 2 Flash",
+            "meta": "Single · 0.08 cr",
+            "chip1": "Pattern: Single ✓",
+            "chip1Tone": "on",
+            "chip2": "Latency: 1.8 s ✓",
+            "chip2Tone": "on",
+            "chip3": "Cost: -94% vs Opus ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "fusion",
+            "step": 1,
+            "code": 0
+          }
+        }
       ],
       "2": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "fusion", "step": 2 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "$ copilot -p \"Trim whitespace in greetingFormatter(), add regression test, run vitest\" --model copilot-fusion --reasoning-effort high\n" } },
-        { "delayMs": 140, "event": { "kind": "output", "text": "[Copilot Fusion · High] Task profile: multi-file edit + test verification\n  execution_pattern = CASCADE (Primary draft -> Judge inspect -> optional Repair)\n" } },
-        { "delayMs": 160, "event": { "kind": "output", "text": "  1. Primary (claude-haiku-5.5): patched src/format.ts + tests/format.test.ts (14/14 vitest PASS, 1.4 cr)\n  2. Judge (gpt-5.6-luna): diff matches spec, edge cases (tabs/unicode nbsp) covered -> ACCEPT\n  3. Escalation skipped: saved frontier repair pass (-52% AI Credits, -38% wall time)\n[FUSION_STEP_2_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "Haiku 5.5 + Judge", "meta": "Cascade · Accepted", "chip1": "Pattern: Cascade ✓", "chip1Tone": "on", "chip2": "Judge: ACCEPTED ✓", "chip2Tone": "on", "chip3": "Credits: -52% saved ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "fusion", "step": 2, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "fusion",
+            "step": 2
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Cascade workflow: Fast Primary Draft -> node --test -> Read-Only Judge\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Fix greetingFormatter() in format.mjs to trim tabs & Unicode NBSP (\\u00A0)\n  1. Primary (Claude Haiku 5.5): patched format.mjs -> 14/14 vitest PASS\n  2. Judge (GPT-5.6 Luna): ACCEPT — Tabs and Unicode NBSP are trimmed cleanly.\n✓ PASS — Short-circuited after Judge ACCEPT; heavy Repair model skipped (-52% credits)\nWhy: Cascade lets an inexpensive model solve routine edits first and skips heavy repair when tests + Judge pass.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "Haiku 5.5 + Judge",
+            "meta": "Cascade · Accepted",
+            "chip1": "Pattern: Cascade ✓",
+            "chip1Tone": "on",
+            "chip2": "Judge: ACCEPTED ✓",
+            "chip2Tone": "on",
+            "chip3": "Credits: -52% saved ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "fusion",
+            "step": 2,
+            "code": 0
+          }
+        }
       ],
       "3": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "fusion", "step": 3 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "$ copilot -p \"Fix intermittent deadlock when TokenBucket.refill() races with close()\" --model copilot-fusion --reasoning-effort high\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "[Copilot Fusion · High] execution_pattern = CASCADE\n  1. Primary (gpt-5.6-luna): drafted mutex wrapper around refill() (unit tests pass)\n  2. Judge (claude-sonnet-5.5): ESCALATE — lock order inverted between close() -> drain() and refill() -> notify()\n" } },
-        { "delayMs": 170, "event": { "kind": "output", "text": "  3. Repair (gpt-6.1-sol · fresh start): enforced monotonic lock hierarchy + 500-iteration stress test PASS\n  [Hover Effort Badge] Models used: gpt-5.6-luna -> claude-sonnet-5.5 -> gpt-6.1-sol\n[FUSION_STEP_3_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "GPT-6.1 Sol (Repair)", "meta": "Cascade · Escalated", "chip1": "Pattern: Cascade ✓", "chip1Tone": "on", "chip2": "Judge: ESCALATED ✕", "chip2Tone": "denied", "chip3": "Deadlock: FIXED ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "fusion", "step": 3, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "fusion",
+            "step": 3
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Cascade safety net: Concurrency Judge audits lock order -> escalates to Repair if unsafe\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Fix intermittent deadlock when TokenBucket.refill() races with close()\n  1. Primary (GPT-5.6 Luna): naive mutex passed unit tests, sent to Concurrency Judge\n✕ ESCALATED — Judge (Claude Sonnet 5.5) rejected draft: refill() holds drainLock -> stateLock while close() holds stateLock -> drainLock\n  2. Repair (GPT-6.1 Sol): enforced monotonic stateLock -> drainLock order across both methods\n✓ PASS — Escalated repair passed 500/500 concurrent refill()+close() stress runs (0 deadlocks)\nWhy: Unit tests missed the race condition, so Judge escalated only this hard concurrency bug to GPT-6.1 Sol.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "GPT-6.1 Sol (Repair)",
+            "meta": "Cascade · Escalated",
+            "chip1": "Pattern: Cascade ✓",
+            "chip1Tone": "on",
+            "chip2": "Judge: ESCALATED ✕",
+            "chip2Tone": "denied",
+            "chip3": "Deadlock: FIXED ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "fusion",
+            "step": 3,
+            "code": 0
+          }
+        }
       ],
       "4": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "fusion", "step": 4 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "$ copilot -p \"Design multi-region Redis sliding-window limiter for 50k RPS (<2ms p99) & audit failure modes\" --model copilot-fusion --reasoning-effort max\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "[Copilot Fusion · Max] execution_pattern = CRITIQUE (Draft + Parallel Read-Only Critics + Revision)\n  1. Primary Draft (claude-opus-5.5): Lua atomic ZREMRANGEBYSCORE + local token pre-allocation\n  2. Critic A (gpt-6-sol · read-only): flagged clock-skew split-brain during Redis failover\n  3. Critic B (gemini-4-argon · read-only): flagged hot-key shard saturation on tenant bursts\n" } },
-        { "delayMs": 170, "event": { "kind": "output", "text": "  4. Primary Revision (claude-opus-5.5): switched to Redis TIME monotonic ticks + two-tier local quota lease\n  AA Coding Agent Index: Fusion Max = 60 (~50% lower cost & ~40% faster than single heavy max)\n[FUSION_STEP_4_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "Opus 5.5 + 2 Critics", "meta": "Critique · Revised", "chip1": "Pattern: Critique ✓", "chip1Tone": "on", "chip2": "Critics: 2 flaws caught ✓", "chip2Tone": "on", "chip3": "Cost: -48% vs Max ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "fusion", "step": 4, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "fusion",
+            "step": 4
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Critique workflow: Primary Draft + 2 Parallel Read-Only Critics (--deny-tool write) + Revision\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Design multi-region Redis sliding-window rate limiter for 50k RPS (<2ms p99)\n✕ CRITIC A [GPT-6 Sol · Read-Only]: Flagged wall-clock skew causing split-brain admissions during Redis failover\n✕ CRITIC B [Gemini Argon · Read-Only]: Flagged single-shard saturation when a hot tenant bursts\n✓ PASS — Primary (Claude Opus 5.5) revised design with monotonic Redis TIME + local batch leases\nWhy: Parallel read-only Critics catch architectural blind spots at ~50% lower cost than single-model max reasoning.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "Opus 5.5 + 2 Critics",
+            "meta": "Critique · Revised",
+            "chip1": "Pattern: Critique ✓",
+            "chip1Tone": "on",
+            "chip2": "Critics: 2 flaws caught ✓",
+            "chip2Tone": "on",
+            "chip3": "Cost: -48% vs Max ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "fusion",
+            "step": 4,
+            "code": 0
+          }
+        }
       ],
       "5": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "fusion", "step": 5 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Turn 2 Follow-up] \"Now export Prometheus metrics for lease_hits_total and fallback_open_total.\"\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "[Cache-Boundary Guard] 64,200 tokens already warm in claude-opus-5.5 prefix cache (TTL 1800s)\n  Switching to a cheaper model mid-turn would re-prefill 64.2k tokens at 10x higher uncached cost.\n  Decision: KEEP claude-opus-5.5 (Single) -> cacheReadTokens=64,200 (90% discount), latency=2.1s!\n[FUSION_STEP_5_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "Opus 5.5 (Cached)", "meta": "64.2k prefix reused", "chip1": "Cache: 90% hit ✓", "chip1Tone": "on", "chip2": "Latency: 2.1 s ✓", "chip2Tone": "on", "chip3": "Prefix: 10× cheaper ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "fusion", "step": 5, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "fusion",
+            "step": 5
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Cache-boundary guard: copilot --resume <session> --model auto (prefix cache warm)\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Follow-up turn: Export Prometheus counter names lease_hits_total and fallback_open_total\n  cache telemetry: 64,200 input tokens served from warm Opus prefix cache (90% discount!)\n✓ PASS — Retained warm Claude Opus 5.5 instead of switching ($0.038 vs $0.195 cold switch · 2.1s)\nWhy: Switching to a cold \"cheaper\" model mid-session breaks the prefix cache and costs 5x more to re-prefill.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "Opus 5.5 (Cached)",
+            "meta": "64.2k prefix reused",
+            "chip1": "Cache: 90% hit ✓",
+            "chip1Tone": "on",
+            "chip2": "Latency: 2.1 s ✓",
+            "chip2Tone": "on",
+            "chip3": "Prefix: 10× cheaper ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "fusion",
+            "step": 5,
+            "code": 0
+          }
+        }
       ]
     },
     "foundry": {
       "1": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "foundry", "step": 1 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Stage 1 & 4 · Pre-Rank Eligibility Gate + Cross-Lab Parameter Adaptation]\n  Pool & Subset : 45 models (7 labs) -> narrowed to approved subset supporting tools + json_schema\n  Param Adapt   : auto-drops temperature/stop on reasoning models & maps developer -> system role\n  Capacity Order: 1. Own OpenAI PTU ($0 model fee) -> 2. Own PAYG -> 3. Managed -> 4. Subset failover\n[FOUNDRY_STEP_1_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "Eligible Subset Ready", "meta": "Gate + Param Adapt", "chip1": "Gate: tools+schema ✓", "chip1Tone": "on", "chip2": "Params: Adapted ✓", "chip2Tone": "on", "chip3": "PTU: $0 Model Fee ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "foundry", "step": 1, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "foundry",
+            "step": 1
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Foundry Model Router: approved subset + tools/json_schema filter + parameter auto-adapter\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] POST /openai/v1/chat/completions (role=\"developer\", temperature=0.2, json_object)\n  pre-rank gate : 45 models -> narrowed to tenant-approved subset supporting json_schema\n  param adapter : mapped developer->system & stripped unsupported temperature on reasoning models\n✓ PASS — Eligible subset verified; pre-paid OpenAI PTU ($0 extra model fee) prioritized first\nWhy: One cloud endpoint normalizes incompatible cross-provider parameters and drains your PTU quota before PAYG.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "Eligible Subset Ready",
+            "meta": "Gate + Param Adapt",
+            "chip1": "Gate: tools+schema ✓",
+            "chip1Tone": "on",
+            "chip2": "Params: Adapted ✓",
+            "chip2Tone": "on",
+            "chip3": "PTU: $0 Model Fee ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "foundry",
+            "step": 1,
+            "code": 0
+          }
+        }
       ],
       "2": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "foundry", "step": 2 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "POST /openai/v1/chat/completions  (Header: Foundry-Features: ModelRouterControls=V1Preview)\n  { \"model\": \"auto\", \"routing_config\": {\"mode\": \"balanced\"},\n    \"messages\": [{\"role\":\"user\",\"content\":\"Extract invoice ID & currency as JSON: Invoice INV-2026-8841, 4,250 EUR\"}] }\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "HTTP 200 OK · served by \"DeepSeek-V4.1-Flash\"\n  routing_trace: [{ \"latency_ms\": 23, \"attempts\": [{ \"model\": \"DeepSeek-V4.1-Flash\", \"result\": {\"status\": 200} }] }]\n  usage: prompt_tokens=41, completion_tokens=29, reasoning_tokens=0\n  output: { \"invoice_id\": \"INV-2026-8841\", \"currency\": \"EUR\" }\n[FOUNDRY_STEP_2_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "DeepSeek-V4.1-Flash", "meta": "Router: 23 ms · 0 reason", "chip1": "Router: 23 ms ✓", "chip1Tone": "on", "chip2": "JSON: Valid 200 ✓", "chip2Tone": "on", "chip3": "Cost: ~25× lower ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "foundry", "step": 2, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "foundry",
+            "step": 2
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] POST /openai/v1/chat/completions · model=\"auto\" · routing_config.mode=\"balanced\" (1–2% band)\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Extract invoice_id & currency as JSON: \"Invoice INV-2026-8841, Total 4,250 EUR\"\n  routing_trace : latency_ms=23 -> selected \"DeepSeek-V4.1-Flash\" (reasoning_tokens=0)\n  output        : {\"invoice_id\":\"INV-2026-8841\",\"currency\":\"EUR\"}\n✓ PASS — Served valid JSON via DeepSeek-V4.1-Flash in 23 ms router overhead (~25x lower cost)\nWhy: Easy extraction lands within 1% of flagship quality, so Balanced mode picks the cheapest model in the top band.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "DeepSeek-V4.1-Flash",
+            "meta": "Router: 23 ms · 0 reason",
+            "chip1": "Router: 23 ms ✓",
+            "chip1Tone": "on",
+            "chip2": "JSON: Valid 200 ✓",
+            "chip2Tone": "on",
+            "chip3": "Cost: ~25× lower ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "foundry",
+            "step": 2,
+            "code": 0
+          }
+        }
       ],
       "3": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "foundry", "step": 3 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "POST /openai/v1/chat/completions  (Same endpoint, \"model\": \"auto\", mode: \"balanced\")\n  Prompt: \"Design a lock-free ring buffer in Rust with formal ABA hazard-pointer invariants & Acquire/Release proofs.\"\n" } },
-        { "delayMs": 160, "event": { "kind": "output", "text": "HTTP 200 OK · served by \"gpt-5.6-luna-2026-07-09\"\n  routing_trace: [{ \"latency_ms\": 20, \"attempts\": [{ \"model\": \"gpt-5.6-luna\", \"result\": {\"status\": 200} }] }]\n  latency_checkpoint: user_visible_ttft_ms=130, service_ttlt_ms=1011, reasoning_tokens=120\n  -> Escalated automatically from Flash to reasoning tier because complexity crossed quality band!\n[FOUNDRY_STEP_3_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "gpt-5.6-luna", "meta": "Router: 20 ms · Reasoning", "chip1": "Router: 20 ms ✓", "chip1Tone": "on", "chip2": "TTFT: 130 ms ✓", "chip2Tone": "on", "chip3": "Escalated: Quality ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "foundry", "step": 3, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "foundry",
+            "step": 3
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Same endpoint · model=\"auto\" · mode=\"balanced\" · session_affinity=\"adaptive\"\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Design a lock-free ring buffer in Rust with formal ABA & Acquire/Release proofs (+ Turn 2 follow-up)\n  routing_trace : latency_ms=20 -> escalated to \"gpt-5.6-luna\" (TTFT=130 ms, reasoning_tokens=120)\n  turn 2 check  : session_affinity.decision=\"retain\" (warm prefix fingerprint matched)\n✓ PASS — Automatically escalated hard proof to gpt-5.6-luna and retained warm cache on Turn 2\nWhy: Flash dropped outside the 1–2% quality band on formal proofs, triggering instant escalation without changing code.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "gpt-5.6-luna",
+            "meta": "Router: 20 ms · Reasoning",
+            "chip1": "Router: 20 ms ✓",
+            "chip1Tone": "on",
+            "chip2": "TTFT: 130 ms ✓",
+            "chip2Tone": "on",
+            "chip3": "Escalated: Quality ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "foundry",
+            "step": 3,
+            "code": 0
+          }
+        }
       ],
       "4": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "foundry", "step": 4 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Microsoft 365 Copilot · Home -> Cowork Auto (>90% of Copilot queries)]\n  User: \"Customer renewal Thursday: should we expand, hold, or discount? Build a 6-slide proposal deck.\"\n" } },
-        { "delayMs": 160, "event": { "kind": "output", "text": "  1. Experience Gate (Microsoft-Decision-1.1): recommends Chat -> Cowork handoff (2.2x faster, 4.4x cheaper)\n  2. Sub-job A · Work IQ Retrieval (emails, Teams, contract PDFs) -> SLM (fast, low-cost grounding)\n  3. Sub-job B · Renewal Economics & Slide Narrative             -> Claude Opus 5.5 (main loop, prefix cached)\n  4. Sub-job C · Proposal Diagrams & Hero Visuals               -> GPT Image 2.5 (specialized image model)\n[FOUNDRY_STEP_4_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "SLM + Opus 5.5 + Image", "meta": "4 Specialized Jobs", "chip1": "Handoff: Cowork ✓", "chip1Tone": "on", "chip2": "Multi-model: 3 labs ✓", "chip2Tone": "on", "chip3": "Cost: 2.5–5× saved ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "foundry", "step": 4, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "foundry",
+            "step": 4
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Multi-job workplace orchestration (M365 Copilot Auto across 3 specialist model classes)\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] \"Customer renewal Thursday: expand, hold, or discount? Build a 6-slide proposal deck.\"\n  Job 1 (Decision-1.1): Chat -> Cowork handoff (2.2x faster, 4.4x cheaper than LLM router)\n  Job 2 (Fast SLM)    : Retrieved renewal emails, Teams notes & prior contract terms\n  Job 3 & 4           : Claude Opus 5.5 built strategy/slides (cached) + GPT Image 2.5 rendered visuals\n✓ PASS — Split one prompt into 4 right-sized sub-jobs across retrieval, reasoning, and image generation\nWhy: No single model wins retrieval speed, deep reasoning, and image synthesis simultaneously.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "SLM + Opus 5.5 + Image",
+            "meta": "4 Specialized Jobs",
+            "chip1": "Handoff: Cowork ✓",
+            "chip1Tone": "on",
+            "chip2": "Multi-model: 3 labs ✓",
+            "chip2Tone": "on",
+            "chip3": "Cost: 2.5–5× saved ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "foundry",
+            "step": 4,
+            "code": 0
+          }
+        }
       ],
       "5": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "foundry", "step": 5 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Resilience Test · Peak Traffic Burst on Primary Frontier Deployment]\n  Attempt 1 -> gpt-6-sol (Own PAYG deployment) returned HTTP 429 Too Many Requests\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "  Foundry Model Router automatic failover within approved subset (router overhead: 19 ms):\n  routing_trace: [{\n    \"latency_ms\": 19,\n    \"attempts\": [\n      { \"model\": \"gpt-6-sol\",   \"result\": { \"status\": 429 } },\n      { \"model\": \"gpt-5.6-sol\", \"result\": { \"status\": 200 } }\n    ]\n  }]\n[FOUNDRY_STEP_5_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "gpt-5.6-sol (200 OK)", "meta": "Failover: 429 -> 200", "chip1": "Attempt 1: 429 ✕", "chip1Tone": "denied", "chip2": "Attempt 2: 200 OK ✓", "chip2Tone": "on", "chip3": "Zero App Error ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "foundry", "step": 5, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "foundry",
+            "step": 5
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Two-tier resilience: PTU -> PAYG -> Managed on #1 model, then #2 model inside allow-list\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Peak traffic burst hits primary deployment \"gpt-6-sol\"\n✕ BLOCKED — Attempt 1 (gpt-6-sol) returned HTTP 429 Too Many Requests\n✓ PASS — Router failed over in 19 ms to allow-list #2 (\"gpt-5.6-sol\") and returned HTTP 200 OK\nWhy: Built-in subset failover absorbs 429 rate-limit spikes transparently without violating compliance rules.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "gpt-5.6-sol (200 OK)",
+            "meta": "Failover: 429 -> 200",
+            "chip1": "Attempt 1: 429 ✕",
+            "chip1Tone": "denied",
+            "chip2": "Attempt 2: 200 OK ✓",
+            "chip2Tone": "on",
+            "chip3": "Zero App Error ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "foundry",
+            "step": 5,
+            "code": 0
+          }
+        }
       ]
     },
     "decision": {
       "1": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "decision", "step": 1 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "POST /providers/microsoft/v1/systemone  (model: \"microsoft-decision-1.1\" · $0.042/1M in, $0 out)\n  state: \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\"\n  question: ready_to_buy (type: \"noul\" -> \"Is this customer ready to buy within two weeks?\")\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "[5x Consistency & Latency Probe]\n  Run #1: p=0.9800 (180 ms)  |  Run #2: p=0.9800 (178 ms)  |  Run #3: p=0.9800 (181 ms)\n  Run #4: p=0.9800 (179 ms)  |  Run #5: p=0.9800 (180 ms)\n  Spread: 0.0 pts  ·  Avg latency: 180 ms  ·  Cost: $0.000013 / call  -> routeToSales() triggered!\n[DECISION_STEP_1_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "noul = 0.9800", "meta": "180 ms · $0.000013", "chip1": "Spread: 0.0 pts ✓", "chip1Tone": "on", "chip2": "Latency: 180 ms ✓", "chip2Tone": "on", "chip3": "Cost: $0.000013 ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "decision", "step": 1, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "decision",
+            "step": 1
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · model=\"microsoft-decision-1.1\" ($0.042/1M in, $0 out)\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] 5x consistency probe (noul: ready_to_buy) on \"Is the Harbor sectional still 15% off before the 20th?\"\n  runs #1..#5 : 0.9800 | 0.9800 | 0.9800 | 0.9800 | 0.9800  (p50=180 ms, cost=$0.000013/call)\n✓ PASS — 5/5 identical calibrated probability (0.9800, 0.0 pt spread) -> triggered routeToSales()\nWhy: Single-pass decision engine returns deterministic probabilities 35x faster than generative LLM prose.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "noul = 0.9800",
+            "meta": "180 ms · $0.000013",
+            "chip1": "Spread: 0.0 pts ✓",
+            "chip1Tone": "on",
+            "chip2": "Latency: 180 ms ✓",
+            "chip2Tone": "on",
+            "chip3": "Cost: $0.000013 ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "decision",
+            "step": 1,
+            "code": 0
+          }
+        }
       ],
       "2": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "decision", "step": 2 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Check 1 · MD-1.1 as a Model Router (type: \"choice\")]\n  criteria: { no_reply, code_template, fast_slm, frontier_sol }\n" } },
-        { "delayMs": 160, "event": { "kind": "output", "text": "  1. \"Thanks! 👍\"                                     -> choice=\"no_reply\"      (p=0.97) · $0 LLM cost\n  2. \"Please unsubscribe me / STOP\"                   -> choice=\"code_template\" (p=0.98) · deterministic handler\n  3. \"Is the 15% spring promo valid on Aspen king?\"   -> choice=\"fast_slm\"      (p=0.93) · catalog lookup\n  4. \"Compare sofa warranty & pet-stain coverage\"     -> choice=\"frontier_sol\"  (p=0.96) · full catalog agent\n  32-message inbox benchmark: MD-1.1 = 100% accuracy (vs 88% regex), 57% of turns skip Frontier Sol!\n[DECISION_STEP_2_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "choice · 100% acc", "meta": "57% skip Frontier Sol", "chip1": "MD-1.1: 100% acc ✓", "chip1Tone": "on", "chip2": "Regex: 88% acc", "chip2Tone": "denied", "chip3": "Sol skipped: 57% ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "decision", "step": 2, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "decision",
+            "step": 2
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Decision-1.1 pre-LLM router · type=\"choice\" · criteria={no_reply, code_template, fast_slm, frontier_sol}\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Triage incoming customer inbox messages before calling expensive generative LLMs\n  \"Thanks! 👍\"                     -> no_reply      (p=0.97) · $0 LLM cost\n  \"Please unsubscribe me / STOP\"  -> code_template (p=0.98) · $0 LLM cost\n  \"Is 15% promo valid on king?\"   -> fast_slm      (p=0.93) · cheap catalog lookup\n  \"Compare pet-stain warranties\"  -> frontier_sol  (p=0.96) · complex reasoning\n✓ PASS — 100% inbox routing accuracy (vs. 88% regex); 57% of messages skipped the frontier LLM\nWhy: Spending $0.000013 up front filters out routine messages that never needed a $0.15 frontier LLM call.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "choice · 100% acc",
+            "meta": "57% skip Frontier Sol",
+            "chip1": "MD-1.1: 100% acc ✓",
+            "chip1Tone": "on",
+            "chip2": "Regex: 88% acc",
+            "chip2Tone": "denied",
+            "chip3": "Sol skipped: 57% ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "decision",
+            "step": 2,
+            "code": 0
+          }
+        }
       ],
       "3": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "decision", "step": 3 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Check 2 · Combined Multi-Question Call (choice + score + noul in ONE request)]\n  state: \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\"\n  questions: { team: choice, priority: score[P0_Agent, P1_Normal, P2_Urgent, P3_Immediate], repeat: noul }\n" } },
-        { "delayMs": 160, "event": { "kind": "output", "text": "  answers.team     = { \"choice\": \"safety_support\", \"probabilities\": {\"safety_support\":0.95, \"sales\":0.02, \"billing\":0.03} }\n  answers.priority = { \"score\": 2.94, \"distribution\": [0.00, 0.01, 0.04, 0.95] }  -> round(2.94) = P3 IMMEDIATE HUMAN\n  answers.repeat   = { \"noul\": 0.99 }\n  Action: Bypass autonomous bot immediately; page P3 safety specialist with full context!\n[DECISION_STEP_3_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "score = 2.94 (P3)", "meta": "3 answers in 1 call", "chip1": "Team: safety (0.95) ✓", "chip1Tone": "on", "chip2": "Priority: P3 Human ✕", "chip2Tone": "denied", "chip3": "Repeat: 0.99 ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "decision", "step": 3, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "decision",
+            "step": 3
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Combined /v1/systemone call: 3 typed questions (choice + score[0..3] + noul) in ONE request\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\"\n  team (choice)    : \"safety_support\" (p=0.95)\n  priority (score) : 2.94 / 3.0 -> P3 IMMEDIATE HUMAN\n  repeat (noul)    : 0.99\n✕ ESCALATED — High-risk injury detected (score 2.94 >= 2.5); autonomous bot reply blocked!\n✓ PASS — Paged P3 human safety specialist in one 180 ms API call\nWhy: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in a single round-trip.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "score = 2.94 (P3)",
+            "meta": "3 answers in 1 call",
+            "chip1": "Team: safety (0.95) ✓",
+            "chip1Tone": "on",
+            "chip2": "Priority: P3 Human ✕",
+            "chip2Tone": "denied",
+            "chip3": "Repeat: 0.99 ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "decision",
+            "step": 3,
+            "code": 0
+          }
+        }
       ],
       "4": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "decision", "step": 4 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Check 3 · Outbound Content & Policy Guardrail (type: \"noul\", hold threshold >= 0.50)]\n  Customer: \"Is there anything cheaper out there? Be honest.\"\n  Sol Draft: \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n" } },
-        { "delayMs": 160, "event": { "kind": "output", "text": "  MD-1.1 Check -> mentions_competitor.noul = 0.964 (>= 0.50) | promises_unapproved_discount.noul = 0.031\n  VERDICT: DRAFT HELD BEFORE SEND! Prevented sending lead to competitor Fabrikam.\n[DECISION_STEP_4_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "noul = 0.964 HELD", "meta": "Competitor leak blocked", "chip1": "Competitor: 0.964 ✕", "chip1Tone": "denied", "chip2": "Draft: HELD ✓", "chip2Tone": "on", "chip3": "Safe drafts: auto ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "decision", "step": 4, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "decision",
+            "step": 4
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Outbound policy guardrail · type=\"noul\" · hold draft if mentions_competitor >= 0.50\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] Screen LLM draft reply: \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n  mentions_competitor.noul = 0.964 (>= 0.50 threshold)  |  unapproved_discount.noul = 0.031\n✕ BLOCKED — Outbound draft HELD before send (competitor leak p=0.964)\n✓ PASS — Prevented sending customer to rival while letting 92% of clean drafts auto-send\nWhy: A $0.00006 pre-send noul gate cuts human review from 100% of drafts down to just the risky 8%.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "noul = 0.964 HELD",
+            "meta": "Competitor leak blocked",
+            "chip1": "Competitor: 0.964 ✕",
+            "chip1Tone": "denied",
+            "chip2": "Draft: HELD ✓",
+            "chip2Tone": "on",
+            "chip3": "Safe drafts: auto ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "decision",
+            "step": 4,
+            "code": 0
+          }
+        }
       ],
       "5": [
-        { "delayMs": 10, "event": { "kind": "step-start", "demo": "decision", "step": 5 } },
-        { "delayMs": 120, "event": { "kind": "output", "text": "[Check 4 · Calibrated Abstention + Pipeline Unit Economics]\n  Ambiguous query: \"Compare renewal notice in Contract A vs Exhibit B\" (Exhibit B missing from state)\n  MD-1.1 probabilities: { \"fast_extract\": 0.14, \"frontier_compare\": 0.38, \"request_missing_exhibit\": 0.48 }\n  max(p) = 0.48 < 0.75 confidence gate -> ABSTAIN & request Exhibit B (zero hallucinated ranking!)\n" } },
-        { "delayMs": 150, "event": { "kind": "output", "text": "  [End-to-End Economics · $10,000/mo budget]\n    All-Sol + 100% human review : $0.31/lead · 764 new customers/mo  · CAC = $13.00\n    + 3 MD-1.1 checks ($0.00019): $0.05/lead · 5,511 new customers/mo · CAC = $1.81 (7.2x lower!)\n[DECISION_STEP_5_COMPLETE]\n" } },
-        { "delayMs": 20, "event": { "kind": "route", "model": "CAC $13 -> $1.81", "meta": "7.2× lower · $0.00019", "chip1": "Missing B: ABSTAIN ✓", "chip1Tone": "on", "chip2": "Review: 100%->8% ✓", "chip2Tone": "on", "chip3": "CAC: 7.2× lower ✓", "chip3Tone": "on" } },
-        { "delayMs": 20, "event": { "kind": "step-done", "demo": "decision", "step": 5, "code": 0 } }
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "decision",
+            "step": 5
+          }
+        },
+        {
+          "delayMs": 90,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75) + $10,000/mo sales pipeline ROI\n"
+          }
+        },
+        {
+          "delayMs": 130,
+          "event": {
+            "kind": "output",
+            "text": "[REQUEST] \"Compare renewal notice in Contract A vs Exhibit B\"  (Exhibit B missing from state!)\n  probabilities: { fast_extract: 0.14, frontier_compare: 0.38, request_missing_exhibit: 0.48 }\n✕ BLOCKED — max(p)=0.48 < 0.75 confidence gate; abstained from hallucinating a comparison!\n✓ PASS — Asked user to attach Exhibit B; full 3-gate stack cuts CAC 7.2x ($13.00 -> $1.81)\nWhy: Calibrated probabilities let software know when to stop and ask, while cutting per-lead cost from $0.31 to $0.05.\n"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "route",
+            "model": "CAC $13 -> $1.81",
+            "meta": "7.2× lower · $0.00019",
+            "chip1": "Missing B: ABSTAIN ✓",
+            "chip1Tone": "on",
+            "chip2": "Review: 100%->8% ✓",
+            "chip2Tone": "on",
+            "chip3": "CAC: 7.2× lower ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 20,
+          "event": {
+            "kind": "step-done",
+            "demo": "decision",
+            "step": 5,
+            "code": 0
+          }
+        }
       ]
     }
   }
