@@ -96,7 +96,7 @@ def header(s,eyebrow,title,x=M,cx=CW,title_cy=None):
     tb(s,x,310000,cx,eyebrow,size=12,color=CY,font=HF,bold=True,ls=0.9,cy=280000,name='eyebrow')
     tb(s,x,640000,cx,title,size=29.5,color=INK,font=HF,bold=True,cy=title_cy or 640000,name='slide_title')
 def footer(s,src,num,x=M,cx=CW):
-    tb(s,x+cx-800000,6260000,800000,f'{num:02d}',size=11.5,color=FOOT,align='right',cy=340000,name='footer_num')
+    tb(s,W-940000,H-430000,700000,f'{num:02d}',size=11.5,color=FOOT,font=MF,bold=True,align='right',cy=290000,name='footer_num')
 def note(s,t): notes[s]=t
 
 def card_box(s,x,y,cx,cy,paras,fill=CARD,line=EDGE,lw=12700,pad_x=240000,pad_y=120000,font=BF,space_after=6.5,align='left'):
@@ -121,6 +121,7 @@ tb(s,x,860000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=
 tb(s,x,1220000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=1460000)
 tb(s,x,2800000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16.5,color=MUTED,cy=1300000)
 tb(s,x,4280000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.5,color=INK,bold=True,cy=380000)
+footer(s,'',1)
 note(s,'大家好，欢迎来到今天的分享。今天我们聊一个几乎所有做 AI 应用的团队都绕不开的问题：市面上的模型越来越多、换代越来越快，我们怎么在保证效果不掉的前提下，把调用成本和等待时间都压下来？答案就是自动路由 Auto-routing。\n接下来这 45 分钟，我会结合微软自己的工程实践，从大家熟悉的 Microsoft Copilot、GitHub Copilot Fusion 和 Foundry Model Router 讲起，拆开看看它们底层到底是怎么选模型的，再重点介绍微软专门为程序控制打造的决策模型 Microsoft-Decision-1.1，最后通过三组真实的交互 Demo，看看怎么把这套能力用到你自己的系统里。')
 
 # ---------- 1 AGENDA
