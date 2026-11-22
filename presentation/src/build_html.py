@@ -936,12 +936,20 @@ var SCENARIOS={
  }
 };
 
-var curKind='fusion',curStep=1,doneSet={fusion:{},foundry:{},decision:{}},liveSource=null;
-function isLocalDemoHost(){return ['127.0.0.1','localhost'].includes(location.hostname)&&location.port==='8787';}
+var curKind='fusion',curStep=1,doneSet={fusion:{},foundry:{},decision:{}},lastLiveRoute={},liveMeta=null,liveSource=null;
+function isLocalDemoHost(){return ['127.0.0.1','localhost'].includes(location.hostname)&&location.protocol.indexOf('http')===0;}
 var replayMode=!isLocalDemoHost(),replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],rawLogOpen=false;
 
 function setStatus(label,tone){var el=byId('live-demo-status');el.textContent=label;if(tone)el.dataset.tone=tone;else delete el.dataset.tone;}
-function idleModeLabel(){return replayMode?'Replay · Verified':'Live · 127.0.0.1:8787';}
+function idleModeLabel(){
+ if(replayMode)return 'Replay · Verified';
+ if(liveMeta){
+  if(liveMeta.liveCopilot&&liveMeta.liveFoundry)return 'Live · Copilot + Foundry';
+  if(liveMeta.liveFoundry)return 'Live · Foundry Cloud';
+  if(liveMeta.liveCopilot)return 'Live · Copilot CLI';
+ }
+ return 'Live · '+location.host;
+}
 function setChip(id,text,tone){var el=byId(id);if(!el)return;el.textContent=text;el.classList.remove('on','denied');if(tone)el.classList.add(tone);}
 
 function renderBars(bars,animate){
@@ -1020,6 +1028,14 @@ function renderVisualStep(kind,stepNum,animate){
  setChip('live-chip-1',g.chips[0][0],g.chips[0][1]);
  setChip('live-chip-2',g.chips[1][0],g.chips[1][1]);
  setChip('live-chip-3',g.chips[2][0],g.chips[2][1]);
+ var saved=lastLiveRoute[kind+':'+(idx+1)];
+ if(saved){
+  if(saved.model)byId('live-agent-user').textContent=saved.model;
+  if(saved.meta)byId('live-agent-session').textContent=saved.meta;
+  if(saved.chip1)setChip('live-chip-1',saved.chip1,saved.chip1Tone);
+  if(saved.chip2)setChip('live-chip-2',saved.chip2,saved.chip2Tone);
+  if(saved.chip3)setChip('live-chip-3',saved.chip3,saved.chip3Tone);
+ }
  updateLedger();
  renderTabsAndPills();
 }
@@ -1037,9 +1053,35 @@ function resetScenario(keepKind){
  stopAutoPlay();clearReplayTimers();resolveStepWaiters(false);
  var k=keepKind||curKind;
  doneSet[k]={};
+ Object.keys(lastLiveRoute).forEach(function(key){if(key.indexOf(k+':')===0)delete lastLiveRoute[key];});
+ if(!replayMode)fetch('/api/cancel',{method:'POST'}).catch(function(){});
  byId('live-demo-output').textContent='';
- setStatus(idleModeLabel());
+ setStatus(idleModeLabel(),replayMode?undefined:'ok');
  renderVisualStep(k,1,false);
+}
+
+function applyLocalProbeCard(r){
+ byId('vis-ctx-badge').textContent=r.ctx;
+ byId('vis-prompt').textContent=r.prompt;
+ byId('vis-scorer-meta').textContent=r.scorer;
+ renderBars(r.bars,true);
+ byId('vis-pattern-badge').textContent=r.pattern;
+ renderNodes(r.nodes);
+ byId('vis-outcome').textContent=r.outcome;
+ byId('explain-step-badge').textContent='LIVE PROBE';
+ byId('explain-boundary-tag').textContent=r.tag;
+ byId('explain-title').textContent=r.title;
+ byId('explain-what').textContent=r.what;
+ byId('explain-code').textContent=r.code;
+ byId('live-host-user').textContent=r.bN;
+ byId('live-host-nums').textContent=r.bV;
+ byId('live-host-session').textContent=r.bM;
+ byId('live-agent-user').textContent=r.aN;
+ byId('live-agent-nums').textContent=r.aV;
+ byId('live-agent-session').textContent=r.aM;
+ setChip('live-chip-1',r.chips[0][0],r.chips[0][1]);
+ setChip('live-chip-2',r.chips[1][0],r.chips[1][1]);
+ setChip('live-chip-3',r.chips[2][0],r.chips[2][1]);
 }
 
 function applyDemoEvent(data){
@@ -1047,15 +1089,35 @@ function applyDemoEvent(data){
  if(data.kind==='output'){
   out.textContent+=data.text;out.scrollTop=out.scrollHeight;
  }else if(data.kind==='route'){
+  lastLiveRoute[curKind+':'+curStep]=data;
   if(data.model)byId('live-agent-user').textContent=data.model;
   if(data.meta)byId('live-agent-session').textContent=data.meta;
   if(data.chip1)setChip('live-chip-1',data.chip1,data.chip1Tone);
   if(data.chip2)setChip('live-chip-2',data.chip2,data.chip2Tone);
   if(data.chip3)setChip('live-chip-3',data.chip3,data.chip3Tone);
+ }else if(data.kind==='probe-result'){
+  stepRunning=false;renderTabsAndPills();
+  byId('vis-ctx-badge').textContent=data.source;
+  byId('vis-prompt').textContent='"'+data.prompt+'"';
+  byId('vis-scorer-meta').textContent=data.source+' · '+data.meta;
+  byId('vis-outcome').textContent='✓ '+data.summary;
+  byId('live-agent-user').textContent=data.model;
+  byId('live-agent-nums').textContent=data.meta;
+  byId('live-agent-session').textContent=data.source;
+  if(data.chips&&data.chips.length===3){
+   setChip('live-chip-1',data.chips[0][0],data.chips[0][1]);
+   setChip('live-chip-2',data.chips[1][0],data.chips[1][1]);
+   setChip('live-chip-3',data.chips[2][0],data.chips[2][1]);
+  }
+  setStatus('Live Probe ✓','ok');
+ }else if(data.kind==='probe-fallback'){
+  stepRunning=false;renderTabsAndPills();
+  setStatus('Probe Routed ✓','ok');
  }else if(data.kind==='step-start'){
   stepRunning=true;
   curKind=data.demo;curStep=Number(data.step);
-  setStatus('Scoring Step '+curStep+'…','running');
+  delete lastLiveRoute[curKind+':'+curStep];
+  setStatus((replayMode?'Scoring Step ':'Running Live Step ')+curStep+'…','running');
   renderVisualStep(curKind,curStep,true);
   out.textContent+=(out.textContent?'\\n':'')+'──▶ [Step '+curStep+'] '+SCENARIOS[curKind].steps[curStep-1].title+'\\n';
  }else if(data.kind==='step-done'){
@@ -1188,32 +1250,18 @@ function classifyCustomPrompt(prompt){
 function runCustomProbe(cmd){
  if(!cmd||stepRunning)return;
  stopAutoPlay();
- if(!replayMode){
-  fetch('/api/custom-prompt',{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:cmd}).catch(function(){});
- }
  var r=classifyCustomPrompt(cmd);
- byId('vis-ctx-badge').textContent=r.ctx;
- byId('vis-prompt').textContent=r.prompt;
- byId('vis-scorer-meta').textContent=r.scorer;
- renderBars(r.bars,true);
- byId('vis-pattern-badge').textContent=r.pattern;
- renderNodes(r.nodes);
- byId('vis-outcome').textContent=r.outcome;
- byId('explain-step-badge').textContent='LIVE PROBE';
- byId('explain-boundary-tag').textContent=r.tag;
- byId('explain-title').textContent=r.title;
- byId('explain-what').textContent=r.what;
- byId('explain-code').textContent=r.code;
- byId('live-host-user').textContent=r.bN;
- byId('live-host-nums').textContent=r.bV;
- byId('live-host-session').textContent=r.bM;
- byId('live-agent-user').textContent=r.aN;
- byId('live-agent-nums').textContent=r.aV;
- byId('live-agent-session').textContent=r.aM;
- setChip('live-chip-1',r.chips[0][0],r.chips[0][1]);
- setChip('live-chip-2',r.chips[1][0],r.chips[1][1]);
- setChip('live-chip-3',r.chips[2][0],r.chips[2][1]);
- byId('live-demo-output').textContent+='\\n──▶ [Live Probe] '+r.prompt+'\\n  '+r.outcome+'\\n';
+ applyLocalProbeCard(r);
+ if(!replayMode){
+  stepRunning=true;renderTabsAndPills();
+  setStatus('Probing Live…','running');
+  fetch('/api/custom-prompt',{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:cmd}).catch(function(err){
+   stepRunning=false;renderTabsAndPills();
+   setStatus('Probe Routed ✓','ok');
+  });
+  return;
+ }
+ byId('live-demo-output').textContent+='\\n──▶ [Replay Probe] '+r.prompt+'\\n  '+r.outcome+'\\n';
  setStatus('Probe Routed ✓','ok');
 }
 
@@ -1228,12 +1276,13 @@ async function connectLive(){
  if(!isLocalDemoHost()){replayMode=true;setStatus(idleModeLabel());return;}
  try{
   var meta=await fetch('/api/meta').then(function(r){if(!r.ok)throw new Error('unavailable');return r.json();});
+  liveMeta=meta;
   replayMode=false;
-  setStatus(meta.liveFoundry?'Live · Foundry Cloud':'Live · 127.0.0.1:8787','ok');
+  setStatus(idleModeLabel(),'ok');
   if(liveSource)liveSource.close();
   liveSource=new EventSource('/api/events');
   liveSource.onmessage=function(event){applyDemoEvent(JSON.parse(event.data));};
- }catch(_e){replayMode=true;setStatus(idleModeLabel());}
+ }catch(_e){liveMeta=null;replayMode=true;setStatus(idleModeLabel());}
 }
 
 async function openLiveDemo(preferredKind,preferredStep){

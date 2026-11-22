@@ -1,0 +1,15 @@
+{
+  "account": "Northwind Logistics",
+  "renewalDate": "2026-11-26",
+  "currentContract": {
+    "seats": 1200,
+    "annualSpendUsd": 432000,
+    "utilizationPct": 94
+  },
+  "recentSignals": [
+    "VP Ops email (Nov 18): Asked to add 350 warehouse mobile seats in Q1 if unit rate stays flat.",
+    "Teams thread (Nov 19): Finance pushed back on list-price uplift but approved 2-year commitment.",
+    "Support health: Zero Sev-1 incidents in trailing 6 months; NPS +58."
+  ],
+  "invoiceSample": "Invoice INV-2026-8841, Customer: Northwind EU GmbH, Total: 4,250 EUR"
+}

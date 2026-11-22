@@ -7,13 +7,17 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "node --check src/demo-cli.mjs && node --check src/web-demo-server.mjs && node --check src/record-web-demo.mjs",
+    "build": "node --check src/live-runners.mjs && node --check src/demo-cli.mjs && node --check src/web-demo-server.mjs && node --check src/record-web-demo.mjs",
     "check": "npm run build",
-    "test": "npm run check && node src/demo-cli.mjs --demo all",
+    "test": "npm run check && node src/demo-cli.mjs --demo all --replay && node src/demo-cli.mjs --demo foundry --step 5 --live",
     "demo:fusion": "node src/demo-cli.mjs --demo fusion",
+    "demo:fusion:live": "node src/demo-cli.mjs --demo fusion --live",
     "demo:foundry": "node src/demo-cli.mjs --demo foundry",
+    "demo:foundry:live": "node src/demo-cli.mjs --demo foundry --live",
     "demo:decision": "node src/demo-cli.mjs --demo decision",
+    "demo:decision:live": "node src/demo-cli.mjs --demo decision --live",
     "demo:all": "node src/demo-cli.mjs --demo all",
+    "demo:replay": "node src/demo-cli.mjs --demo all --replay",
     "demo:web": "node src/web-demo-server.mjs",
     "demo:record": "node src/record-web-demo.mjs"
   }

@@ -40,9 +40,10 @@ python build.py --target pptx
 python build.py --target html
 python build.py --target demo
 
-npm --prefix demo run demo:fusion
+npm --prefix demo run demo:fusion:live
 npm --prefix demo run demo:foundry
 npm --prefix demo run demo:decision
+npm --prefix demo run demo:replay
 ```
 
 - **PPTX**：`dist/pptx/Auto-routing LLMs.pptx`
@@ -50,7 +51,7 @@ npm --prefix demo run demo:decision
 - **网页集成可视化 Auto-Routing Studio**：
   - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭；翻页同步备注，打开 Studio 自动收起；`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF（不含工具栏和备注）。
   - **GitHub Pages / 静态离线回放**：直接打开 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（或任意页按 `D`），即可在零滚动条的可视化路由决策台中逐步运行或 `Auto-Play` **Demo 1（Copilot Fusion）**、**Demo 2（Foundry Model Router & M365 Copilot）** 与 **Demo 3（Microsoft-Decision-1.1）**，支持一键点击预设测试胶囊或输入自定义提示词实时查看算分条、拓扑节点与省费账本（点击 `{ } Log` 可展开原始 CLI/HTTP 报文）。
-  - **本机 Live Bridge**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`（配置 `AZURE_FOUNDRY_ENDPOINT` 后自动切换为真实云端 Foundry / Decision-1.1 调用）。
+  - **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`，会自动检测并驱动本机 `copilot` CLI（真实运行 Demo 1 全部 5 步及自定义 Prompt 探测）、本机 `429 -> 200` HTTP 故障转移测试台（Demo 2 第 5 步），以及在配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`）后真实请求云端 Foundry Model Router 与 `/providers/microsoft/v1/systemone`。
 
 ## 视觉系统
 
