@@ -226,12 +226,16 @@ LIVE_DEMO = """
             <strong id="terminal-mode-title">GitHub Copilot CLI · Auto &amp; Fusion</strong>
             <span id="terminal-mode-sub">SINGLE · NO REVIEW OVERHEAD</span>
           </div>
-          <div class="term-legend" aria-label="Color legend">
+          <div class="term-legend" id="term-legend" aria-label="Color legend">
             <span class="lg-item lg-pol">Config</span>
             <span class="lg-item lg-run">Request</span>
             <span class="lg-item lg-ok">✓ Pass</span>
-            <span class="lg-item lg-err">✕ Escalate / Hold</span>
-            <span class="lg-item lg-log">Log</span>
+            <span class="lg-item lg-err">✕ Hold</span>
+            <span class="lg-item lg-src">Source</span>
+          </div>
+          <div class="term-view-switch" role="group" aria-label="Terminal view mode">
+            <button type="button" class="tview-btn active" id="btn-view-summary">Summary</button>
+            <button type="button" class="tview-btn" id="btn-view-raw" title="Inspect verbatim CLI JSONL / HTTP JSON and provenance">{ } Raw Log</button>
           </div>
         </div>
 
@@ -394,7 +398,11 @@ img.a{object-fit:cover}
 .lg-run{color:#fcd34d;background:rgba(252,211,77,.12);border-color:rgba(252,211,77,.28)}
 .lg-ok{color:#4ade80;background:rgba(74,222,128,.13);border-color:rgba(74,222,128,.32)}
 .lg-err{color:#f87171;background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.34)}
-.lg-log{color:#cbd5e1;background:rgba(203,213,225,.10);border-color:rgba(203,213,225,.22)}
+.lg-src{color:#c4b5fd;background:rgba(196,181,253,.12);border-color:rgba(196,181,253,.30)}
+.term-view-switch{display:inline-flex;background:#0b1219;border:1px solid #2b3e50;border-radius:8px;padding:2px;gap:2px;flex-shrink:0}
+.tview-btn{border:0;background:transparent;color:#94a8ba;padding:4px 8px;border-radius:6px;font:700 10px/1 var(--font-mono);cursor:pointer;white-space:nowrap}
+.tview-btn:hover{color:#e2edf7}
+.tview-btn.active{background:#2d5d82;color:#fff}
 
 .route-strip{display:flex;align-items:stretch;gap:7px;padding:10px 14px;background:#111b25;border-bottom:1px solid #223241;flex-shrink:0;min-width:0}
 .tnode{flex:1 1 0;min-width:0;background:#172431;border:1px solid #293b4d;border-radius:9px;padding:7px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px}
@@ -420,6 +428,8 @@ img.a{object-fit:cover}
 .tl-pass{color:#4ade80;font-weight:700;background:rgba(34,197,94,.13);border-left:3px solid #22c55e;padding:4px 9px;margin:4px 0 2px;border-radius:0 6px 6px 0}
 .tl-fail{color:#f87171;font-weight:700;background:rgba(239,68,68,.15);border-left:3px solid #ef4444;padding:4px 9px;margin:4px 0 2px;border-radius:0 6px 6px 0}
 .tl-why{color:#fde68a;padding-left:9px;margin-bottom:2px}
+.tl-src{color:#c4b5fd;font-size:11px;padding-left:9px;opacity:.92;margin-bottom:2px}
+.tl-prov{color:#7dd3fc;font-weight:600}
 .tl-log{color:#cbd5e1}
 
 .probe-form{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#121d27;border-top:1px solid #223241;flex-shrink:0}
@@ -909,7 +919,7 @@ var SCENARIO_META={
 
 var curKind='fusion',curStep=1,doneSet={fusion:{},foundry:{},decision:{}},lastLiveRoute={},liveMeta=null,liveSource=null;
 function isLocalDemoHost(){return ['127.0.0.1','localhost'].includes(location.hostname)&&location.protocol.indexOf('http')===0;}
-var replayMode=!isLocalDemoHost(),replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],displayLog='',hintShown=false;
+var replayMode=!isLocalDemoHost(),replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],displayLog='',rawLog='',rawView=false,hintShown=false;
 
 function escHtml(s){
  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -921,10 +931,12 @@ function renderTerminalHtml(text){
   var raw=lines[idx];
   if(idx===lines.length-1&&raw==='')continue;
   var safe=escHtml(raw),cls='tl-log';
-  if(/^# /.test(raw))cls='tl-hint';
+  if(/^# (PROVENANCE|WHAT IS|CLI invocation|HTTP |--usage-output-file|---)/.test(raw))cls='tl-prov';
+  else if(/^# /.test(raw))cls='tl-hint';
   else if(/^──▶/.test(raw))cls='tl-step';
   else if(/^\\[CONFIG\\]/.test(raw))cls='tl-policy';
   else if(/^\\[REQUEST\\]/.test(raw))cls='tl-run';
+  else if(/^\\[SOURCE\\]/.test(raw))cls='tl-src';
   else if(/^✓ /.test(raw))cls='tl-pass';
   else if(/^✕ /.test(raw)||/^\\[Error\\]/.test(raw))cls='tl-fail';
   else if(/^Why:/.test(raw))cls='tl-why';
@@ -933,14 +945,36 @@ function renderTerminalHtml(text){
  return html.join('');
 }
 
+function getPreviewRawForCurrentStep(){
+ if(!window.RECORDED_DEMO||!window.RECORDED_DEMO.steps||!window.RECORDED_DEMO.steps[curKind])return '# Run a step to capture its raw JSONL / HTTP payload.';
+ var seq=window.RECORDED_DEMO.steps[curKind][String(curStep)]||[];
+ for(var i=0;i<seq.length;i++){
+  if(seq[i].event&&seq[i].event.kind==='raw'){
+   return '──▶ [Step '+curStep+' Preview · Raw Log & Provenance] '+SCENARIOS[curKind].steps[curStep-1].title+'\\n'+seq[i].event.text;
+  }
+ }
+ return '# Run a step to capture its raw JSONL / HTTP payload.';
+}
+
+function syncViewSwitch(){
+ byId('btn-view-summary').classList.toggle('active',!rawView);
+ byId('btn-view-raw').classList.toggle('active',rawView);
+ byId('term-legend').style.display=rawView?'none':'flex';
+}
+
 function flushTerminal(){
  var out=byId('live-demo-output');
- out.innerHTML=renderTerminalHtml(displayLog);
- out.scrollTop=out.scrollHeight;
+ var src=rawView?(rawLog||getPreviewRawForCurrentStep()):displayLog;
+ out.innerHTML=renderTerminalHtml(src);
+ out.scrollTop=rawView&&!rawLog?0:out.scrollHeight;
 }
 function appendTerminal(chunk){
  displayLog+=chunk;
- flushTerminal();
+ if(!rawView)flushTerminal();
+}
+function appendRaw(chunk){
+ rawLog+=chunk;
+ if(rawView)flushTerminal();
 }
 
 function setStatus(label,tone){var el=byId('live-demo-status');el.textContent=label;if(tone)el.dataset.tone=tone;else delete el.dataset.tone;}
@@ -1034,7 +1068,7 @@ function resolveStepWaiters(ok){while(stepDoneWaiters.length){var fn=stepDoneWai
 function showInitialHint(){
  if(!displayLog){
   hintShown=true;
-  appendTerminal('# Click "Run Step 1" or "Auto-Play" above — Config is blue, Request is amber, Pass is green, Escalate/Hold is red.');
+  appendTerminal('# Click "Run Step 1" or "Auto-Play" above — or click "{ } Raw Log" to inspect verbatim CLI JSONL / HTTP JSON & provenance.');
  }
 }
 
@@ -1044,11 +1078,12 @@ function resetScenario(keepKind){
  doneSet[k]={};
  Object.keys(lastLiveRoute).forEach(function(key){if(key.indexOf(k+':')===0)delete lastLiveRoute[key];});
  if(!replayMode)fetch('/api/cancel',{method:'POST'}).catch(function(){});
- displayLog='';hintShown=false;
+ displayLog='';rawLog='';hintShown=false;
  byId('live-demo-output').innerHTML='';
  setStatus(idleModeLabel(),replayMode?undefined:'ok');
  renderVisualStep(k,1);
  showInitialHint();
+ flushTerminal();
 }
 
 function applyLocalProbeCard(r){
@@ -1074,6 +1109,8 @@ function applyDemoEvent(data){
  if(hintShown&&(data.kind==='step-start'||data.kind==='output')){displayLog='';hintShown=false;}
  if(data.kind==='output'){
   appendTerminal(data.text);
+ }else if(data.kind==='raw'){
+  appendRaw(data.text);
  }else if(data.kind==='route'){
   lastLiveRoute[curKind+':'+curStep]=data;
   if(data.model)byId('live-agent-user').textContent=data.model;
@@ -1102,7 +1139,9 @@ function applyDemoEvent(data){
   delete lastLiveRoute[curKind+':'+curStep];
   setStatus((replayMode?'Running Step ':'Running Live Step ')+curStep+'…','running');
   renderVisualStep(curKind,curStep);
-  appendTerminal((displayLog?'\\n':'')+'──▶ [Step '+curStep+'] '+SCENARIOS[curKind].steps[curStep-1].title+'\\n');
+  var title=SCENARIOS[curKind].steps[curStep-1].title;
+  appendTerminal((displayLog?'\\n':'')+'──▶ [Step '+curStep+'] '+title+'\\n');
+  appendRaw((rawLog?'\\n':'')+'──▶ [Step '+curStep+' · Raw Log & Provenance] '+title+'\\n');
  }else if(data.kind==='step-done'){
   stepRunning=false;
   var demo=data.demo,step=Number(data.step),total=SCENARIOS[demo].steps.length;
@@ -1248,7 +1287,8 @@ function runCustomProbe(cmd){
   return;
  }
  var isHold=/Blocked|HELD|Injury|Escalated/i.test(r.outcome+' '+r.title);
- appendTerminal((isHold?'✕ ESCALATED / HELD — '+r.title+'\\n':'')+r.outcome.replace(/^✓ /,'✓ PASS — ')+'\\nWhy: '+r.what+'\\n');
+ appendTerminal((isHold?'✕ ESCALATED / HELD — '+r.title+'\\n':'')+r.outcome.replace(/^✓ /,'✓ PASS — ')+'\\nWhy: '+r.what+'\\n[SOURCE] Heuristic Custom Probe Simulator (run `npm --prefix demo run demo:web` for live CLI / Foundry probe)\\n');
+ appendRaw((rawLog?'\\n':'')+'──▶ [Custom Prompt Probe · Simulated Raw Payload]\\n# PROVENANCE: Client-side rule preview in static Replay mode; start `npm --prefix demo run demo:web` for live Copilot CLI / Decision-1.1 JSON.\\n'+JSON.stringify({prompt:cmd,pattern:r.pattern,rule:r.code,verdict:r.title},null,2)+'\\n');
  setStatus('Probe Routed ✓','ok');
 }
 
@@ -1318,13 +1358,16 @@ document.querySelectorAll('.sc-tab').forEach(function(btn){
  btn.addEventListener('click',function(){
   if(stepRunning||btn.dataset.kind===curKind)return;
   stopAutoPlay();
-  displayLog='';hintShown=false;
+  displayLog='';rawLog='';hintShown=false;
   byId('live-demo-output').innerHTML='';
   renderVisualStep(btn.dataset.kind,1);
   showInitialHint();
+  flushTerminal();
   setStatus(idleModeLabel(),replayMode?undefined:'ok');
  });
 });
+byId('btn-view-summary').addEventListener('click',function(){rawView=false;syncViewSwitch();flushTerminal();});
+byId('btn-view-raw').addEventListener('click',function(){rawView=true;syncViewSwitch();flushTerminal();});
 byId('step-pills').addEventListener('click',function(ev){
  var pill=ev.target.closest('.step-pill');
  if(!pill||stepRunning)return;

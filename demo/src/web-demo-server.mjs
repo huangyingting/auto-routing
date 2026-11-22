@@ -188,11 +188,13 @@ const server = http.createServer(async (req, res) => {
     if (!prompt) return;
 
     busy = true;
-    send({ kind: "output", text: `\n──▶ [Live Custom Prompt Probe] "${prompt}"\n` });
     try {
       const live = await probeCustomPromptLive(prompt);
       if (live) {
-        send({ kind: "output", text: `  [${live.source}] ${live.summary}\n` });
+        send({ kind: "output", text: `[SOURCE] ${live.source} (--output-format json / HTTP JSON)\n` });
+        if (live.rawTrace) {
+          send({ kind: "raw", text: `\n──▶ [Live Custom Prompt Probe · Raw Log]\n${live.rawTrace}\n` });
+        }
         send({
           kind: "probe-result",
           source: live.source,

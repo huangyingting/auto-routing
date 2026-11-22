@@ -36,6 +36,7 @@ function parseArgs(argv) {
   let mode = "auto";
   let step = null;
   let probe = null;
+  let showRaw = false;
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--demo" && argv[i + 1]) {
@@ -51,9 +52,11 @@ function parseArgs(argv) {
       mode = "live";
     } else if (arg === "--replay") {
       mode = "replay";
+    } else if (arg === "--raw") {
+      showRaw = true;
     }
   }
-  return { demo, mode, step, probe };
+  return { demo, mode, step, probe, showRaw };
 }
 
 export async function tryLiveFoundryRoute(prompt, mode = "balanced") {
@@ -78,21 +81,26 @@ function colorizeCliText(text) {
       if (/^\[REQUEST\]/.test(line)) return `\x1b[33;1m${line}\x1b[0m`;
       if (/^✓ /.test(line)) return `\x1b[32;1m${line}\x1b[0m`;
       if (/^✕ /.test(line)) return `\x1b[31;1m${line}\x1b[0m`;
+      if (/^\[SOURCE\]/.test(line)) return `\x1b[90m${line}\x1b[0m`;
       if (/^Why:/.test(line)) return `\x1b[2m${line}\x1b[0m`;
       return line;
     })
     .join("\n");
 }
 
-function cliEmitter(event) {
-  if (event.kind === "step-start") {
-    console.log(`\n--- [${event.demo.toUpperCase()} · Step ${event.step}] ---`);
-  } else if (event.kind === "output") {
-    process.stdout.write(colorizeCliText(event.text));
-  }
+function makeCliEmitter(showRaw) {
+  return function cliEmitter(event) {
+    if (event.kind === "step-start") {
+      console.log(`\n--- [${event.demo.toUpperCase()} · Step ${event.step}] ---`);
+    } else if (event.kind === "output") {
+      process.stdout.write(colorizeCliText(event.text));
+    } else if (event.kind === "raw" && showRaw) {
+      console.log(`\n--- [RAW LOG & PROVENANCE] ---\n${event.text}\n------------------------------`);
+    }
+  };
 }
 
-async function replayStep(recordings, kind, stepNum, reason = null) {
+async function replayStep(recordings, kind, stepNum, reason = null, showRaw = false) {
   const seq = recordings.steps?.[kind]?.[String(stepNum)];
   if (!seq) throw new Error(`Unknown demo=${kind} step=${stepNum}`);
   console.log(`\n--- [${kind.toUpperCase()} · Step ${stepNum} (Replay)] ---`);
@@ -102,18 +110,21 @@ async function replayStep(recordings, kind, stepNum, reason = null) {
   for (const item of seq) {
     if (item.event.kind === "output") {
       process.stdout.write(colorizeCliText(item.event.text));
+    } else if (item.event.kind === "raw" && showRaw) {
+      console.log(`\n--- [RAW LOG & PROVENANCE] ---\n${item.event.text}\n------------------------------`);
     }
   }
 }
 
-async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionStore) {
+async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionStore, showRaw = false) {
+  const cliEmitter = makeCliEmitter(showRaw);
   console.log(`\n============================================================`);
-  console.log(`  AUTO-ROUTING DEMO: ${kind.toUpperCase()}  (mode: ${mode.toUpperCase()})`);
+  console.log(`  AUTO-ROUTING DEMO: ${kind.toUpperCase()}  (mode: ${mode.toUpperCase()}${showRaw ? " · RAW" : ""})`);
   console.log(`============================================================`);
 
   for (const s of stepsToRun) {
     if (mode === "replay") {
-      await replayStep(recordings, kind, s);
+      await replayStep(recordings, kind, s, null, showRaw);
       continue;
     }
 
@@ -124,7 +135,7 @@ async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionSt
             "Live `fusion` demo requires GitHub Copilot CLI (`copilot`) on PATH and signed in (`copilot login`).",
           );
         }
-        await replayStep(recordings, kind, s, "GitHub Copilot CLI not detected -> using verified replay.");
+        await replayStep(recordings, kind, s, "GitHub Copilot CLI not detected -> using verified replay.", showRaw);
         continue;
       }
       await runFusionStepLive(s, cliEmitter, sessionStore);
@@ -147,6 +158,7 @@ async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionSt
           kind,
           s,
           "AZURE_FOUNDRY_ENDPOINT not set -> using verified replay (set AZURE_FOUNDRY_ENDPOINT for live cloud calls).",
+          showRaw,
         );
         continue;
       }
@@ -166,6 +178,7 @@ async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionSt
           kind,
           s,
           "AZURE_FOUNDRY_ENDPOINT not set -> using verified replay (set AZURE_FOUNDRY_ENDPOINT for live /v1/systemone calls).",
+          showRaw,
         );
         continue;
       }
@@ -178,7 +191,7 @@ async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionSt
 }
 
 async function main() {
-  const { demo, mode, step, probe } = parseArgs(process.argv.slice(2));
+  const { demo, mode, step, probe, showRaw } = parseArgs(process.argv.slice(2));
   const caps = detectLiveCapabilities();
 
   if (probe) {
@@ -199,7 +212,7 @@ async function main() {
 
   try {
     for (const k of targets) {
-      await runTargetDemo(k, stepsToRun, mode, caps, recordings, sessionStore);
+      await runTargetDemo(k, stepsToRun, mode, caps, recordings, sessionStore, showRaw);
     }
   } finally {
     if (sessionStore.fusionDir) {

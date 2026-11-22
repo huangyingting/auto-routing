@@ -131,6 +131,50 @@ function summarizeUsage(rawStats, prevStats = null) {
   };
 }
 
+function parseCopilotJsonl(rawStdout) {
+  const lines = String(rawStdout || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  let sessionStart = null;
+  let autoResolved = null;
+  let lastMessageEvent = null;
+  let resultEvent = null;
+  const plainFallback = [];
+
+  for (const line of lines) {
+    try {
+      const evt = JSON.parse(line);
+      if (evt.type === "session.start") sessionStart = evt;
+      else if (evt.type === "session.auto_mode_resolved") autoResolved = evt;
+      else if (evt.type === "assistant.message" && evt.data?.content) {
+        const cleanedData = { ...evt.data };
+        delete cleanedData.reasoningOpaque;
+        delete cleanedData.reasoningBlocks;
+        delete cleanedData.apiCallId;
+        delete cleanedData.serverTools;
+        lastMessageEvent = { ...evt, data: cleanedData };
+      } else if (evt.type === "result") resultEvent = evt;
+    } catch {
+      plainFallback.push(line);
+    }
+  }
+
+  const finalText = lastMessageEvent?.data?.content?.trim() || plainFallback.join("\n").trim();
+  return { sessionStart, autoResolved, lastMessageEvent, resultEvent, finalText };
+}
+
+function compactUsageJson(rawUsage) {
+  if (!rawUsage) return {};
+  return {
+    currentModel: rawUsage.currentModel,
+    totalUserRequests: rawUsage.totalUserRequests,
+    totalNanoAiu: rawUsage.totalNanoAiu,
+    totalApiDurationMs: rawUsage.totalApiDurationMs,
+    modelMetrics: rawUsage.modelMetrics,
+  };
+}
+
 export async function runCopilotPrompt({
   prompt,
   cwd,
@@ -157,7 +201,8 @@ export async function runCopilotPrompt({
     safePrompt,
     "--model",
     model,
-    "-s",
+    "--output-format",
+    "json",
     "--disable-builtin-mcps",
     "--no-custom-instructions",
     "--no-ask-user",
@@ -187,16 +232,27 @@ export async function runCopilotPrompt({
       timeout: timeoutMs,
       windowsHide: true,
       shell: copilotBin.toLowerCase().endsWith(".cmd"),
-      maxBuffer: 8 * 1024 * 1024,
+      maxBuffer: 12 * 1024 * 1024,
     });
     const wallMs = Math.round(performance.now() - start);
     const rawUsage = JSON.parse(await readFile(usageFile, "utf8"));
     const usage = summarizeUsage(rawUsage, prevStats);
+    const parsed = parseCopilotJsonl(stdout);
+    const rawParts = [
+      `# CLI invocation: copilot -p "${safePrompt}" --model ${model} --output-format json --usage-output-file usage.json${resumeId ? ` --resume ${resumeId}` : ""}`,
+    ];
+    if (parsed.sessionStart) rawParts.push(JSON.stringify(parsed.sessionStart, null, 2));
+    if (parsed.autoResolved) rawParts.push(JSON.stringify(parsed.autoResolved, null, 2));
+    if (parsed.lastMessageEvent) rawParts.push(JSON.stringify(parsed.lastMessageEvent, null, 2));
+    if (parsed.resultEvent) rawParts.push(JSON.stringify(parsed.resultEvent, null, 2));
+    rawParts.push(`# --usage-output-file usage.json\n${JSON.stringify(compactUsageJson(rawUsage), null, 2)}`);
     return {
-      stdout: stdout.trim(),
+      stdout: parsed.finalText,
       stderr: stderr.trim(),
       wallMs,
       usage,
+      autoResolved: parsed.autoResolved?.data || null,
+      rawTrace: rawParts.join("\n\n"),
     };
   } finally {
     await rm(usageDir, { recursive: true, force: true }).catch(() => {});
@@ -218,6 +274,13 @@ export async function callFoundryRouter({
     throw new Error("Missing Foundry credentials: set AZURE_FOUNDRY_API_KEY, AZURE_ENTRA_TOKEN, or run `az login`.");
   }
   const model = process.env.FOUNDRY_ROUTER_MODEL || "auto";
+  const requestBody = {
+    model,
+    routing_config: { mode, session_affinity: sessionAffinity },
+    messages,
+    max_completion_tokens: 220,
+    ...extraBody,
+  };
   const start = performance.now();
   const res = await fetch(`${endpoint}/openai/v1/chat/completions`, {
     method: "POST",
@@ -226,13 +289,7 @@ export async function callFoundryRouter({
       "Foundry-Features": "ModelRouterControls=V1Preview",
       [auth.headerName]: auth.headerValue,
     },
-    body: JSON.stringify({
-      model,
-      routing_config: { mode, session_affinity: sessionAffinity },
-      messages,
-      max_completion_tokens: 220,
-      ...extraBody,
-    }),
+    body: JSON.stringify(requestBody),
   });
   const wallMs = Math.round(performance.now() - start);
   if (!res.ok) {
@@ -240,7 +297,11 @@ export async function callFoundryRouter({
     throw new Error(`Foundry Model Router HTTP ${res.status}: ${body}`);
   }
   const json = await res.json();
-  return { json, wallMs };
+  const rawTrace =
+    `# HTTP Request: POST ${endpoint}/openai/v1/chat/completions (Header: Foundry-Features: ModelRouterControls=V1Preview)\n` +
+    `${JSON.stringify(requestBody, null, 2)}\n\n` +
+    `# HTTP 200 Response JSON\n${JSON.stringify(json, null, 2)}`;
+  return { json, wallMs, rawTrace };
 }
 
 export async function callDecisionSystemOne({ state, questions, assets = undefined }) {
@@ -271,7 +332,11 @@ export async function callDecisionSystemOne({ state, questions, assets = undefin
     throw new Error(`Microsoft-Decision-1.1 (/v1/systemone) HTTP ${res.status}: ${body}`);
   }
   const json = await res.json();
-  return { json, wallMs, deployment };
+  const rawTrace =
+    `# HTTP Request: POST ${endpoint}/providers/microsoft/v1/systemone\n` +
+    `${JSON.stringify(payload, null, 2)}\n\n` +
+    `# HTTP 200 Response JSON (${wallMs} ms)\n${JSON.stringify(json, null, 2)}`;
+  return { json, wallMs, deployment, rawTrace };
 }
 
 async function verifyConcurrentLockSafety() {
@@ -347,16 +412,29 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       }
       const cr = res.usage.credits.toFixed(3);
       const sec = (res.wallMs / 1000).toFixed(1);
+      const scores = res.autoResolved?.categoryScores;
+      const scoreLine = scores
+        ? `reasoning=${Number(scores.reasoning || 0).toFixed(3)}, code_gen=${Number(scores.code_gen || 0).toFixed(3)}, debugging=${Number(scores.debugging || 0).toFixed(3)}, tool_use=${Number(scores.tool_use || 0).toFixed(3)} (routerRTT=${Math.round(res.autoResolved.endToEndLatencyMs || 0)} ms)`
+        : `selected=${res.usage.displayName} (${res.usage.modelId})`;
       emit({
         kind: "output",
         text:
-          `[CONFIG] copilot --model auto  (HyDRA 4-head capability router · single-turn fast path)\n` +
+          `[CONFIG] copilot -p "..." --model auto --output-format json --usage-output-file usage.json\n` +
           `[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n` +
-          `  selected : ${res.usage.displayName} (${res.usage.modelId})\n` +
-          `  tokens   : input=${res.usage.inputTokens.toLocaleString()} (cacheRead=${res.usage.cacheReadTokens.toLocaleString()}) · output=${res.usage.outputTokens} · reasoning=${res.usage.reasoningTokens}\n` +
-          `  output   : ${res.stdout}\n` +
-          `✓ PASS — Routed to lightweight ${res.usage.displayName} (${cr} AI Credits, ${sec}s)\n` +
-          `Why: Low reasoning/debug demand fits Flash capability profile with zero judge overhead.\n`,
+          `  categoryScores : ${scoreLine}\n` +
+          `  usage.json     : model=${res.usage.modelId}, input=${res.usage.inputTokens.toLocaleString()} (cacheRead=${res.usage.cacheReadTokens.toLocaleString()}), output=${res.usage.outputTokens}\n` +
+          `  output         : ${res.stdout}\n` +
+          `✓ PASS — Routed to ${res.usage.displayName} (${cr} AIU · ${sec}s)\n` +
+          `Why: Low categoryScores trigger auto_v2 Single fast path without Judge overhead.\n` +
+          `[SOURCE] Raw Log: CLI JSONL "session.auto_mode_resolved" + usage.json  |  Arch Spec: HyDRA 86 ms CPU / τ=0.05 (Slide 8)\n`,
+      });
+      emit({
+        kind: "raw",
+        text:
+          `# PROVENANCE: Captured live from Copilot CLI (--output-format json + --usage-output-file).\n` +
+          `# Note: categoryScores, chosenModel, routingMethod & endToEndLatencyMs come directly from "session.auto_mode_resolved";\n` +
+          `# server-side HyDRA ModernBERT 86 ms CPU & threshold τ=0.05 are architecture specs (Deck Slide 8), not CLI fields.\n\n` +
+          res.rawTrace,
       });
       emit({
         kind: "route",
@@ -417,11 +495,20 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       emit({
         kind: "output",
         text:
-          `  1. Primary (${draft.usage.displayName}): patched format.mjs (${draft.usage.credits.toFixed(3)} cr)\n` +
+          `  1. Primary (${draft.usage.displayName}): patched format.mjs (${draft.usage.credits.toFixed(3)} AIU)\n` +
           `  2. Host Test: node --test format.test.mjs -> ${testRun.stdout.split(/\r?\n/).filter((l) => l.includes("pass")).pop() || "3/3 pass"}\n` +
           `  3. Judge (${judge.usage.displayName}): ${verdictLine}\n` +
-          `✓ PASS — Judge ACCEPTED draft; heavy Frontier Repair skipped (total ${totalCr} cr)\n` +
-          `Why: Cascade lets a fast model try first and only pays for a heavy repair model when Judge finds a flaw.\n`,
+          `✓ PASS — Judge ACCEPTED draft; heavy Repair pass skipped (total ${totalCr} AIU)\n` +
+          `Why: Cascade lets a fast model try first and only pays for a heavy repair model when Judge finds a flaw.\n` +
+          `[SOURCE] Raw Log: 2x Copilot CLI JSONL + node --test stdout  |  Arch Spec: Copilot Fusion Cascade pattern (Slide 11)\n`,
+      });
+      emit({
+        kind: "raw",
+        text:
+          `# PROVENANCE: Live client-orchestrated Cascade harness running real Copilot CLI (--output-format json) + node --test.\n\n` +
+          `# --- Stage 1: Primary Draft ---\n${draft.rawTrace}\n\n` +
+          `# --- Stage 2: node --test format.test.mjs ---\n${testRun.stdout.trim()}\n\n` +
+          `# --- Stage 3: Read-Only Judge ---\n${judge.rawTrace}`,
       });
       emit({
         kind: "route",
@@ -486,7 +573,15 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
           `✕ ESCALATED — Judge (${judge.usage.displayName}) rejected draft: ${judge.stdout.replace(/\s+/g, " ")}\n` +
           `  repair (${repair.usage.displayName}): ${repair.stdout.replace(/\s+/g, " ")}\n` +
           `✓ PASS — Escalated repair verified by ${stressRuns}/500 concurrent refill()+close() runs (0 deadlocks)\n` +
-          `Why: Naive unit tests miss race conditions; Judge catches inverted lock order and escalates to a strong model.\n`,
+          `Why: Naive unit tests miss race conditions; Judge catches inverted lock order and escalates to a strong model.\n` +
+          `[SOURCE] Raw Log: Judge + Repair CLI JSONL + 500x AsyncMutex stress check  |  Arch Spec: Cascade escalation (Slide 11)\n`,
+      });
+      emit({
+        kind: "raw",
+        text:
+          `# PROVENANCE: Live Concurrency Judge (--deny-tool write) + Repair pass via Copilot CLI JSONL.\n\n` +
+          `# --- Stage 1: Read-Only Concurrency Judge ---\n${judge.rawTrace}\n\n` +
+          `# --- Stage 2: Escalated Repair Pass ---\n${repair.rawTrace}`,
       });
       emit({
         kind: "route",
@@ -571,7 +666,16 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         `✕ CRITIC A [${criticA.usage.displayName} · read-only]: ${criticA.stdout.replace(/\s+/g, " ")}\n` +
         `✕ CRITIC B [${criticB.usage.displayName} · read-only]: ${criticB.stdout.replace(/\s+/g, " ")}\n` +
         `✓ PASS — Primary (${revision.usage.displayName}) synthesized both fixes (cacheRead=${revision.usage.cacheReadTokens.toLocaleString()} tok)\n` +
-        `Why: Read-only Critics uncover architectural blind spots in parallel without conflicting file edits.\n`,
+        `Why: Read-only Critics uncover architectural blind spots in parallel without conflicting file edits.\n` +
+        `[SOURCE] Raw Log: 4x Copilot CLI JSONL (--deny-tool write on Critics)  |  Benchmark: AA Coding Index 60 (Slide 11)\n`,
+    });
+    emit({
+      kind: "raw",
+      text:
+        `# PROVENANCE: Live parallel read-only Critics (--available-tools view --deny-tool write) + resumed Primary revision.\n\n` +
+        `# --- Critic A JSONL ---\n${criticA.rawTrace}\n\n` +
+        `# --- Critic B JSONL ---\n${criticB.rawTrace}\n\n` +
+        `# --- Primary Revision (--resume ${sid}) ---\n${revision.rawTrace}`,
     });
     emit({
       kind: "route",
@@ -635,8 +739,16 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         `  retained model  : ${follow.usage.displayName} (${follow.usage.modelId})\n` +
         `  warm cache read : ${follow.usage.cacheReadTokens.toLocaleString()} / ${follow.usage.inputTokens.toLocaleString()} tokens (${hitPct}% cache hit)\n` +
         `  output          : ${follow.stdout.replace(/\n+/g, " | ")}\n` +
-        `✓ PASS — Retained warm ${follow.usage.displayName} (${hitPct}% cache hit · ${follow.usage.credits.toFixed(3)} cr · ${sec}s)\n` +
-        `Why: Switching to a cold model mid-session breaks the prefix cache and forces a 10x pricier full re-read.\n`,
+        `✓ PASS — Retained warm ${follow.usage.displayName} (${hitPct}% cache hit · ${follow.usage.credits.toFixed(3)} AIU · ${sec}s)\n` +
+        `Why: Switching to a cold model mid-session breaks the prefix cache and forces a 10x pricier full re-read.\n` +
+        `[SOURCE] Raw Log: usage.json modelMetrics.usage.cacheReadTokens & cacheExpiresAt (--resume ${sid.slice(0, 8)}…)\n`,
+    });
+    emit({
+      kind: "raw",
+      text:
+        `# PROVENANCE: Captured live from copilot --resume ${sid} --usage-output-file usage.json.\n` +
+        `# Observe modelMetrics[*].usage.cacheReadTokens and cacheExpiresAt directly in raw usage.json below:\n\n` +
+        follow.rawTrace,
     });
     emit({
       kind: "route",
@@ -710,11 +822,27 @@ export async function runLocalFailoverStep(emit, useLiveSecondary = false) {
     emit({
       kind: "output",
       text:
-        `[CONFIG] Two-tier failover policy: Primary deployment -> Next-ranked model inside approved subset\n` +
+        `[CONFIG] Local HTTP Failover Harness: /primary (returns 429) -> /secondary (returns 200 OK)\n` +
         `[REQUEST] POST ${baseUrl}/primary/chat/completions  (peak traffic burst)\n` +
         `✕ BLOCKED — Attempt 1 (${attempts[0].deployment}) failed with HTTP ${attempts[0].status} Too Many Requests\n` +
         `✓ PASS — Automatic failover to ${attempts[1].deployment} succeeded with HTTP ${attempts[1].status} OK in ${elapsedMs} ms\n` +
-        `Why: Router absorbs 429 rate-limit bursts inside your compliance allow-list so callers see zero errors.\n`,
+        `Why: Router absorbs 429 rate-limit bursts inside your compliance allow-list so callers see zero errors.\n` +
+        `[SOURCE] Raw Log: Real 127.0.0.1 HTTP 429->200 trace  |  Cloud Spec: Foundry routing_trace.attempts[] (Slide 15)\n`,
+    });
+    emit({
+      kind: "raw",
+      text:
+        `# PROVENANCE: Real local HTTP 429 -> 200 failover exchange on ${baseUrl} modeling Foundry routing_trace.attempts[].\n\n` +
+        JSON.stringify(
+          {
+            endpoint: baseUrl,
+            elapsedMs,
+            routing_trace: [{ latency_ms: elapsedMs, attempts }],
+            finalResponse: finalBody,
+          },
+          null,
+          2,
+        ),
     });
     emit({
       kind: "route",
@@ -749,7 +877,7 @@ export async function runFoundryStepLive(step, emit) {
         `[CONFIG] Foundry Model Router: approved subset + json_object gate + parameter auto-adapter\n` +
         `[REQUEST] POST ${process.env.AZURE_FOUNDRY_ENDPOINT}/openai/v1/chat/completions (role="developer", temperature=0.2)\n`,
     });
-    const { json, wallMs } = await callFoundryRouter({
+    const { json, wallMs, rawTrace } = await callFoundryRouter({
       messages: [
         { role: "developer", content: "Return compact JSON with key status='eligible_ok'." },
         { role: "user", content: "Verify router parameter normalization and JSON mode." },
@@ -764,8 +892,10 @@ export async function runFoundryStepLive(step, emit) {
       text:
         `  response: ${json.choices?.[0]?.message?.content?.trim()}\n` +
         `✓ PASS — HTTP 200 OK served by "${json.model}" (router=${rMs} ms, wall=${wallMs} ms)\n` +
-        `Why: One cloud endpoint normalizes incompatible cross-provider parameters and drains pre-paid PTU first.\n`,
+        `Why: One cloud endpoint normalizes incompatible cross-provider parameters and drains pre-paid PTU first.\n` +
+        `[SOURCE] Raw Log: POST /openai/v1/chat/completions (ModelRouterControls=V1Preview)  |  Spec: PTU order (Slide 14)\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live Microsoft Foundry Model Router HTTP JSON.\n\n${rawTrace}` });
     emit({
       kind: "route",
       model: json.model,
@@ -789,7 +919,7 @@ export async function runFoundryStepLive(step, emit) {
         `[CONFIG] POST /openai/v1/chat/completions · model="auto" · routing_config.mode="balanced" (1–2% band)\n` +
         `[REQUEST] Extract invoice_id and currency as JSON from "${renewal.invoiceSample}"\n`,
     });
-    const { json, wallMs } = await callFoundryRouter({
+    const { json, wallMs, rawTrace } = await callFoundryRouter({
       messages: [
         {
           role: "user",
@@ -810,8 +940,10 @@ export async function runFoundryStepLive(step, emit) {
         `  usage : prompt=${json.usage?.prompt_tokens}, completion=${json.usage?.completion_tokens}, reasoning=${reasonTok}\n` +
         `  output: ${JSON.stringify(parsed)}\n` +
         `✓ PASS — Served valid JSON via "${json.model}" (router=${rMs} ms, wall=${wallMs} ms)\n` +
-        `Why: Easy JSON extraction lands in the top 1–2% quality band, so Balanced mode picks the cheapest fast model.\n`,
+        `Why: Easy JSON extraction lands in the top 1–2% quality band, so Balanced mode picks the cheapest fast model.\n` +
+        `[SOURCE] Raw Log: response.model + model_selection_details.model_router_details.routing_trace\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live Microsoft Foundry Model Router HTTP JSON.\n\n${rawTrace}` });
     emit({
       kind: "route",
       model: json.model,
@@ -866,7 +998,12 @@ export async function runFoundryStepLive(step, emit) {
         `  Turn 1: "${turn1.json.model}" (router=${rMs} ms, wall=${turn1.wallMs} ms)\n` +
         `  Turn 2: "${turn2.json.model}" (session_affinity=${affinityDecision}, wall=${turn2.wallMs} ms)\n` +
         `✓ PASS — Escalated hard concurrency proof to "${turn1.json.model}" and applied ${affinityDecision} affinity on Turn 2\n` +
-        `Why: Formal proofs drop lightweight Flash below the 1–2% band, triggering automatic escalation.\n`,
+        `Why: Formal proofs drop lightweight Flash below the 1–2% band, triggering automatic escalation.\n` +
+        `[SOURCE] Raw Log: Turn 1 & Turn 2 HTTP JSON (routing_trace + session_affinity)\n`,
+    });
+    emit({
+      kind: "raw",
+      text: `# PROVENANCE: Live 2-turn Foundry Model Router HTTP JSON.\n\n# --- Turn 1 ---\n${turn1.rawTrace}\n\n# --- Turn 2 ---\n${turn2.rawTrace}`,
     });
     emit({
       kind: "route",
@@ -912,7 +1049,12 @@ export async function runFoundryStepLive(step, emit) {
         `  Job 1 (mode="cost")    -> ${job1.json.model} (${job1.wallMs} ms)\n` +
         `  Job 2 (mode="quality") -> ${job2.json.model} (${job2.wallMs} ms)\n` +
         `✓ PASS — Split workflow across ${job1.json.model} (retrieval) and ${job2.json.model} (strategy)\n` +
-        `Why: Decomposing sub-jobs lets each step pick the right price-performance tier instead of one bulky call.\n`,
+        `Why: Decomposing sub-jobs lets each step pick the right price-performance tier instead of one bulky call.\n` +
+        `[SOURCE] Raw Log: 2x Foundry Router HTTP JSON (mode="cost" + mode="quality")  |  Case Study: M365 Copilot Auto (Slide 16)\n`,
+    });
+    emit({
+      kind: "raw",
+      text: `# PROVENANCE: Live 2-stage Foundry Model Router sub-job HTTP JSON.\n\n# --- Job 1 (mode="cost") ---\n${job1.rawTrace}\n\n# --- Job 2 (mode="quality") ---\n${job2.rawTrace}`,
     });
     emit({
       kind: "route",
@@ -951,8 +1093,10 @@ export async function runDecisionStepLive(step, emit) {
     });
     const probs = [];
     const times = [];
+    let firstRaw = "";
     for (let i = 0; i < 5; i += 1) {
-      const { json, wallMs } = await callDecisionSystemOne({ state, questions });
+      const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
+      if (i === 0) firstRaw = rawTrace;
       const p = Number(json.answers?.ready_to_buy?.noul ?? json.ready_to_buy?.noul ?? 0);
       probs.push(p);
       times.push(wallMs);
@@ -965,8 +1109,10 @@ export async function runDecisionStepLive(step, emit) {
       text:
         `  runs: ${probs.map((p, idx) => `#${idx + 1}=${p.toFixed(4)} (${times[idx]}ms)`).join(" | ")}\n` +
         `✓ PASS — 5/5 calibrated probability (${probs[0].toFixed(4)}, spread=${spread.toFixed(2)} pts, p50=${p50} ms)\n` +
-        `Why: Single-pass decision engine returns deterministic probabilities with $0 output-token cost.\n`,
+        `Why: Single-pass decision engine returns deterministic probabilities with $0 output-token cost.\n` +
+        `[SOURCE] Raw Log: 5x POST /providers/microsoft/v1/systemone (answers.ready_to_buy.noul)  |  Pricing: $0.042/1M in (Slide 17)\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone HTTP JSON (Run #1 of 5).\n\n${firstRaw}` });
     emit({
       kind: "route",
       model: `noul = ${probs[0].toFixed(4)}`,
@@ -1008,8 +1154,10 @@ export async function runDecisionStepLive(step, emit) {
         `[REQUEST] Triage 4 incoming customer inbox messages before calling generative LLMs\n`,
     });
     let skipped = 0;
+    const rawTraces = [];
     for (const msg of inbox) {
-      const { json, wallMs } = await callDecisionSystemOne({ state: msg, questions });
+      const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state: msg, questions });
+      rawTraces.push(rawTrace);
       const ans = json.answers?.route ?? json.route ?? {};
       const choice = ans.choice || "unknown";
       const conf = ans.probabilities?.[choice] ?? 0;
@@ -1023,8 +1171,10 @@ export async function runDecisionStepLive(step, emit) {
       kind: "output",
       text:
         `✓ PASS — Routed 4/4 messages live; ${skipped}/4 skipped the expensive frontier LLM\n` +
-        `Why: Spending $0.000013 up front filters out routine messages that never needed a frontier LLM call.\n`,
+        `Why: Spending $0.000013 up front filters out routine messages that never needed a frontier LLM call.\n` +
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.route.{choice,probabilities})  |  Eval: Slide 21\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone batch HTTP JSON.\n\n${rawTraces.join("\n\n")}` });
     emit({
       kind: "route",
       model: `choice · ${skipped}/4 skip Frontier`,
@@ -1062,7 +1212,7 @@ export async function runDecisionStepLive(step, emit) {
         instructions: "Has the customer contacted support multiple times about this issue?",
       },
     };
-    const { json, wallMs } = await callDecisionSystemOne({ state, questions });
+    const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
     const team = json.answers?.team ?? json.team ?? {};
     const priority = json.answers?.priority ?? json.priority ?? {};
     const repeat = json.answers?.repeat ?? json.repeat ?? {};
@@ -1075,8 +1225,10 @@ export async function runDecisionStepLive(step, emit) {
         `  team=${JSON.stringify(team)} | priority=${JSON.stringify(priority)} | repeat=${JSON.stringify(repeat)}\n` +
         (score >= 2.0 ? `✕ ESCALATED — High-risk injury detected (score ${score.toFixed(2)} >= 2.0); bot reply blocked!\n` : ``) +
         `✓ PASS — Completed 3-primitive triage in ${wallMs} ms\n` +
-        `Why: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n`,
+        `Why: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n` +
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.{team,priority,repeat})  |  Schema: Slide 18\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live 3-question /providers/microsoft/v1/systemone HTTP JSON.\n\n${rawTrace}` });
     emit({
       kind: "route",
       model: `score = ${score.toFixed(2)}`,
@@ -1107,7 +1259,7 @@ export async function runDecisionStepLive(step, emit) {
         instructions: "Does agent_draft_reply promise a custom discount or refund?",
       },
     };
-    const { json, wallMs } = await callDecisionSystemOne({ state, questions });
+    const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
     const comp = Number(json.answers?.mentions_competitor?.noul ?? json.mentions_competitor?.noul ?? 0);
     const disc = Number(json.answers?.promises_unapproved_discount?.noul ?? json.promises_unapproved_discount?.noul ?? 0);
     const held = comp >= 0.5 || disc >= 0.5;
@@ -1119,8 +1271,10 @@ export async function runDecisionStepLive(step, emit) {
         `  mentions_competitor.noul=${comp.toFixed(3)} | promises_unapproved_discount.noul=${disc.toFixed(3)}\n` +
         (held ? `✕ BLOCKED — Outbound draft HELD before send (competitor leak p=${comp.toFixed(3)})\n` : ``) +
         `✓ PASS — Outbound guardrail evaluated in ${wallMs} ms\n` +
-        `Why: Pre-send noul gates catch policy leaks for $0.00006 so safe drafts auto-send without human review.\n`,
+        `Why: Pre-send noul gates catch policy leaks for $0.00006 so safe drafts auto-send without human review.\n` +
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.mentions_competitor.noul)  |  Case Study: Slide 21\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone outbound noul HTTP JSON.\n\n${rawTrace}` });
     emit({
       kind: "route",
       model: `noul = ${comp.toFixed(3)} ${held ? "HELD" : "OK"}`,
@@ -1154,7 +1308,7 @@ export async function runDecisionStepLive(step, emit) {
         },
       },
     };
-    const { json, wallMs } = await callDecisionSystemOne({ state, questions });
+    const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
     const ans = json.answers?.action ?? json.action ?? {};
     const probs = ans.probabilities || {};
     const maxP = Math.max(0, ...Object.values(probs).map(Number));
@@ -1167,8 +1321,10 @@ export async function runDecisionStepLive(step, emit) {
         `  choice="${ans.choice}" · probabilities=${JSON.stringify(probs)}\n` +
         (abstained ? `✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n` : ``) +
         `✓ PASS — Safeguard evaluated in ${wallMs} ms (${abstained ? "asked user for Exhibit B" : "proceeded"})\n` +
-        `Why: Calibrated probabilities let software know when to stop and ask instead of guessing.\n`,
+        `Why: Calibrated probabilities let software know when to stop and ask instead of guessing.\n` +
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  CAC ROI: Slide 21\n`,
     });
+    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone abstention HTTP JSON.\n\n${rawTrace}` });
     emit({
       kind: "route",
       model: abstained ? "Abstain · Ask User" : ans.choice,
@@ -1191,7 +1347,7 @@ export async function probeCustomPromptLive(prompt) {
   const caps = detectLiveCapabilities();
 
   if (caps.decisionReady) {
-    const { json, wallMs } = await callDecisionSystemOne({
+    const { json, wallMs, rawTrace } = await callDecisionSystemOne({
       state: prompt,
       questions: {
         route: {
@@ -1221,6 +1377,7 @@ export async function probeCustomPromptLive(prompt) {
       model: choice,
       meta: `Decision-1.1 · ${wallMs} ms`,
       summary: `Live /v1/systemone -> choice="${choice}" (p=${conf.toFixed(2)}), priority.score=${score.toFixed(2)} in ${wallMs} ms.`,
+      rawTrace: `# PROVENANCE: Live /providers/microsoft/v1/systemone custom prompt probe.\n\n${rawTrace}`,
       chips: [
         [`Choice: ${choice} ✓`, "on"],
         [`Conf: ${(conf * 100).toFixed(0)}% ✓`, "on"],
@@ -1244,11 +1401,12 @@ export async function probeCustomPromptLive(prompt) {
       return {
         source: "Live · GitHub Copilot CLI Auto",
         model: res.usage.displayName,
-        meta: `${cr} cr · ${sec}s (${res.usage.modelId})`,
-        summary: `Live copilot --model auto selected ${res.usage.displayName} (${cr} cr, reasoning=${res.usage.reasoningTokens} tok): ${res.stdout.replace(/\s+/g, " ").slice(0, 140)}`,
+        meta: `${cr} AIU · ${sec}s (${res.usage.modelId})`,
+        summary: `Live copilot --model auto selected ${res.usage.displayName} (${cr} AIU): ${res.stdout.replace(/\s+/g, " ").slice(0, 140)}`,
+        rawTrace: `# PROVENANCE: Live Copilot CLI (--output-format json + --usage-output-file) custom prompt probe.\n\n${res.rawTrace}`,
         chips: [
           [`Model: ${res.usage.modelId} ✓`, "on"],
-          [`Credits: ${cr} cr ✓`, "on"],
+          [`Credits: ${cr} AIU ✓`, "on"],
           [`Time: ${sec}s Live ✓`, "on"],
         ],
       };

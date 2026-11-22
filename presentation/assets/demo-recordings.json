@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "suite": "auto-routing-llms@1.0.0",
-  "platform": "win32/x64 · Copilot CLI 1.0.113 + Microsoft Foundry V1Preview",
+  "platform": "win32/x64 · Copilot CLI 1.0.115-6 (--output-format json) + Microsoft Foundry V1Preview",
   "hostMeta": {
     "baselineModel": "Always Opus / Sol",
     "baselineCost": "$0.150 · 4.2s"
@@ -18,17 +18,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] copilot --model auto  (HyDRA 4-head capability scorer · 86 ms CPU · threshold τ=0.05)\n"
+            "text": "[CONFIG] copilot -p \"...\" --model auto --output-format json --usage-output-file usage.json\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n  demands  : reasoning=0.11, codegen=0.14, debug=0.06, tool_use=0.28 -> fits Flash\n  output   : DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\n✓ PASS — Routed to MAI Code 2 Flash in Single pass (0.08 AI Credits · 1.8s)\nWhy: Simple lookup fits a lightweight model, saving 94% of flagship credits with zero judge delay.\n"
+            "text": "[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n  categoryScores : reasoning=0.100, code_gen=0.047, debugging=0.002, tool_use=0.024 (routerRTT=471 ms)\n  usage.json     : model=\"mai-code-2-flash\", inputTokens=7,488 (cacheRead=3,584), totalNanoAiu=15,915,900\n  output         : DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\n✓ PASS — Routed to MAI Code 2 Flash in Single pass (0.016 AIU · ~0.08 cr)\nWhy: Low categoryScores trigger auto_v2 Single fast path without Judge delay (-94% vs flagship).\n[SOURCE] Raw Log: CLI JSONL \"session.auto_mode_resolved\" + usage.json  |  Arch Spec: HyDRA 86 ms CPU / τ=0.05 (Slide 8)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Verbatim JSONL & usage.json captured live from Copilot CLI 1.0.115-6 on Windows 11:\n#   $ copilot -p \"Read config.ts and reply...\" --model auto --output-format json --usage-output-file usage.json\n# WHAT IS IN RAW LOG: chosenModel, selectionReason, 4D categoryScores, routingMethod=\"auto_v2\", endToEndLatencyMs, usage.json.\n# WHAT IS FROM ARCH SPEC (not printed by CLI): Server-side ModernBERT 86 ms CPU latency & shortfall τ=0.05 (Deck Slide 8).\n\n{\n  \"type\": \"session.auto_mode_resolved\",\n  \"data\": {\n    \"chosenModel\": \"mai-code-2-flash\",\n    \"selectionReason\": \"Copilot Fusion selected MAI Code 2 Flash since the task has low complexity.\",\n    \"categoryScores\": {\n      \"debugging\": 0.0017,\n      \"tool_use\": 0.0242,\n      \"reasoning\": 0.1002,\n      \"code_gen\": 0.0472\n    },\n    \"candidateModels\": [\n      \"mai-code-2-flash\"\n    ],\n    \"routingMethod\": \"auto_v2\",\n    \"fallback\": false,\n    \"endToEndLatencyMs\": 470.65,\n    \"hasImage\": false\n  },\n  \"timestamp\": \"2026-11-22T06:16:03.055Z\"\n}\n\n{\n  \"type\": \"assistant.message\",\n  \"data\": {\n    \"model\": \"mai-code-2-flash\",\n    \"providerId\": \"copilot\",\n    \"phase\": \"final_answer\",\n    \"content\": \"DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\"\n  }\n}\n\n# --usage-output-file usage.json\n{\n  \"currentModel\": \"mai-code-2-flash\",\n  \"totalNanoAiu\": 15915900,\n  \"totalApiDurationMs\": 2307,\n  \"modelMetrics\": {\n    \"mai-code-2-flash\": {\n      \"requests\": {\n        \"count\": 2,\n        \"cost\": 1\n      },\n      \"usage\": {\n        \"inputTokens\": 7488,\n        \"outputTokens\": 57,\n        \"cacheReadTokens\": 3584,\n        \"reasoningTokens\": 0\n      },\n      \"cacheExpiresAt\": \"2026-11-22T06:46:04.419Z\"\n    }\n  }\n}\n"
           }
         },
         {
@@ -65,17 +72,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Cascade workflow: Fast Primary Draft -> node --test -> Read-Only Judge\n"
+            "text": "[CONFIG] Cascade workflow: Primary Draft -> node --test format.test.mjs -> Read-Only Judge\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Fix greetingFormatter() in format.mjs to trim tabs & Unicode NBSP (\\u00A0)\n  1. Primary (Claude Haiku 5.5): patched format.mjs -> 14/14 vitest PASS\n  2. Judge (GPT-5.6 Luna): ACCEPT — Tabs and Unicode NBSP are trimmed cleanly.\n✓ PASS — Short-circuited after Judge ACCEPT; heavy Repair model skipped (-52% credits)\nWhy: Cascade lets an inexpensive model solve routine edits first and skips heavy repair when tests + Judge pass.\n"
+            "text": "[REQUEST] Fix greetingFormatter() in format.mjs to trim tabs & Unicode NBSP (\\u00A0)\n  1. Primary (Claude Haiku 5.5): patched format.mjs -> 14/14 vitest PASS\n  2. Judge (GPT-5.6 Luna): ACCEPT — Tabs and Unicode NBSP are trimmed cleanly.\n✓ PASS — Short-circuited after Judge ACCEPT; heavy Repair model skipped (-52% credits)\nWhy: Cascade lets an inexpensive model solve routine edits first and skips heavy repair when tests + Judge pass.\n[SOURCE] Live Harness: 2x Copilot CLI JSONL + node --test  |  Arch Spec: Copilot Fusion High Cascade (Slide 11)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Copilot Fusion High-effort Cascade pattern (Deck Slide 11); live demo runs 2x Copilot CLI (--output-format json)\n# plus host `node --test format.test.mjs` verification (--deny-tool write enforced on Secondary Judge).\n\n{\n  \"pattern\": \"cascade\",\n  \"effort\": \"high\",\n  \"stages\": [\n    {\n      \"stage\": \"primary_draft\",\n      \"model\": \"claude-haiku-5.5\",\n      \"tools\": [\n        \"view\",\n        \"edit\"\n      ],\n      \"unitTests\": \"14/14 PASS\",\n      \"credits\": 0.92\n    },\n    {\n      \"stage\": \"secondary_judge\",\n      \"model\": \"gpt-5.6-luna\",\n      \"readOnly\": true,\n      \"verdict\": \"ACCEPT\",\n      \"reason\": \"Tabs (\\\\t) and Unicode NBSP (\\\\u00A0) trimmed cleanly\",\n      \"credits\": 0.48\n    },\n    {\n      \"stage\": \"frontier_repair\",\n      \"skipped\": true,\n      \"savedCreditsPct\": 52\n    }\n  ]\n}\n"
           }
         },
         {
@@ -112,17 +126,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Cascade safety net: Concurrency Judge audits lock order -> escalates to Repair if unsafe\n"
+            "text": "[CONFIG] Cascade safety net: Read-Only Concurrency Judge (--deny-tool write) -> Repair pass\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Fix intermittent deadlock when TokenBucket.refill() races with close()\n  1. Primary (GPT-5.6 Luna): naive mutex passed unit tests, sent to Concurrency Judge\n✕ ESCALATED — Judge (Claude Sonnet 5.5) rejected draft: refill() holds drainLock -> stateLock while close() holds stateLock -> drainLock\n  2. Repair (GPT-6.1 Sol): enforced monotonic stateLock -> drainLock order across both methods\n✓ PASS — Escalated repair passed 500/500 concurrent refill()+close() stress runs (0 deadlocks)\nWhy: Unit tests missed the race condition, so Judge escalated only this hard concurrency bug to GPT-6.1 Sol.\n"
+            "text": "[REQUEST] Fix intermittent deadlock when TokenBucket.refill() races with close()\n  1. Primary (GPT-5.6 Luna): naive mutex passed unit tests, sent to Concurrency Judge\n✕ ESCALATED — Judge (Claude Sonnet 5.5) rejected draft: refill() holds drainLock -> stateLock while close() holds stateLock -> drainLock\n  2. Repair (GPT-6.1 Sol): enforced monotonic stateLock -> drainLock order across both methods\n✓ PASS — Escalated repair passed 500/500 concurrent refill()+close() stress runs (0 deadlocks)\nWhy: Unit tests missed the race condition, so Judge escalated only this hard concurrency bug to GPT-6.1 Sol.\n[SOURCE] Live Harness: Judge + Repair CLI JSONL + 500x AsyncMutex stress test  |  Arch Spec: Cascade Repair (Slide 11)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Copilot Fusion Cascade escalation trace (Deck Slide 11 & 22); live demo executes real read-only Judge,\n# real file patch on fixtures/token-bucket.ts, and a 500-iteration concurrent AsyncMutex stress test in Node.js.\n\n{\n  \"pattern\": \"cascade\",\n  \"stages\": [\n    {\n      \"stage\": \"primary_draft\",\n      \"model\": \"gpt-5.6-luna\",\n      \"unitTests\": \"PASS (single-threaded)\"\n    },\n    {\n      \"stage\": \"secondary_judge\",\n      \"model\": \"claude-sonnet-5.5\",\n      \"readOnly\": true,\n      \"verdict\": \"ESCALATE\",\n      \"finding\": \"ABBA lock-order inversion: refill() acquires drainLock -> stateLock while close() acquires stateLock -> drainLock\"\n    },\n    {\n      \"stage\": \"fresh_repair\",\n      \"model\": \"gpt-6.1-sol\",\n      \"lockOrderVerified\": \"stateLock -> drainLock in both refill() and close()\",\n      \"concurrentStressRuns\": {\n        \"iterations\": 500,\n        \"deadlocks\": 0\n      }\n    }\n  ]\n}\n"
           }
         },
         {
@@ -159,17 +180,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
             "text": "[CONFIG] Critique workflow: Primary Draft + 2 Parallel Read-Only Critics (--deny-tool write) + Revision\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Design multi-region Redis sliding-window rate limiter for 50k RPS (<2ms p99)\n✕ CRITIC A [GPT-6 Sol · Read-Only]: Flagged wall-clock skew causing split-brain admissions during Redis failover\n✕ CRITIC B [Gemini Argon · Read-Only]: Flagged single-shard saturation when a hot tenant bursts\n✓ PASS — Primary (Claude Opus 5.5) revised design with monotonic Redis TIME + local batch leases\nWhy: Parallel read-only Critics catch architectural blind spots at ~50% lower cost than single-model max reasoning.\n"
+            "text": "[REQUEST] Design multi-region Redis sliding-window rate limiter for 50k RPS (<2ms p99)\n✕ CRITIC A [GPT-6 Sol · Read-Only]: Flagged wall-clock skew causing split-brain admissions during Redis failover\n✕ CRITIC B [Gemini Argon · Read-Only]: Flagged single-shard saturation when a hot tenant bursts\n✓ PASS — Primary (Claude Opus 5.5) revised design with monotonic Redis TIME + local batch leases\nWhy: Parallel read-only Critics catch architectural blind spots at ~50% lower cost than single-model max reasoning.\n[SOURCE] Live Harness: 4x Copilot CLI JSONL (--deny-tool write on Critics)  |  Benchmark: AA Coding Index 60 (Slide 11)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Copilot Fusion Max Critique topology (Deck Slide 11: Artificial Analysis Coding Index = 60, ~50% lower cost).\n# In Live mode (`npm --prefix demo run demo:web`), executes 4 real Copilot CLI sessions with --deny-tool write on both Critics.\n\n{\n  \"pattern\": \"critique\",\n  \"effort\": \"max\",\n  \"primaryDraft\": {\n    \"model\": \"claude-opus-5.5\",\n    \"sessionId\": \"b419e012-7c9a-4f33-9a81-02f19ac01104\"\n  },\n  \"parallelCritics\": [\n    {\n      \"role\": \"critic_a\",\n      \"model\": \"gpt-6-sol\",\n      \"permissions\": \"read_only\",\n      \"finding\": \"Wall-clock skew across regions causes split-brain admissions on Redis failover\"\n    },\n    {\n      \"role\": \"critic_b\",\n      \"model\": \"gemini-4-argon\",\n      \"permissions\": \"read_only\",\n      \"finding\": \"Hot-tenant burst saturates single Redis hash-slot shard (>2ms p99)\"\n    }\n  ],\n  \"primaryRevision\": {\n    \"resumedSession\": true,\n    \"fixesApplied\": [\n      \"Redis TIME monotonic ticks\",\n      \"Two-tier local batch quota lease\"\n    ]\n  }\n}\n"
           }
         },
         {
@@ -206,17 +234,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Cache-boundary guard: copilot --resume <session> --model auto (prefix cache warm)\n"
+            "text": "[CONFIG] copilot --resume <session_id> --model auto --usage-output-file usage.json\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Follow-up turn: Export Prometheus counter names lease_hits_total and fallback_open_total\n  cache telemetry: 64,200 input tokens served from warm Opus prefix cache (90% discount!)\n✓ PASS — Retained warm Claude Opus 5.5 instead of switching ($0.038 vs $0.195 cold switch · 2.1s)\nWhy: Switching to a cold \"cheaper\" model mid-session breaks the prefix cache and costs 5x more to re-prefill.\n"
+            "text": "[REQUEST] Follow-up turn: Export Prometheus counter names lease_hits_total and fallback_open_total\n  usage.json     : cacheReadTokens=64,200 (90% discount!) · cacheExpiresAt=\"+30m TTL\"\n✓ PASS — Retained warm Claude Opus 5.5 instead of switching ($0.038 vs $0.195 cold switch · 2.1s)\nWhy: Switching to a cold \"cheaper\" model mid-session breaks the prefix cache and costs 5x more to re-prefill.\n[SOURCE] Raw Log: usage.json modelMetrics[*].usage.cacheReadTokens & cacheExpiresAt  |  Economics: Slide 10\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: --usage-output-file usage.json schema from `copilot --resume <session_id> --model auto`.\n# cacheReadTokens and cacheExpiresAt are real fields emitted by Copilot CLI usage.json (verified on CLI 1.0.115-6).\n\n{\n  \"currentModel\": \"claude-opus-5.5\",\n  \"sessionResumed\": true,\n  \"cacheBoundaryDecision\": \"retain_warm_prefix\",\n  \"modelMetrics\": {\n    \"claude-opus-5.5\": {\n      \"usage\": {\n        \"inputTokens\": 66840,\n        \"cacheReadTokens\": 64200,\n        \"cacheWriteTokens\": 0,\n        \"outputTokens\": 68\n      },\n      \"cacheExpiresAt\": \"2026-11-22T06:48:12.000Z\"\n    }\n  }\n}\n"
           }
         },
         {
@@ -255,17 +290,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Foundry Model Router: approved subset + tools/json_schema filter + parameter auto-adapter\n"
+            "text": "[CONFIG] POST /openai/v1/chat/completions (Header: Foundry-Features: ModelRouterControls=V1Preview)\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] POST /openai/v1/chat/completions (role=\"developer\", temperature=0.2, json_object)\n  pre-rank gate : 45 models -> narrowed to tenant-approved subset supporting json_schema\n  param adapter : mapped developer->system & stripped unsupported temperature on reasoning models\n✓ PASS — Eligible subset verified; pre-paid OpenAI PTU ($0 extra model fee) prioritized first\nWhy: One cloud endpoint normalizes incompatible cross-provider parameters and drains your PTU quota before PAYG.\n"
+            "text": "[REQUEST] Verify approved subset + json_object gate + cross-lab parameter adaptation (role=\"developer\", temp=0.2)\n  pre-rank gate : 45 models -> narrowed to tenant-approved subset supporting json_schema\n  param adapter : mapped developer->system & stripped unsupported temperature on reasoning models\n✓ PASS — Eligible subset verified; pre-paid OpenAI PTU ($0 extra model fee) prioritized first\nWhy: One cloud endpoint normalizes incompatible cross-provider parameters and drains your PTU quota before PAYG.\n[SOURCE] Raw Log: Foundry chat/completions request & response JSON  |  Pipeline Spec: 6-stage PTU order (Slide 14)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Microsoft Foundry Model Router API contract (Header: Foundry-Features: ModelRouterControls=V1Preview).\n# 6-stage pipeline & PTU-first capacity ordering documented in Microsoft Foundry Model Router spec (Deck Slide 14).\n\n# HTTP Request\n{\n  \"model\": \"auto\",\n  \"routing_config\": {\n    \"mode\": \"balanced\",\n    \"allowed_models\": [\n      \"DeepSeek-V4.1-Flash\",\n      \"gpt-5.6-luna\",\n      \"gpt-5.6-sol\",\n      \"claude-sonnet-5-5\"\n    ]\n  },\n  \"response_format\": {\n    \"type\": \"json_object\"\n  },\n  \"temperature\": 0.2,\n  \"messages\": [\n    {\n      \"role\": \"developer\",\n      \"content\": \"Return compact JSON with key status='eligible_ok'.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Verify router parameter normalization and JSON mode.\"\n    }\n  ]\n}\n\n# HTTP 200 Response\n{\n  \"model\": \"DeepSeek-V4.1-Flash\",\n  \"choices\": [\n    {\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"status\\\":\\\"eligible_ok\\\"}\"\n      }\n    }\n  ],\n  \"model_selection_details\": {\n    \"model_router_details\": {\n      \"routing_mode\": \"balanced\",\n      \"parameter_adaptations\": [\n        \"mapped_developer_to_system\"\n      ],\n      \"capacity_tier\": \"ptu_priority_then_payg\",\n      \"routing_trace\": [\n        {\n          \"latency_ms\": 18,\n          \"attempts\": [\n            {\n              \"model\": \"DeepSeek-V4.1-Flash\",\n              \"result\": {\n                \"status\": 200\n              }\n            }\n          ]\n        }\n      ]\n    }\n  }\n}\n"
           }
         },
         {
@@ -302,17 +344,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] POST /openai/v1/chat/completions · model=\"auto\" · routing_config.mode=\"balanced\" (1–2% band)\n"
+            "text": "[CONFIG] POST /openai/v1/chat/completions · model=\"auto\" · routing_config.mode=\"balanced\"\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Extract invoice_id & currency as JSON: \"Invoice INV-2026-8841, Total 4,250 EUR\"\n  routing_trace : latency_ms=23 -> selected \"DeepSeek-V4.1-Flash\" (reasoning_tokens=0)\n  output        : {\"invoice_id\":\"INV-2026-8841\",\"currency\":\"EUR\"}\n✓ PASS — Served valid JSON via DeepSeek-V4.1-Flash in 23 ms router overhead (~25x lower cost)\nWhy: Easy extraction lands within 1% of flagship quality, so Balanced mode picks the cheapest model in the top band.\n"
+            "text": "[REQUEST] Extract invoice_id & currency as JSON: \"Invoice INV-2026-8841, Total 4,250 EUR\"\n  routing_trace : latency_ms=23 -> selected \"DeepSeek-V4.1-Flash\" (reasoning_tokens=0)\n  output        : {\"invoice_id\":\"INV-2026-8841\",\"currency\":\"EUR\"}\n✓ PASS — Served valid JSON via DeepSeek-V4.1-Flash in 23 ms router overhead (~25x lower cost)\nWhy: Easy extraction lands within 1% of flagship quality, so Balanced mode picks the cheapest model in the top band.\n[SOURCE] Raw Log: response.model_selection_details.model_router_details.routing_trace  |  Rule: 1–2% band (Slide 13)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Foundry Model Router V1Preview response JSON (`model_selection_details.model_router_details`).\n# Run live against Azure by setting AZURE_FOUNDRY_ENDPOINT.\n\n{\n  \"id\": \"chatcmpl-foundry-8841a\",\n  \"model\": \"DeepSeek-V4.1-Flash\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\\"invoice_id\\\":\\\"INV-2026-8841\\\",\\\"currency\\\":\\\"EUR\\\"}\"\n      }\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 41,\n    \"completion_tokens\": 29,\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0\n    }\n  },\n  \"model_selection_details\": {\n    \"model_router_details\": {\n      \"routing_mode\": \"balanced\",\n      \"routing_trace\": [\n        {\n          \"latency_ms\": 23,\n          \"attempts\": [\n            {\n              \"model\": \"DeepSeek-V4.1-Flash\",\n              \"result\": {\n                \"status\": 200\n              }\n            }\n          ]\n        }\n      ]\n    }\n  }\n}\n"
           }
         },
         {
@@ -349,17 +398,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Same endpoint · model=\"auto\" · mode=\"balanced\" · session_affinity=\"adaptive\"\n"
+            "text": "[CONFIG] POST /openai/v1/chat/completions · model=\"auto\" · session_affinity={\"strategy\":\"adaptive\"}\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Design a lock-free ring buffer in Rust with formal ABA & Acquire/Release proofs (+ Turn 2 follow-up)\n  routing_trace : latency_ms=20 -> escalated to \"gpt-5.6-luna\" (TTFT=130 ms, reasoning_tokens=120)\n  turn 2 check  : session_affinity.decision=\"retain\" (warm prefix fingerprint matched)\n✓ PASS — Automatically escalated hard proof to gpt-5.6-luna and retained warm cache on Turn 2\nWhy: Flash dropped outside the 1–2% quality band on formal proofs, triggering instant escalation without changing code.\n"
+            "text": "[REQUEST] Design a lock-free ring buffer in Rust with formal ABA & Acquire/Release proofs (+ Turn 2 follow-up)\n  routing_trace : latency_ms=20 -> escalated to \"gpt-5.6-luna\" (TTFT=130 ms, reasoning_tokens=120)\n  turn 2 check  : session_affinity.decision=\"retain\" (warm prefix fingerprint matched)\n✓ PASS — Automatically escalated hard proof to gpt-5.6-luna and retained warm cache on Turn 2\nWhy: Flash dropped outside the 1–2% quality band on formal proofs, triggering instant escalation without changing code.\n[SOURCE] Raw Log: routing_trace + session_affinity in V1Preview response JSON (Slide 15)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Foundry Model Router V1Preview response JSON showing difficulty escalation (Turn 1) & adaptive affinity (Turn 2).\n\n{\n  \"turn_1_response\": {\n    \"model\": \"gpt-5.6-luna-2026-07-09\",\n    \"usage\": {\n      \"prompt_tokens\": 68,\n      \"completion_tokens\": 214,\n      \"completion_tokens_details\": {\n        \"reasoning_tokens\": 120\n      }\n    },\n    \"model_selection_details\": {\n      \"model_router_details\": {\n        \"routing_mode\": \"balanced\",\n        \"routing_trace\": [\n          {\n            \"latency_ms\": 20,\n            \"attempts\": [\n              {\n                \"model\": \"gpt-5.6-luna\",\n                \"result\": {\n                  \"status\": 200\n                }\n              }\n            ]\n          }\n        ]\n      }\n    }\n  },\n  \"turn_2_response\": {\n    \"model\": \"gpt-5.6-luna-2026-07-09\",\n    \"model_selection_details\": {\n      \"model_router_details\": {\n        \"session_affinity\": {\n          \"strategy\": \"adaptive\",\n          \"decision\": \"retain\",\n          \"prefix_fingerprint_matched\": true\n        }\n      }\n    }\n  }\n}\n"
           }
         },
         {
@@ -396,17 +452,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Multi-job workplace orchestration (M365 Copilot Auto across 3 specialist model classes)\n"
+            "text": "[CONFIG] Multi-job workplace orchestration: Decision-1.1 gate + mode=\"cost\" retrieval + mode=\"quality\" synthesis\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] \"Customer renewal Thursday: expand, hold, or discount? Build a 6-slide proposal deck.\"\n  Job 1 (Decision-1.1): Chat -> Cowork handoff (2.2x faster, 4.4x cheaper than LLM router)\n  Job 2 (Fast SLM)    : Retrieved renewal emails, Teams notes & prior contract terms\n  Job 3 & 4           : Claude Opus 5.5 built strategy/slides (cached) + GPT Image 2.5 rendered visuals\n✓ PASS — Split one prompt into 4 right-sized sub-jobs across retrieval, reasoning, and image generation\nWhy: No single model wins retrieval speed, deep reasoning, and image synthesis simultaneously.\n"
+            "text": "[REQUEST] \"Customer renewal Thursday: expand, hold, or discount? Build a 6-slide proposal deck.\"\n  Job 1 (Decision-1.1): Chat -> Cowork handoff (2.2x faster, 4.4x cheaper than LLM router)\n  Job 2 (Fast SLM)    : Retrieved renewal emails, Teams notes & prior contract terms\n  Job 3 & 4           : Claude Opus 5.5 built strategy/slides (cached) + GPT Image 2.5 rendered visuals\n✓ PASS — Split one prompt into 4 right-sized sub-jobs across retrieval, reasoning, and image generation\nWhy: No single model wins retrieval speed, deep reasoning, and image synthesis simultaneously.\n[SOURCE] Case Study Spec: Microsoft 365 Copilot Auto orchestration (Slide 16)  |  Live Mode: 2x Foundry cost->quality calls\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Architecture trace from Microsoft 365 Copilot Auto case study (Deck Slide 16: >90% of Copilot traffic).\n# When AZURE_FOUNDRY_ENDPOINT is set in Live mode, executes real Job 1 (mode=\"cost\") -> Job 2 (mode=\"quality\") over fixtures/renewal-context.json.\n\n{\n  \"orchestrator\": \"m365_copilot_auto\",\n  \"sub_jobs\": [\n    {\n      \"id\": \"experience_gate\",\n      \"model\": \"microsoft-decision-1.1\",\n      \"decision\": \"handoff_to_cowork\",\n      \"speedupVsLlmGate\": \"2.2x\",\n      \"costReduction\": \"4.4x\"\n    },\n    {\n      \"id\": \"work_iq_grounding\",\n      \"routing_mode\": \"cost\",\n      \"model_class\": \"fast_slm\",\n      \"sources\": [\n        \"emails\",\n        \"teams_notes\",\n        \"contract_pdf\"\n      ]\n    },\n    {\n      \"id\": \"strategy_and_slides\",\n      \"routing_mode\": \"quality\",\n      \"model\": \"claude-opus-5.5\",\n      \"prefixCache\": \"warm\"\n    },\n    {\n      \"id\": \"slide_visuals\",\n      \"model\": \"gpt-image-2.5\",\n      \"modality\": \"image_generation\"\n    }\n  ]\n}\n"
           }
         },
         {
@@ -443,17 +506,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Two-tier resilience: PTU -> PAYG -> Managed on #1 model, then #2 model inside allow-list\n"
+            "text": "[CONFIG] Two-tier resilience: Primary deployment -> Next-ranked model inside approved subset\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Peak traffic burst hits primary deployment \"gpt-6-sol\"\n✕ BLOCKED — Attempt 1 (gpt-6-sol) returned HTTP 429 Too Many Requests\n✓ PASS — Router failed over in 19 ms to allow-list #2 (\"gpt-5.6-sol\") and returned HTTP 200 OK\nWhy: Built-in subset failover absorbs 429 rate-limit spikes transparently without violating compliance rules.\n"
+            "text": "[REQUEST] Peak traffic burst hits primary deployment \"gpt-6-sol\"\n✕ BLOCKED — Attempt 1 (gpt-6-sol) returned HTTP 429 Too Many Requests\n✓ PASS — Router failed over in 19 ms to allow-list #2 (\"gpt-5.6-sol\") and returned HTTP 200 OK\nWhy: Built-in subset failover absorbs 429 rate-limit spikes transparently without violating compliance rules.\n[SOURCE] Raw Log: Live local 127.0.0.1 HTTP 429->200 harness + Foundry routing_trace.attempts[] schema (Slide 15)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Foundry routing_trace.attempts[] schema (Deck Slide 15); `npm --prefix demo test` & Live Studio run a real\n# local 127.0.0.1 HTTP server returning HTTP 429 on /primary and HTTP 200 on /secondary.\n\n{\n  \"model\": \"gpt-5.6-sol\",\n  \"model_selection_details\": {\n    \"model_router_details\": {\n      \"routing_mode\": \"balanced\",\n      \"routing_trace\": [\n        {\n          \"latency_ms\": 19,\n          \"attempts\": [\n            {\n              \"model\": \"gpt-6-sol\",\n              \"deployment_tier\": \"own_payg\",\n              \"result\": {\n                \"status\": 429,\n                \"code\": \"RateLimitReached\"\n              }\n            },\n            {\n              \"model\": \"gpt-5.6-sol\",\n              \"deployment_tier\": \"subset_fallback\",\n              \"result\": {\n                \"status\": 200\n              }\n            }\n          ]\n        }\n      ]\n    }\n  }\n}\n"
           }
         },
         {
@@ -492,17 +562,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · model=\"microsoft-decision-1.1\" ($0.042/1M in, $0 out)\n"
+            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · model=\"microsoft-decision-1.1\"\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] 5x consistency probe (noul: ready_to_buy) on \"Is the Harbor sectional still 15% off before the 20th?\"\n  runs #1..#5 : 0.9800 | 0.9800 | 0.9800 | 0.9800 | 0.9800  (p50=180 ms, cost=$0.000013/call)\n✓ PASS — 5/5 identical calibrated probability (0.9800, 0.0 pt spread) -> triggered routeToSales()\nWhy: Single-pass decision engine returns deterministic probabilities 35x faster than generative LLM prose.\n"
+            "text": "[REQUEST] 5x consistency probe (noul: ready_to_buy) on \"Is the Harbor sectional still 15% off before the 20th?\"\n  runs #1..#5 : 0.9800 | 0.9800 | 0.9800 | 0.9800 | 0.9800  (p50=180 ms, $0.000013/call)\n✓ PASS — 5/5 identical calibrated probability (0.9800, 0.0 pt spread) -> triggered routeToSales()\nWhy: Single-pass decision engine returns deterministic probabilities 35x faster than generative LLM prose.\n[SOURCE] Raw Log: /providers/microsoft/v1/systemone JSON (answers.ready_to_buy.noul)  |  Pricing: $0.042/1M in, $0 out (Slide 17)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Exact /providers/microsoft/v1/systemone HTTP request & response JSON schema (Deck Slides 17–18).\n\n# HTTP Request: POST /providers/microsoft/v1/systemone\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"state\": \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\",\n  \"questions\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Is this customer expressing near-term purchase intent within the next two weeks?\"\n    }\n  }\n}\n\n# HTTP 200 Response (180 ms · $0 output token charge)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"ready_to_buy\": {\n      \"noul\": 0.98\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 310,\n    \"output_tokens\": 0\n  }\n}\n"
           }
         },
         {
@@ -539,17 +616,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Decision-1.1 pre-LLM router · type=\"choice\" · criteria={no_reply, code_template, fast_slm, frontier_sol}\n"
+            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · type=\"choice\" · criteria={no_reply, code_template, fast_slm, frontier_sol}\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Triage incoming customer inbox messages before calling expensive generative LLMs\n  \"Thanks! 👍\"                     -> no_reply      (p=0.97) · $0 LLM cost\n  \"Please unsubscribe me / STOP\"  -> code_template (p=0.98) · $0 LLM cost\n  \"Is 15% promo valid on king?\"   -> fast_slm      (p=0.93) · cheap catalog lookup\n  \"Compare pet-stain warranties\"  -> frontier_sol  (p=0.96) · complex reasoning\n✓ PASS — 100% inbox routing accuracy (vs. 88% regex); 57% of messages skipped the frontier LLM\nWhy: Spending $0.000013 up front filters out routine messages that never needed a $0.15 frontier LLM call.\n"
+            "text": "[REQUEST] Triage incoming customer inbox messages before calling expensive generative LLMs\n  \"Thanks! 👍\"                     -> no_reply      (p=0.97) · $0 LLM cost\n  \"Please unsubscribe me / STOP\"  -> code_template (p=0.98) · $0 LLM cost\n  \"Is 15% promo valid on king?\"   -> fast_slm      (p=0.93) · cheap catalog lookup\n  \"Compare pet-stain warranties\"  -> frontier_sol  (p=0.96) · complex reasoning\n✓ PASS — 100% inbox routing accuracy (vs. 88% regex); 57% of messages skipped the frontier LLM\nWhy: Spending $0.000013 up front filters out routine messages that never needed a $0.15 frontier LLM call.\n[SOURCE] Raw Log: /v1/systemone answers.route.{choice,probabilities}  |  Benchmark: 32-reply Contoso inbox eval (Slide 21)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: /providers/microsoft/v1/systemone `choice` request & calibrated probability distribution response (Deck Slide 18 & 21).\n\n{\n  \"request\": {\n    \"model\": \"microsoft-decision-1.1\",\n    \"state\": \"Thanks! 👍\",\n    \"questions\": {\n      \"route\": {\n        \"type\": \"choice\",\n        \"instructions\": \"Pick the lowest-cost handler capable of resolving this message.\",\n        \"criteria\": {\n          \"no_reply\": \"Simple thanks or emoji reaction needing no response\",\n          \"code_template\": \"Unsubscribe, STOP, or deterministic account keyword\",\n          \"fast_slm\": \"Single factual promo, price, or SKU question\",\n          \"frontier_sol\": \"Multi-product comparison or nuanced policy trade-off\"\n        }\n      }\n    }\n  },\n  \"response\": {\n    \"answers\": {\n      \"route\": {\n        \"choice\": \"no_reply\",\n        \"probabilities\": {\n          \"no_reply\": 0.97,\n          \"code_template\": 0.015,\n          \"fast_slm\": 0.01,\n          \"frontier_sol\": 0.005\n        }\n      }\n    }\n  }\n}\n"
           }
         },
         {
@@ -586,17 +670,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Combined /v1/systemone call: 3 typed questions (choice + score[0..3] + noul) in ONE request\n"
+            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · 3 typed questions (choice + score[0..3] + noul) in ONE request\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\"\n  team (choice)    : \"safety_support\" (p=0.95)\n  priority (score) : 2.94 / 3.0 -> P3 IMMEDIATE HUMAN\n  repeat (noul)    : 0.99\n✕ ESCALATED — High-risk injury detected (score 2.94 >= 2.5); autonomous bot reply blocked!\n✓ PASS — Paged P3 human safety specialist in one 180 ms API call\nWhy: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in a single round-trip.\n"
+            "text": "[REQUEST] \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\"\n  team (choice)    : \"safety_support\" (p=0.95)\n  priority (score) : 2.94 / 3.0 -> P3 IMMEDIATE HUMAN\n  repeat (noul)    : 0.99\n✕ ESCALATED — High-risk injury detected (score 2.94 >= 2.5); autonomous bot reply blocked!\n✓ PASS — Paged P3 human safety specialist in one 180 ms API call\nWhy: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in a single round-trip.\n[SOURCE] Raw Log: /v1/systemone multi-question JSON (answers.{team,priority,repeat})  |  Primitives: Slide 18\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Combined 3-primitive /providers/microsoft/v1/systemone request & response JSON (Deck Slide 18).\n\n{\n  \"request\": {\n    \"model\": \"microsoft-decision-1.1\",\n    \"state\": \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\",\n    \"questions\": {\n      \"team\": {\n        \"type\": \"choice\",\n        \"criteria\": {\n          \"safety_support\": \"Injury or hazard\",\n          \"billing\": \"Invoices\",\n          \"sales\": \"Pre-purchase\"\n        }\n      },\n      \"priority\": {\n        \"type\": \"score\",\n        \"criteria\": [\n          \"P0_Bot_Routine\",\n          \"P1_Standard\",\n          \"P2_Urgent\",\n          \"P3_Immediate_Human\"\n        ]\n      },\n      \"repeat\": {\n        \"type\": \"noul\",\n        \"instructions\": \"Has the customer contacted support multiple times?\"\n      }\n    }\n  },\n  \"response\": {\n    \"answers\": {\n      \"team\": {\n        \"choice\": \"safety_support\",\n        \"probabilities\": {\n          \"safety_support\": 0.95,\n          \"billing\": 0.03,\n          \"sales\": 0.02\n        }\n      },\n      \"priority\": {\n        \"score\": 2.94\n      },\n      \"repeat\": {\n        \"noul\": 0.99\n      }\n    }\n  }\n}\n"
           }
         },
         {
@@ -633,17 +724,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Outbound policy guardrail · type=\"noul\" · hold draft if mentions_competitor >= 0.50\n"
+            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · outbound noul guardrail (hold if mentions_competitor >= 0.50)\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] Screen LLM draft reply: \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n  mentions_competitor.noul = 0.964 (>= 0.50 threshold)  |  unapproved_discount.noul = 0.031\n✕ BLOCKED — Outbound draft HELD before send (competitor leak p=0.964)\n✓ PASS — Prevented sending customer to rival while letting 92% of clean drafts auto-send\nWhy: A $0.00006 pre-send noul gate cuts human review from 100% of drafts down to just the risky 8%.\n"
+            "text": "[REQUEST] Screen LLM draft reply: \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n  mentions_competitor.noul = 0.964 (>= 0.50 threshold)  |  unapproved_discount.noul = 0.031\n✕ BLOCKED — Outbound draft HELD before send (competitor leak p=0.964)\n✓ PASS — Prevented sending customer to rival while letting 92% of clean drafts auto-send\nWhy: A $0.00006 pre-send noul gate cuts human review from 100% of drafts down to just the risky 8%.\n[SOURCE] Raw Log: /v1/systemone answers.mentions_competitor.noul  |  Contoso Sales Pipeline: Slide 21\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Outbound guardrail /providers/microsoft/v1/systemone request & response JSON (Deck Slide 19 & 21).\n\n{\n  \"request\": {\n    \"model\": \"microsoft-decision-1.1\",\n    \"state\": {\n      \"customer_msg\": \"Is there anything cheaper out there? Be honest.\",\n      \"agent_draft_reply\": \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n    },\n    \"questions\": {\n      \"mentions_competitor\": {\n        \"type\": \"noul\",\n        \"instructions\": \"Does agent_draft_reply recommend or promote a competing brand?\"\n      },\n      \"promises_unapproved_discount\": {\n        \"type\": \"noul\",\n        \"instructions\": \"Does agent_draft_reply promise an unapproved discount?\"\n      }\n    }\n  },\n  \"response\": {\n    \"answers\": {\n      \"mentions_competitor\": {\n        \"noul\": 0.964\n      },\n      \"promises_unapproved_discount\": {\n        \"noul\": 0.031\n      }\n    }\n  }\n}\n"
           }
         },
         {
@@ -680,17 +778,24 @@
           }
         },
         {
-          "delayMs": 90,
+          "delayMs": 80,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75) + $10,000/mo sales pipeline ROI\n"
+            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · confidence abstention gate (abstain if max(p) < 0.75)\n"
           }
         },
         {
-          "delayMs": 130,
+          "delayMs": 120,
           "event": {
             "kind": "output",
-            "text": "[REQUEST] \"Compare renewal notice in Contract A vs Exhibit B\"  (Exhibit B missing from state!)\n  probabilities: { fast_extract: 0.14, frontier_compare: 0.38, request_missing_exhibit: 0.48 }\n✕ BLOCKED — max(p)=0.48 < 0.75 confidence gate; abstained from hallucinating a comparison!\n✓ PASS — Asked user to attach Exhibit B; full 3-gate stack cuts CAC 7.2x ($13.00 -> $1.81)\nWhy: Calibrated probabilities let software know when to stop and ask, while cutting per-lead cost from $0.31 to $0.05.\n"
+            "text": "[REQUEST] \"Compare renewal notice in Contract A vs Exhibit B\"  (Exhibit B missing from state!)\n  probabilities: { fast_extract: 0.14, frontier_compare: 0.38, request_missing_exhibit: 0.48 }\n✕ BLOCKED — max(p)=0.48 < 0.75 confidence gate; abstained from hallucinating a comparison!\n✓ PASS — Asked user to attach Exhibit B; full 3-gate stack cuts CAC 7.2x ($13.00 -> $1.81)\nWhy: Calibrated probabilities let software know when to stop and ask, while cutting per-lead cost from $0.31 to $0.05.\n[SOURCE] Raw Log: /v1/systemone answers.action.probabilities  |  ROI Study: $10k/mo pipeline 7.2x CAC reduction (Slide 21)\n"
+          }
+        },
+        {
+          "delayMs": 10,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Confidence-abstention /providers/microsoft/v1/systemone response JSON + $10,000/mo CAC case study (Deck Slide 19 & 21).\n\n{\n  \"request\": {\n    \"model\": \"microsoft-decision-1.1\",\n    \"state\": {\n      \"user_query\": \"Compare the renewal termination notice window in Contract A vs Exhibit B.\",\n      \"attached_documents\": {\n        \"Contract_A\": \"Section 9.2: Either party may terminate upon 60 days prior written notice.\"\n      }\n    },\n    \"questions\": {\n      \"action\": {\n        \"type\": \"choice\",\n        \"criteria\": {\n          \"fast_extract\": \"All referenced documents are present and trivial to extract\",\n          \"frontier_compare\": \"All referenced documents are present and require legal comparison\",\n          \"request_missing_exhibit\": \"A referenced document or exhibit is missing from attached_documents\"\n        }\n      }\n    }\n  },\n  \"response\": {\n    \"answers\": {\n      \"action\": {\n        \"choice\": \"request_missing_exhibit\",\n        \"probabilities\": {\n          \"fast_extract\": 0.14,\n          \"frontier_compare\": 0.38,\n          \"request_missing_exhibit\": 0.48\n        }\n      }\n    }\n  }\n}\n"
           }
         },
         {
