@@ -5,7 +5,8 @@
 Usage:  pip install pillow
         python -m presentation.src.build_html [--out dist/html/index.html]
 Keys in the browser: <- / -> or Space to navigate, F = fullscreen,
-Home/End = first/last, D = open interactive Auto-Routing Studio. Print (Ctrl+P) gives one slide per page.
+Home/End = first/last, N = speaker notes, D = open interactive Auto-Routing Studio.
+Print (Ctrl+P) gives one slide per page.
 """
 import argparse, base64, html, io, json, os
 from PIL import Image
@@ -168,21 +169,23 @@ def slide_html(k, ops, img_dir, maxw):
         )
     return f'<section class="slide" data-n="{k+1}" data-reveals="{reveal_count}" aria-label="Slide {k+1}">{"".join(parts)}{action}</section>'
 
-LIVE_DEMO = """
+PRESENTER_UI = """
 <div id="deck-hud" class="deck-hud" aria-label="Presenter toolbar">
-  <span class="hud-count" id="hud-count">01 / 26</span>
-  <button type="button" class="hud-btn" id="hud-notes-btn" title="Toggle Chinese speaker notes (N)">Notes <kbd>N</kbd></button>
+  <span class="hud-count" id="hud-count"></span>
+  <button type="button" class="hud-btn" id="hud-notes-btn" title="Toggle Chinese speaker notes (N)" aria-controls="notes-drawer" aria-expanded="false">Notes <kbd>N</kbd></button>
   <button type="button" class="hud-btn hud-btn-accent" id="hud-demo-btn" title="Open Visual Auto-Routing Studio (D)">Studio <kbd>D</kbd></button>
 </div>
 
 <aside id="notes-drawer" class="notes-drawer" aria-label="Speaker notes" hidden>
   <div class="notes-head">
-    <strong id="notes-title">讲者备注 · Slide 01</strong>
+    <strong id="notes-title" lang="zh-CN">讲者备注</strong>
     <button type="button" class="notes-close" id="notes-close" aria-label="Close speaker notes">✕</button>
   </div>
-  <div class="notes-body" id="notes-body"></div>
+  <div class="notes-body" id="notes-body" lang="zh-CN"></div>
 </aside>
+"""
 
+LIVE_DEMO = """
 <section id="live-demo" class="live-demo" role="dialog" aria-modal="true" aria-label="Visual Auto-Routing Studio" hidden>
   <div class="studio-shell">
     <header class="studio-top">
@@ -337,7 +340,7 @@ img.a{object-fit:cover}
 #deck-progress{position:fixed;left:0;top:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--accent),#5d8aa8);transition:width .25s ease;pointer-events:none}
 
 .deck-hud{position:fixed;left:50%%;bottom:8px;transform:translateX(-50%%);z-index:45;display:inline-flex;align-items:center;gap:6px;padding:3px 7px;border-radius:999px;background:rgba(251,248,242,.82);backdrop-filter:blur(8px);border:1px solid rgba(201,192,174,.75);box-shadow:0 4px 14px rgba(35,30,22,.07);opacity:.38;transition:opacity .18s ease}
-.deck-hud:hover,.deck-hud.notes-open{opacity:1}
+.deck-hud:hover,.deck-hud:focus-within,.deck-hud.notes-open{opacity:1}
 .hud-count{font:700 10.5px/1 var(--font-mono);color:var(--muted);padding:0 5px}
 .hud-btn{border:1px solid var(--edge);background:#fff;color:var(--ink);border-radius:999px;padding:4px 9px;font:600 11px/1 var(--font-sans);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 .hud-btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -546,6 +549,7 @@ function toggleNotes(force){
  notesOpen=typeof force==='boolean'?force:!notesOpen;
  notesDrawer.hidden=!notesOpen;
  hud.classList.toggle('notes-open',notesOpen);
+ byId('hud-notes-btn').setAttribute('aria-expanded',String(notesOpen));
  syncNotes();
 }
 function defaultDemoForSlide(idx){
@@ -565,13 +569,14 @@ byId('hud-demo-btn').addEventListener('click',function(ev){ev.stopPropagation();
 
 addEventListener('keydown',function(ev){
  if(ev.altKey||ev.ctrlKey||ev.metaKey)return;
- if(ev.target&&ev.target.tagName==='INPUT')return;
  var k=ev.key;
+ if(ev.target&&ev.target.closest('input,textarea,select,[contenteditable="true"]')&&k!=='Escape')return;
  if(liveOpen){
   if(k==='Escape'){ev.preventDefault();closeLiveDemo();}
   return;
  }
  if(k==='Escape'&&notesOpen){ev.preventDefault();toggleNotes(false);return;}
+ if(k===' '&&ev.target&&ev.target.closest('button,a'))return;
  if(k==='ArrowRight'||k==='ArrowDown'||k==='PageDown'||(k===' '&&!ev.shiftKey)){ev.preventDefault();next();}
  else if(k==='ArrowLeft'||k==='ArrowUp'||k==='PageUp'||(k===' '&&ev.shiftKey)){ev.preventDefault();previous();}
  else if(k==='Home'){ev.preventDefault();go(0);}
@@ -1335,6 +1340,7 @@ def load_recorded_demo(img_dir):
     return 'null'
 
 def build(out, img_dir, maxw):
+    D.validate_layout()
     out_dir = os.path.dirname(os.path.abspath(out))
     os.makedirs(out_dir, exist_ok=True)
     body = ''.join(slide_html(k, D.slides[k], img_dir, maxw) for k in sorted(D.slides))
@@ -1347,6 +1353,7 @@ def build(out, img_dir, maxw):
 <title>Auto-routing LLMs — Balancing Quality, Cost &amp; Latency with Decision Models and Microsoft Copilot</title>
 <style>{CSS % (D.BG, D.INK, D.CY, D.CARD, D.CODEBG, D.EDGE, D.MUTED, D.AMB)}</style></head>
 <body><div id="deck-progress" aria-hidden="true"></div><main id="stage">{body}</main>
+{PRESENTER_UI}
 {LIVE_DEMO}
 <script>window.RECORDED_DEMO={recorded_json};window.SLIDE_NOTES={notes_json};</script>
 <script>{JS}</script></body></html>"""

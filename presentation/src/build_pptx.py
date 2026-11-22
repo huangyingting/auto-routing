@@ -92,9 +92,9 @@ def rect(s,x,y,cx,cy,fill=CARD,line=None,lw=None,preset='rect',text=None,size=16
     P(s,op)
 def img(s,path,x,y,cx,cy,alt,fit='cover'):
     P(s,{'op':'add_image','slide':s,'path':path,'x':int(x),'y':int(y),'cx':int(cx),'cy':int(cy),'fit':fit,'altText':alt})
-def header(s,eyebrow,title,x=M,cx=CW):
+def header(s,eyebrow,title,x=M,cx=CW,title_cy=None):
     tb(s,x,310000,cx,eyebrow,size=12,color=CY,font=HF,bold=True,ls=2,cy=280000,name='eyebrow')
-    tb(s,x,640000,cx,title,size=29.5,color=INK,font=HF,bold=True,cy=640000,name='slide_title')
+    tb(s,x,640000,cx,title,size=29.5,color=INK,font=HF,bold=True,cy=title_cy or 640000,name='slide_title')
 def footer(s,src,num,x=M,cx=CW):
     if src: tb(s,x,6260000,cx-900000,src,size=11.5,color=FOOT,cy=340000,name='footer_src')
     tb(s,x+cx-800000,6260000,800000,f'{num:02d}',size=11.5,color=FOOT,align='right',cy=340000,name='footer_num')
@@ -781,6 +781,9 @@ def validate_layout():
     errors=[]
     for k in sorted(slides):
         ops=slides[k]
+        for o in ops:
+            if o['cx']<=0 or o['cy']<=0 or o['x']<0 or o['y']<0 or o['x']+o['cx']>W or o['y']+o['cy']>H:
+                errors.append(f'Slide {k+1}: {o["op"]} has invalid bounds')
         tbs=[o for o in ops if o['op']=='add_text_box']
         for o in tbs:
             if o.get('name')=='slide_title':
@@ -834,7 +837,8 @@ def add_picture(sl,o,img_dir):
     path=os.path.join(img_dir,os.path.basename(o['path']))
     if path.lower().endswith('.svg'):
         path=path[:-4]+'.png'
-    iw,ih=Image.open(path).size
+    with Image.open(path) as image:
+        iw,ih=image.size
     x,y,cx,cy=o['x'],o['y'],o['cx'],o['cy']
     fr=cx/cy; ir=iw/ih
     if o.get('fit')=='contain':

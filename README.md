@@ -48,7 +48,7 @@ npm --prefix demo run demo:decision
 - **PPTX**：`dist/pptx/Auto-routing LLMs.pptx`
 - **HTML**：`dist/html/index.html`（同时复制到 `docs/index.html`）
 - **网页集成可视化 Auto-Routing Studio**：
-  - **操作与备注快捷键**：方向键 / 空格翻页；`F` 全屏；`N` 展开/收起中文讲者备注浮层；`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF。
+  - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭；翻页同步备注，打开 Studio 自动收起；`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF（不含工具栏和备注）。
   - **GitHub Pages / 静态离线回放**：直接打开 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（或任意页按 `D`），即可在零滚动条的可视化路由决策台中逐步运行或 `Auto-Play` **Demo 1（Copilot Fusion）**、**Demo 2（Foundry Model Router & M365 Copilot）** 与 **Demo 3（Microsoft-Decision-1.1）**，支持一键点击预设测试胶囊或输入自定义提示词实时查看算分条、拓扑节点与省费账本（点击 `{ } Log` 可展开原始 CLI/HTTP 报文）。
   - **本机 Live Bridge**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`（配置 `AZURE_FOUNDRY_ENDPOINT` 后自动切换为真实云端 Foundry / Decision-1.1 调用）。
 
@@ -58,4 +58,15 @@ npm --prefix demo run demo:decision
 - 标题与正文：**Plus Jakarta Sans**（回退至 Inter / Segoe UI）
 - 代码与终端：**JetBrains Mono**（回退至 Cascadia Code / Consolas）
 - 配色：暖米色宣纸底、炭灰墨色、石板蓝强调色、圆角微阴影卡片与砖红警示色
+
+## 演示框架
+
+本仓库是 `mxc` HTML/PPTX 基础框架的参照，两套保持一致的主题字体、文本与代码间距、页眉页脚、图片 cover/contain、讲者工具栏、备注浮层、快捷键和打印样式。各自的幻灯片内容、逐项动画与 Demo Studio 独立维护；两个仓库均可独立构建，不依赖相邻目录。
+
+HTML 与 PPTX 构建前都会检查元素边界、标题换行和文本框重叠。修改框架后，在两个仓库分别运行：
+
+```text
+python -m unittest discover -s presentation/tests
+python build.py --target presentation
+```
 
