@@ -109,11 +109,10 @@ def card_box(s,x,y,cx,cy,paras,fill=CARD,line=None,lw=19050,pad_x=240000,pad_y=1
 s=0
 img(s,'hd-fork.jpg',W-M-5100000,1580000,5100000,3400000,'Hand-drawn illustration: robot dispatcher at a fork choosing between a fast courier bike and a heavy cargo van')
 x=M+80000; cx=5800000
-tb(s,x,960000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=2,cy=300000)
-tb(s,x,1340000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=1480000)
-tb(s,x,2940000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16.5,color=MUTED,cy=1340000)
-tb(s,x,4560000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.5,color=INK,bold=True,cy=380000)
-tb(s,x,5000000,cx,'November 2026  ·  45 minutes  ·  L300 → L400',size=13.5,color=MUTED,cy=340000)
+tb(s,x,860000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=2,cy=280000)
+tb(s,x,1220000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=1460000)
+tb(s,x,2800000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16.5,color=MUTED,cy=1300000)
+tb(s,x,4280000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.5,color=INK,bold=True,cy=380000)
 note(s,'大家好，欢迎来到今天的分享。今天我们聊一个几乎所有做 AI 应用的团队都绕不开的问题：市面上的模型越来越多、换代越来越快，我们怎么在保证效果不掉的前提下，把调用成本和等待时间都压下来？答案就是自动路由 Auto-routing。\n接下来这 45 分钟，我会结合微软自己的工程实践，从大家熟悉的 Microsoft Copilot、GitHub Copilot Fusion 和 Foundry Model Router 讲起，拆开看看它们底层到底是怎么选模型的，再重点介绍微软专门为程序控制打造的决策模型 Microsoft-Decision-1.1，最后通过三组真实的交互 Demo，看看怎么把这套能力用到你自己的系统里。')
 
 # ---------- 1 AGENDA
