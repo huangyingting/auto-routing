@@ -111,7 +111,7 @@ img(s,'hd-fork.jpg',W-M-5100000,1580000,5100000,3400000,'Hand-drawn illustration
 x=M+80000; cx=5800000
 tb(s,x,960000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=2,cy=300000)
 tb(s,x,1340000,cx,'Auto-routing\nLLMs',size=45,color=INK,font=HF,bold=True,cy=1480000)
-tb(s,x,2940000,cx,'Understand how the right model is selected automatically per task to balance quality, cost and latency — using a proper decision model and Microsoft Copilot as examples.',size=16.5,color=MUTED,cy=1340000)
+tb(s,x,2940000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16.5,color=MUTED,cy=1340000)
 tb(s,x,4560000,cx,'Yingting Huang  |  Sr. Cloud Solution Architect, Microsoft',size=15.5,color=INK,bold=True,cy=380000)
 tb(s,x,5000000,cx,'November 2026  ·  45 minutes  ·  L300 → L400',size=13.5,color=MUTED,cy=340000)
 note(s,'大家好，欢迎来到今天的分享。今天我们聊一个几乎所有做 AI 应用的团队都绕不开的问题：市面上的模型越来越多、换代越来越快，我们怎么在保证效果不掉的前提下，把调用成本和等待时间都压下来？答案就是自动路由 Auto-routing。\n接下来这 45 分钟，我会结合微软自己的工程实践，从大家熟悉的 Microsoft Copilot、GitHub Copilot Fusion 和 Foundry Model Router 讲起，拆开看看它们底层到底是怎么选模型的，再重点介绍微软专门为程序控制打造的决策模型 Microsoft-Decision-1.1，最后通过三组真实的交互 Demo，看看怎么把这套能力用到你自己的系统里。')
@@ -121,11 +121,11 @@ s=1
 header(s,'AGENDA','Our journey today')
 items=[
     ('01','Capability gap','No single model wins all'),
-    ('02','Cost & cache','163× spread & cache law'),
+    ('02','Cost & cache','163× gap & prefix cache'),
     ('03','MS products','Copilot, Fusion, Foundry'),
     ('04','Under the hood','Industry vs. MS HyDRA'),
-    ('05','Decision-1.1','Typed choice, noul, score'),
-    ('06','Live demos','3 interactive replays'),
+    ('05','Decision-1.1','Fast, calibrated control'),
+    ('06','Live demos','Fusion, Foundry, Decision'),
     ('07','Takeaways','Ship your own router'),
 ]
 col=CW/7; ry=2960000
@@ -136,7 +136,7 @@ for i,(n,t,d) in enumerate(items):
     rect(s,cx0+60000,ry-120000,240000,240000,fill=CY if i!=4 else AMB,preset='ellipse')
     tb(s,cx0,3280000,bw,t,size=16,color=INK,bold=True,cy=620000)
     tb(s,cx0,3980000,bw,d,size=13.5,color=MUTED,cy=780000)
-footer(s,'Level: L300 → L400  ·  Press D anytime in web view to open Interactive Routing Studio',2)
+footer(s,'Level: L300 → L400  ·  Audience: architects, AI engineers, platform leads',2)
 note(s,'这是今天整场分享的脉络。我们先聊明白为什么要做自动路由——一方面没有哪个模型样样通吃，另一方面不同模型干同一件活儿成本能差出一百多倍，而且这里面还藏着一条很容易踩坑的前缀缓存铁律。接着我们看微软自家的几款核心产品是怎么在生产环境里做调度的，再往下深挖一层，对比业界常见的路由算法和微软 HyDRA 架构的思路差异。后半程我们聚焦在 Microsoft-Decision-1.1 的三个控制原语上，并现场跑完三组真实链路。')
 
 # ---------- 2 PART 1: NO SINGLE BEST MODEL (CHARLES LAMANNA)
@@ -170,11 +170,11 @@ s=3
 header(s,'01 · CAPABILITY SPECIALIZATION','One prompt, four specialized jobs')
 card_box(s,M,1520000,CW,920000,[
     {'text':'PROMPT  ·  “Customer renewal Thursday — expand, hold, or discount, and build a deck to make the case?”','sizePt':14.5,'bold':True,'color':CODE,'spaceAfterPt':6},
-    {'text':'1. Org guardrails filter allowed providers (OpenAI / Anthropic / xAI), data residency & live endpoint health first.','sizePt':13,'color':MUTED},
+    {'text':'Guardrail gate first: filters tenant-allowed model providers, data residency, and live endpoint health.','sizePt':13,'color':MUTED},
 ],fill=CODEBG,line=EDGE,lw=12700,pad_x=240000,pad_y=100000)
 gap=160000; cw4=(CW-3*gap)/4; y0=2620000; ch=3380000
 jobs=[
-    ('JOB 01 · RETRIEVE','Small Language Model','Scans Work IQ emails, Teams chats, meeting transcripts & contracts fast and cheaply.','SLM · Fast & cheap',CY),
+    ('JOB 01 · RETRIEVE','Small Language Model','Scans M365 emails, Teams chats, meeting notes & prior contracts fast and cheaply.','SLM · Fast & cheap',CY),
     ('JOB 02 · REASON','Claude Opus 5.5','Main agentic loop evaluates expand / hold / discount economics; caches full context.','Main loop · Cached',CY),
     ('JOB 03 · VISUALIZE','GPT Image 2.5','Generates custom proposal graphics and infographics that text LLMs cannot render.','Image specialist',AMB),
     ('JOB 04 · ASSEMBLE','Claude Opus 5.5','Reuses warm context cache to build the finished PowerPoint proposal without re-reading.','Deck synthesis',CY),
@@ -198,8 +198,8 @@ img(s,'bench-163x-frontier.svg',ix+60000,iy+60000,icw-120000,ich-120000,'Vector 
 rx=ix+icw+280000; rw=W-M-rx
 stats=[
     ('4.2-pt quality band, 163× cost gap','Top 14 models cluster within 86.2–90.4 across 8 tasks, yet cost spans $0.09 (auto) and $0.23 (Haiku 5.5) vs. $14.75 (Opus 5).',CY),
-    ('Simple work → lightweight models win','24/28 models pass 98%–100% of structural checks; Haiku 5.5 even ranks #1 on KPI DataViz (92.5) at a fraction of frontier cost.',CY),
-    ('Hard specs → escalate selectively','Reserve heavy reasoning (Opus 5.5, Sonnet 5.5, GPT-6 Sol) for complex specs where weak models burn minutes in retry loops.',AMB),
+    ('Routine work → small models win','24 of 28 models pass routine quality checks; Haiku 5.5 even ranks #1 on dashboard generation at a fraction of flagship cost.',CY),
+    ('Hard problems → escalate selectively','Save heavy reasoning models (Opus 5.5, Sonnet 5.5, GPT-6 Sol) for complex specs where small models stall in retry loops.',AMB),
 ]
 for i,(head_t,desc,col_) in enumerate(stats):
     yy=1540000+i*1520000
@@ -234,10 +234,10 @@ s=6
 header(s,'03 · MICROSOFT PRODUCTS IN ACTION','Four routing surfaces across Microsoft')
 gap=170000; cw4=(CW-3*gap)/4; y0=1560000; ch=4360000
 surfaces=[
-    ('M365 Copilot & Cowork','Workplace Auto','Routes >90% of queries: Chat → Cowork handoff, multi-lab model pick (GPT / Claude / Grok), dynamic effort & sub-agents.'),
-    ('GitHub Copilot Fusion','Coding Orchestrator','Combines HyDRA capability routing + runtime execution patterns: Single, Judge-gated Cascade, and parallel Critique.'),
-    ('Foundry Model Router','Cloud API Router','Non-LLM ML ranker (~20 ms) across 45 models (7 labs): quality bands, adaptive cache affinity, param adaptation & PTU failover.'),
-    ('Microsoft Decision-1.1','Software Controller','Purpose-built /systemone API returning calibrated choice, noul & score probabilities in ~123–180 ms at $0.042/1M.'),
+    ('M365 Copilot & Cowork','Workplace Auto','Routes >90% of queries: Chat → Cowork handoff, multi-provider selection, dynamic effort & sub-agents.'),
+    ('GitHub Copilot Fusion','Coding Orchestrator','Matches each coding task to one model or a team: Single pass, Judge-gated Cascade, or parallel Critique.'),
+    ('Foundry Model Router','Cloud API Router','20 ms ML ranker across 45 models (7 providers): quality bands, cache affinity, param cleanup & PTU failover.'),
+    ('Microsoft Decision-1.1','Software Controller','Purpose-built decision API that classifies, scores priority, and runs yes/no safety gates in ~123 ms at $0.042/1M.'),
 ]
 for i,(prod,tag_,desc) in enumerate(surfaces):
     x=M+i*(cw4+gap)
@@ -255,12 +255,12 @@ header(s,'03 · MICROSOFT PRODUCTS · MICROSOFT COPILOT','Microsoft Copilot Home
 ix=M; iy=1540000; icw=6400000; ich=3600000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'m365-copilot-home.png',ix+50000,iy+50000,icw-100000,ich-100000,'Official Microsoft screenshot: Microsoft Copilot Home composer unifying Chat and Cowork with Auto',fit='contain')
-tb(s,ix,5260000,icw,'Official Microsoft Copilot Home UI: unified Auto composer across Chat, Cowork, and Office artifacts.',size=12.8,color=MUTED,cy=580000)
+tb(s,ix,5260000,icw,'One unified prompt box: Auto answers quick questions in Chat or hands off multi-step work to Cowork.',size=12.8,color=MUTED,cy=580000)
 rx=ix+icw+280000; rw=W-M-rx
 m365_pts=[
-    ('1 · Experience handoff (Decision-1.1)','Detects when a prompt needs multi-step execution and suggests Chat → Cowork (2.2× faster, 4.4× cheaper).',CY),
-    ('2 · Multi-lab within IT guardrails','Routes across OpenAI, Anthropic Claude & xAI Grok while enforcing EU Data Boundary & admin switches.',CY),
-    ('3 · Work IQ + Hybrid local offload','Filters 19.5 EB of M365 signals via Work IQ, and offloads eligible work to local PC models on Windows.',AMB),
+    ('1 · Chat → Cowork handoff','Decision-1.1 detects when a prompt needs multi-step execution and suggests Cowork (2.2× faster, 4.4× cheaper).',CY),
+    ('2 · Multi-provider within IT rules','Routes across OpenAI, Anthropic Claude & xAI Grok while enforcing EU Data Boundary & tenant admin switches.',CY),
+    ('3 · Scoped context & local offload','Pulls only relevant M365 emails, chats & files via Work IQ — and offloads light tasks to local Windows PC models.',AMB),
 ]
 for i,(t,d,col_) in enumerate(m365_pts):
     yy=1540000+i*1520000
@@ -268,18 +268,18 @@ for i,(t,d,col_) in enumerate(m365_pts):
         {'text':t,'sizePt':15.5,'bold':True,'color':col_,'spaceAfterPt':7},
         {'text':d,'sizePt':13,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
-footer(s,'Sources: Microsoft Ignite 2026 Copilot Blog & Command Line Decision-1.1 GA (84% cheaper than standalone Claude per GigaOm)',8)
+footer(s,'Sources: Microsoft Ignite 2026 Copilot Blog & Microsoft-Decision-1.1 GA announcement',8)
 note(s,'我们先看办公侧的 Microsoft Copilot 主界面。以前用户经常拿不准一件事该在聊天框里随口问，还是专门开个长任务工作区；现在一个统一的 Auto 输入框全接住了。\n当你发出一句话，后台其实在百毫秒内做完了三件事：先用 Microsoft-Decision-1.1 判断这是个快问快答，还是需要拆解执行的多步长任务，如果是后者就主动建议移交给 Cowork，比拿通用大模型做判断快了 2.2 倍、省下四分之三以上的成本；接着严格在企业管理员勾选的模型开关和欧盟数据边界之内挑人选；同时靠 Work IQ 从海量的企业邮件文档里只捞最相关的上下文，在支持的 Windows 电脑上甚至能把合适的轻活儿直接分给本地小模型处理。')
 
 # ---------- 8 COPILOT COWORK AUTO SCREENSHOT
 s=8
-header(s,'03 · MICROSOFT PRODUCTS · COPILOT COWORK','Copilot Cowork: model lock & effort')
+header(s,'03 · MICROSOFT PRODUCTS · COPILOT COWORK','Copilot Cowork: keep cache, tune effort')
 ix=M; iy=1540000; icw=6400000; ich=1660000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'m365-cowork-ui.png',ix+50000,iy+50000,icw-100000,ich-100000,'Official Microsoft Learn screenshot: Copilot Cowork composer with Chat/Cowork toggle and Auto Medium selector',fit='contain')
 card_box(s,ix,3340000,icw,2640000,[
     {'text':'COWORK MODEL POOL  ·  ENABLED BY TENANT ADMIN','sizePt':11,'bold':True,'color':CY,'spaceAfterPt':7},
-    {'text':'• Auto (Default)      → Picks best model on turn 1 & locks cache','sizePt':11.6,'color':INK,'spaceAfterPt':5},
+    {'text':'• Auto (Default)      → Picks on turn 1 & keeps cache warm','sizePt':11.6,'color':INK,'spaceAfterPt':5},
     {'text':'• Microsoft / OpenAI  → GPT 6.1 Sol, GPT 6 Astra, GPT 5.6 Terra','sizePt':11.6,'color':INK,'spaceAfterPt':5},
     {'text':'• Anthropic / xAI     → Opus 5.5, Sonnet 5.5, Fable 5.2, Grok 4.7','sizePt':11.6,'color':INK,'spaceAfterPt':6},
     {'text':'• Effort (Decision-1.1) → Light · Medium · High · Extra High · Max','sizePt':11.6,'bold':True,'color':CODE},
@@ -305,12 +305,12 @@ header(s,'03 · MICROSOFT PRODUCTS · GITHUB COPILOT FUSION','Copilot Fusion: pi
 ix=M; iy=1540000; icw=6200000; ich=3592000
 rect(s,ix,iy,icw,ich,fill='11161D',line=EDGE,lw=12700)
 img(s,'fusion-picker.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official GitHub screenshot: Copilot Fusion composer menu showing Standard, High, and Max effort levels',fit='contain')
-tb(s,ix,5260000,icw,'Official GitHub Copilot composer: hover the effort badge on any reply to inspect every model used.',size=12.8,color=MUTED,cy=580000)
+tb(s,ix,5260000,icw,'Pick Standard, High, or Max effort — hover the badge on any reply to see which models ran.',size=12.8,color=MUTED,cy=580000)
 rx=ix+icw+280000; rw=W-M-rx
 fus_cards=[
     ('Standard · High · Max (+ Fast)','Standard routes 1 model per task (including local MAI Code 1.1 Flash / Qwen3.8 Flash); High & Max unlock orchestration.',CY),
     ('Frontier quality at ~50% cost','On AA Coding Agent Index, Fusion Max scores 60 (within 2 pts of Opus 5.5 Max) at ~50% lower API cost & ~40% less time.',CY),
-    ('Cures “sticky flagship” waste','AT&T reported developers used to pick a heavy model for one bug and forget to switch back; Fusion automates right-sizing.',AMB),
+    ('Fixes “forgot to switch back” waste','AT&T found developers picked a heavy model for one hard bug and left it on; Fusion right-sizes every turn automatically.',AMB),
 ]
 for i,(t,d,col_) in enumerate(fus_cards):
     yy=1540000+i*1520000
@@ -351,9 +351,9 @@ img(s,'foundry-overview.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official Mic
 rect(s,ix,4400000,icw,1560000,fill=CODEBG,line=EDGE,lw=12700)
 tb(s,ix+200000,4490000,icw-400000,'SCORING & AFFINITY ENGINE  ·  TRAINED ON BILLIONS OF INTERACTIONS',size=10.5,color=FOOT,font=MF,cy=260000)
 ov_snip=(
-    '1. Score q(m | sys, history, turn_t, tools) in ~20 ms\n'
-    '2. Band  = { m : q(m) >= q(best) - Δ }  // 1–2% | 5–6% | 0%\n'
-    '3. Pick  = m_prev if cache_warm && m_prev ∈ Band else cheapest'
+    '1. Rank eligible models for this prompt (~20 ms ML scorer)\n'
+    '2. Keep models within 1–2% of #1 quality  (5–6% in Cost mode)\n'
+    '3. Reuse prior model if cache is warm & in band; else cheapest'
 )
 tb(s,ix+200000,4800000,icw-400000,ov_snip,size=10.8,color=CODE,font=MF,cy=1060000)
 rx=ix+icw+240000; rw=W-M-rx
@@ -373,23 +373,23 @@ note(s,'如果你们团队不是直接用现成的 Copilot，而是自己调云�
 
 # ---------- 12 FOUNDRY ROUTER: GATES, PARAMS & FAILOVER
 s=12
-header(s,'03 · MICROSOFT PRODUCTS · FOUNDRY PIPELINE','Foundry Router: gates, params & retry',cx=CW-2300000)
+header(s,'03 · MICROSOFT PRODUCTS · FOUNDRY PIPELINE','Foundry: filters, params & failover',cx=CW-2300000)
 ix=M; iy=1540000; icw=6980000; ich=2708000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'foundry-router-flow.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official Microsoft Learn diagram: Six-step Foundry Model Router execution flow from eligibility filtering and ranking to PTU/PAYG capacity waterfall and failover',fit='contain')
 rect(s,ix,4400000,icw,1560000,fill=CODEBG,line=EDGE,lw=12700)
 tb(s,ix+200000,4490000,icw-400000,'live-capture.json  ·  Foundry-Features: ModelRouterControls=V1Preview',size=11,color=FOOT,font=MF,cy=260000)
 live_snip=(
-    '// JSON -> DeepSeek-V4.1-Flash (23ms) | Rust -> gpt-5.6-luna (20ms)\n'
-    '"session_affinity": {"strategy":"adaptive","decision":"retain"},\n'
-    '"attempts": [{"model":"gpt-6-sol","status":429},{"status":200}]'
+    '// Easy JSON -> DeepSeek-V4.1-Flash (23 ms) | Hard Rust -> gpt-5.6-luna (20 ms)\n'
+    '"session_affinity": { "strategy": "adaptive", "decision": "retain" },\n'
+    '"attempts": [ {"model":"gpt-6-sol","status":429}, {"model":"gpt-5.6-sol","status":200} ]'
 )
 tb(s,ix+200000,4800000,icw-400000,live_snip,size=10.8,color=CODE,font=MF,cy=1060000)
 rx=ix+icw+240000; rw=W-M-rx
 f_cards=[
-    ('1 · Pre-Rank Eligibility Gate','Filters by region, approved subset, tools / json_schema / image support, and valid reasoning_effort before ranking.',CY),
-    ('2 · Cross-Lab Param Adaptation','Drops temperature/stop on reasoning models, strips reasoning_effort on non-reasoning, & maps developer → system.',CY),
-    ('3 · Capacity-First & Failover','Drains Own PTU ($0 model fee) → Own PAYG → Managed on #1 model first, then next-ranked model inside your subset.',AMB),
+    ('1 · Pre-Rank Eligibility Gate','Filters by region, approved allow-list, tools / json_schema / image support, and valid reasoning_effort before ranking.',CY),
+    ('2 · Cross-Provider Param Cleanup','Drops temperature/stop on reasoning models, strips reasoning_effort on non-reasoning, & maps developer → system.',CY),
+    ('3 · PTU Priority & Auto-Failover','Uses your pre-paid PTU first ($0 extra model fee) → PAYG → Managed, then fails over to #2 inside your allow-list.',AMB),
 ]
 for i,(t,d,col_) in enumerate(f_cards):
     yy=1540000+i*1520000
@@ -431,14 +431,14 @@ ix=M; iy=1540000; icw=6040000; ich=3398000
 rect(s,ix,iy,icw,ich,fill='111315',line=EDGE,lw=12700)
 img(s,'hydra-pareto.png',ix+30000,iy+30000,icw-60000,ich-60000,'Official GitHub chart: HyDRA on the 5-model production pool — Peak (+1.2% > Sonnet at -12.9% cost), Cons (-54.1% cost), Agg (-72.5% cost)',fit='contain')
 card_box(s,ix,5060000,icw,920000,[
-    {'text':'ModernBERT (86 ms) → d(q) = [Reason, CodeGen, Debug, Tools]','sizePt':11.5,'bold':True,'color':CODE,'spaceAfterPt':7},
-    {'text':'Pick argmin cost(m)  s.t.  shortfall(d(q), profile(m)) ≤ τ','sizePt':11.5,'color':INK},
+    {'text':'1. Score 4 demands (86 ms): [Reason, CodeGen, Debug, Tools]','sizePt':11.3,'bold':True,'color':CODE,'spaceAfterPt':7},
+    {'text':'2. Pick cheapest healthy model whose profile covers all 4','sizePt':11.3,'color':INK},
 ],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=90000,font=MF)
 rx=ix+icw+260000; rw=W-M-rx
 hy_cards=[
-    ('4-Head Capability Encoder','ModernBERT with K=4 sigmoid heads scores Reasoning, CodeGen, Debugging & Tool Use in 86 ms median CPU latency.',CY),
-    ('Zero-Retraining Catalog Updates','Models are config profiles, not output classes! Adding GPT-6 is a config edit — 6× more savings (54.1%) than binary routing.',CY),
-    ('Language-Invariant (16 Families)','Trained on full multi-turn trajectories across 19 languages (including CJK), staying within 4 pts of English baseline.',AMB),
+    ('4-Head Capability Scorer','Lightweight ModernBERT scores Reasoning, CodeGen, Debugging & Tool Use in 86 ms median CPU latency.',CY),
+    ('Zero-Retraining Model Updates','Models live in config files, not classifier weights! Adding GPT-6 is a config edit — 6× more savings (54.1%) than binary routing.',CY),
+    ('Multilingual Across 19 Languages','Trained on full multi-turn coding sessions (including Chinese, Japanese & Korean) within 4 pts of English accuracy.',AMB),
 ]
 for i,(t,d,col_) in enumerate(hy_cards):
     yy=1540000+i*1520000
@@ -457,7 +457,7 @@ rx=M+4980000+320000; rw=W-M-rx
 layers=[
     ('Layer 1 · Deterministic Policy & Cache Gate','Hard code filters tenant-allowed providers, data zones, required tool/schema capabilities, and warm prefix-cache state.',CY),
     ('Layer 2 · Fast Scorer / Decision Model (<180 ms)','Purpose-built encoder (HyDRA / Foundry ML ranker) or Microsoft-Decision-1.1 produces calibrated scores over allowed options.',CY),
-    ('Layer 3 · Workflow Pattern & Output Verifier','Executes Single, Cascade or Critique, then runs deterministic schema, citation or Noul safety checks before acting.',AMB),
+    ('Layer 3 · Workflow Pattern & Output Verifier','Executes Single, Cascade or Critique, then runs deterministic schema, citation or policy safety checks before acting.',AMB),
 ]
 ch_=1320000; gap_=260000; y0_=1520000
 for i,(t,d,col_) in enumerate(layers):
@@ -485,15 +485,15 @@ card_box(s,M,cy0,cw_,ch,[
 rx=W-M-cw_
 card_box(s,rx,cy0,cw_,ch,[
     {'text':'Microsoft-Decision-1.1  (GA Nov 2026)','sizePt':19.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Trained from first principles for calibrated control','sizePt':13.8,'bold':True,'color':CY,'spaceAfterPt':10},
-    {'text':'• Gemma 4 26B-A4B MoE + custom single-pass engine','sizePt':13.8,'color':INK,'spaceAfterPt':7},
-    {'text':'• Multimodal (text, JSON, photos/UI), zero prose bloat','sizePt':13.8,'color':INK,'spaceAfterPt':7},
-    {'text':'• Calibrated confidence + 1.3% shuffle flip rate','sizePt':13.8,'color':INK},
+    {'text':'Built specifically for fast, calibrated decisions','sizePt':13.8,'bold':True,'color':CY,'spaceAfterPt':10},
+    {'text':'• Mixture-of-Experts (4B active) + single-pass engine','sizePt':13.8,'color':INK,'spaceAfterPt':7},
+    {'text':'• Reads text, JSON & photos/UI with zero filler prose','sizePt':13.8,'color':INK,'spaceAfterPt':7},
+    {'text':'• Calibrated probabilities; <1.3% variance on reordered options','sizePt':13.8,'color':INK},
 ],fill=CARD2,line=CY,lw=25400,pad_x=240000,pad_y=130000)
 gap4=160000; tw4=(CW-3*gap4)/4; ty=4560000; th4=1400000
 facts=[
     ('$0.042 / 1M','Input tokens (Global Std); output tokens FREE!',CY),
-    ('~123 ms','AA Decision Index time (2.2× faster than v1.0)',CY),
+    ('~123 ms','Median decision latency (2.2× faster than v1.0)',CY),
     ('35×–100×','Faster than frontier LLMs on routing & QC',CY),
     ('3 Clouds','Microsoft Foundry, OpenRouter & Vercel',AMB),
 ]
@@ -529,7 +529,7 @@ card_box(s,rx,4260000,rw,1740000,[
     {'text':'Powering Microsoft & 4,000+ Customers','sizePt':15.2,'bold':True,'color':AMB,'spaceAfterPt':7},
     {'text':'• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper','sizePt':12.2,'color':INK,'spaceAfterPt':5},
     {'text':'• Cowork Auto effort + Foundry Evaluation judge','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Xbox Research: 14× faster, 200× cheaper than Sol','sizePt':12.2,'color':INK,'spaceAfterPt':5},
+    {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':12.2,'color':INK,'spaceAfterPt':5},
     {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':12.2,'color':INK},
 ],fill=CARD,pad_x=200000,pad_y=90000)
 footer(s,'Sources: Artificial Analysis Decision Index v2.1 (Nov 16, 2026) & Microsoft 102-Benchmark Report (Nov 14, 2026)',18)
@@ -540,21 +540,21 @@ s=18
 header(s,'05 · MICROSOFT DECISION-1.1 · API PRIMITIVES','Three primitives: choice, noul, score')
 gap=180000; cw3=(CW-2*gap)/3; y0=1540000; ch=2360000
 prims=[
-    ('01 · choice','“Which option is it?”','Selects one label from criteria + calibrated probability per option.\nUse: model routing, ticket triage, tool pick.',CY),
-    ('02 · noul','“Is this condition true?”','Returns a single probability in [0, 1] for true vs. false criteria.\nUse: safety gates, refund/rival checks, photo damage.',CY),
-    ('03 · score','“How much on a scale?”','Probability-weighted expected index (0..N-1) on ordered levels.\nUse: P0–P3 incident scheduling, output grading.',AMB),
+    ('01 · choice  (Pick one)','“Which option fits best?”','Picks one label and returns calibrated probabilities per candidate.\nUse: model routing, ticket triage, tool pick.',CY),
+    ('02 · noul  (Yes / No gate)','“Is this condition true?”','Returns a single [0, 1] probability for any true/false check.\nUse: safety gates, refund/rival checks, photo damage.',CY),
+    ('03 · score  (0–N scale)','“How urgent or strong?”','Computes a probability-weighted score across ordered levels.\nUse: P0–P3 incident priority, output grading.',AMB),
 ]
 for i,(k,sub,desc,col_) in enumerate(prims):
     x=M+i*(cw3+gap)
     card_box(s,x,y0,cw3,ch,[
-        {'text':k,'sizePt':19,'bold':True,'color':col_,'spaceAfterPt':7},
+        {'text':k,'sizePt':18,'bold':True,'color':col_,'spaceAfterPt':7},
         {'text':sub,'sizePt':13.5,'bold':True,'color':INK,'spaceAfterPt':8},
         {'text':desc,'sizePt':12.8,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=110000)
 rect(s,M,4060000,CW,1920000,fill=CODEBG,line=EDGE,lw=12700)
-tb(s,M+220000,4150000,CW-440000,'POST <foundry-endpoint>/providers/microsoft/v1/systemone   ·   Combine multiple questions in ONE call!',size=11,color=FOOT,font=MF,cy=260000)
+tb(s,M+220000,4150000,CW-440000,'POST <foundry-endpoint>/providers/microsoft/v1/systemone   ·   Ask all 3 in ONE call',size=11,color=FOOT,font=MF,cy=260000)
 api_code=(
-    '{ "model": "pi-decision-1.1", "state": {"msg": "Checkout is down in EU (3rd ping).", "contacts": 3},\n'
+    '{ "model": "microsoft-decision-1.1", "state": {"msg": "Checkout is down in EU (3rd ping).", "contacts": 3},\n'
     '  "questions": {\n'
     '    "route":    {"type": "choice", "instructions": "Pick tier", "criteria": {"slm":"FAQ","sol":"Incident"}},\n'
     '    "severity": {"type": "score",  "instructions": "Severity",  "criteria": ["Cosmetic","Minor","Major","Critical"]},\n'
@@ -594,29 +594,29 @@ note(s,'有了这三个原语，平时写 Agent 最让人头疼的外围控制�
 
 # ---------- 20 CONTOSO 7.2X CAC CASE STUDY VECTOR SVG
 s=20
-header(s,'05 · MICROSOFT DECISION-1.1 · IMPACT','Three $0.00019 checks cut CAC 7.2×',cx=CW-2300000)
+header(s,'05 · MICROSOFT DECISION-1.1 · IMPACT','Sales agent case: 7.2× lower CAC',cx=CW-2300000)
 ix=M; iy=1540000; icw=6100000; ich=4400000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'decision-cac-waterfall.svg',ix+50000,iy+50000,icw-100000,ich-100000,'Vector SVG chart: Contoso $10,000/mo sales agent Cost-per-Lead waterfall and 32-reply 100% accuracy router benchmark',fit='contain')
 rx=ix+icw+260000; rw=W-M-rx
 steps_cac=[
-    ('Baseline: All-Sol + 100% review','$0.31 / lead  ·  CAC = $13.00','Every reply hits frontier Sol ($0.15) plus 100% human review ($0.24), capping a $10k budget.',MUTED),
-    ('+ Check 1 (Router) + Check 2 (Score)','$0.07 / lead  ·  CAC = $2.63','100% accuracy (vs 88% regex): 57% skip Sol via no-reply & code replies; only P1–P3 hit humans.',CY),
-    ('+ Check 3 (noul Filter) → Full Stack','$0.05 / lead  ·  CAC = $1.81','All 3 MD-1.1 checks cost ~$0.000189/msg — human review drops 100% → 8% for 7.2× more customers!',AMB),
+    ('1 · Baseline: Frontier LLM + 100% review','$0.31 per lead  ·  CAC = $13.00','Every email calls a $0.15 frontier LLM plus $0.24 human review — capping $10k/mo at 764 customers.',MUTED),
+    ('2 · Add choice router + score priority','$0.07 per lead  ·  CAC = $2.63','100% routing accuracy (vs. 88% regex): 57% of simple replies skip the LLM; only P1–P3 go to humans.',CY),
+    ('3 · Add noul outbound safety gate','$0.05 per lead  ·  CAC = $1.81 (7.2× lower)','All 3 Decision-1.1 checks cost $0.00019/email total — cutting human review 100% → 8% (5,511 customers).',AMB),
 ]
 for i,(t,sub,desc,col_) in enumerate(steps_cac):
     yy=1540000+i*1510000
     card_box(s,rx,yy,rw,1380000,[
-        {'text':t,'sizePt':15,'bold':True,'color':INK if col_==MUTED else col_,'spaceAfterPt':6.5},
+        {'text':t,'sizePt':14.6,'bold':True,'color':INK if col_==MUTED else col_,'spaceAfterPt':6.5},
         {'text':sub,'sizePt':12.2,'bold':True,'color':col_,'spaceAfterPt':6.5},
-        {'text':desc,'sizePt':12.2,'color':MUTED},
+        {'text':desc,'sizePt':12.1,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'Source: Microsoft Command Line Interactive Architecture Demo (Illustrative Contoso $10k/mo sales agent model; Demo 3)',21)
+footer(s,'Source: Microsoft Command Line Architecture Case Study ($10k/mo sales inbox model; Demo 3)',21)
 note(s,'这几道毫秒级的小关卡串进真实业务里，商业回报非常可观。我们看这个月预算一万美元的销售线索跟进测算：如果按传统粗放做法，每封客户回信都直接扔给昂贵的旗舰 Sol 模型写回复，再因为怕大模型乱说话安排全量人工复核，算下来处理一条线索要花 3 毛 1，每签下一单的获客成本高达 13 美元。\n把 Decision-1.1 放进去之后，先守住入口分流——在 32 类真实客户邮件测试里，手写正则只能认对 88%，而它做到了 100% 全对，先把 57% 像单纯说声谢谢或者退订的邮件用零成本规则直接处理掉，根本不惊动大模型；接着用 score 给高意向客户排优先级，最后在出口用 noul 拦住乱提竞品的草稿。这三道检查加在一块儿，每封信的决策成本还不到万分之二美元，却把需要人工介入复核的比例从 100% 降到了 8%。同样一万块钱月预算，能转化出来的客户数翻了七倍多，获客成本直接从 13 美元压到了 1.81 美元。')
 
 # ---------- 21 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
 s=21
-header(s,'05 · INTERACTIVE DEMO 1','Copilot Auto & Fusion replay',cx=CW-3400000)
+header(s,'06 · LIVE DEMO 1','Copilot Auto & Fusion replay',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
 tb(s,M+220000,cy0+140000,cx_-440000,'copilot-fusion-trace.jsonl  ·  HyDRA + Fusion',size=11,color=FOOT,font=MF,cy=280000)
@@ -647,12 +647,12 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'Click “Launch Demo 1” (top right) or press D in web view to step through all 5 Copilot Fusion traces',22)
+footer(s,'GitHub Copilot CLI & Copilot Fusion  ·  5 recorded traces in Auto-Routing Studio',22)
 note(s,'账算清楚了，接下来我们通过三组真实的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 回放的是我们在本机实测录下来的 GitHub Copilot 完整轨迹。最开始只是去配置文件里捞个默认端口号，HyDRA 花 86 毫秒打完能力需求分，发现轻量模型完全够用，直接走 Single 通道在 1.8 秒内搞定，只花了 0.08 个点数；接着做常规代码修改加单测走 Cascade，小模型改完测试全过，裁判扫一眼确认没毛病当场放行，省下一半点数；再往下遇到隐蔽的并发锁顺序死锁，虽然普通单测侥幸过了，但裁判敏锐抓出了锁反转风险，果断升级请出 GPT-6.1 Sol 重修并通过五百次压测；到了五万并发的限流架构设计，两个只读评审模型并行挑出了时钟漂移和热点分片两个盲区；最后追问监控指标时，系统稳稳留用刚才缓存了 6.4 万 Token 的主模型，拿满了九折以上的缓存优惠。')
 
 # ---------- 22 LIVE DEMO 2: MICROSOFT COPILOT & FOUNDRY MODEL ROUTER
 s=22
-header(s,'05 · INTERACTIVE DEMO 2','Foundry Router & Copilot replay',cx=CW-3400000)
+header(s,'06 · LIVE DEMO 2','Foundry Router & Copilot replay',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
 tb(s,M+220000,cy0+140000,cx_-440000,'foundry-v1preview.http  ·  ModelRouterControls=V1Preview',size=11,color=FOOT,font=MF,cy=280000)
@@ -687,12 +687,12 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'Click “Launch Demo 2” (top right) — or run npm --prefix demo run demo:web for live Foundry bridge',23)
+footer(s,'Foundry Model Router V1Preview & M365 Copilot  ·  5 steps in Auto-Routing Studio',23)
 note(s,'第二个 Demo 串联了云端 Foundry Model Router 的真实抓包和企业办公的跨模型接力。我们先看六阶段管线怎么在打分前筛掉不合规模型、自动抹平不同厂商的参数差异，并把预购的零模型费 PTU 排在最前面消化。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器只花 23 毫秒就挑中了零推理开销的 DeepSeek Flash；换成 Rust 无锁环形缓冲区的 ABA 形式化证明时，20 毫秒内立刻切换到推理模型 gpt-5.6-luna，并且在追问时保持缓存亲和。随后我们完整重现周四客户续约提案的四棒跨模型协作；最后模拟首选模型突遇 429 限流，看路由器怎么在 19 毫秒内无感切到白名单里的备选模型，给业务端稳稳返回 200 成功结果。')
 
 # ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
 s=23
-header(s,'05 · INTERACTIVE DEMO 3','Decision-1.1 agent controller',cx=CW-3400000)
+header(s,'06 · LIVE DEMO 3','Decision-1.1 agent controller',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
 rect(s,M+cx_-1480000,cy0+130000,1240000,320000,fill=CY,preset='roundRect',text='GA · Nov 2026',size=10.5,bold=True,color=BG)
@@ -713,22 +713,22 @@ d3_code=(
 tb(s,M+220000,cy0+490000,cx_-440000,d3_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:decision','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Click preset prompts or test your own in Studio!','sizePt':11,'color':CY},
+    {'text':'Preset traces + live custom prompt tester in Studio','sizePt':11,'color':CY},
 ],fill=CARD2,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d3_cards=[
-    ('✓  choice Router + 0.0 pt spread','180 ms p50 · $0.000013/call · 57% skip Sol','Proves 5/5 identical probability stability and 100% inbox routing accuracy vs. 88% regex.',CY),
-    ('!  score Scheduler (P0–P3)','Combined choice + score + noul in 1 call','“Bed frame collapsed, hurt back” scores 2.94/3.0 → bypasses bot for P3 Immediate Human.',AMB),
-    ('✕  noul Guardrail + Safe Abstain','Blocks Fabrikam leak (0.964) & missing Exhibit B','Holds competitor-promoting drafts at ≥0.50, abstains when max(p)<0.75, and cuts CAC 7.2×.',CY),
+    ('✓  Repeatable routing (choice)','180 ms median · $0.000013/call · zero variance','5/5 identical runs and 100% inbox triage accuracy (vs. 88% regex), skipping 57% of frontier LLM calls.',CY),
+    ('!  Multi-question priority (score)','Route + P0–P3 severity + repeat check in 1 call','“Bed frame collapsed, hurt back” scores 2.94 / 3.0 — bypassing the bot to page an immediate human.',AMB),
+    ('✕  Outbound guardrail & abstain (noul)','Blocks competitor promo (0.964) & missing files','Holds a draft recommending rival Fabrikam (≥0.50), and asks to clarify when a referenced file is missing.',CY),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d3_cards):
     yy=1540000+idx*1520000
     card_box(s,rx,yy,rw,1380000,[
         {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
         {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
-        {'text':desc,'sizePt':12.6,'color':MUTED},
+        {'text':desc,'sizePt':12.4,'color':MUTED},
     ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'Click “Launch Demo 3” (top right) — and type your own custom prompt in the Studio input bar!',24)
+footer(s,'Microsoft-Decision-1.1 /v1/systemone  ·  5 steps + custom prompt tester in Studio',24)
 note(s,'第三个 Demo 带大家看 Microsoft-Decision-1.1 怎么在代码里当好 Agent 的控制中枢。我们先拿同一封邮件连测五次，验证它的概率输出零抖动、延迟稳在 180 毫秒上下；接着看 choice 怎么把致谢、退订、普通咨询和深度导购精准分流，省掉大半昂贵的大模型调用；再看一次接口调用怎么同时拿回团队路由、2.94 分的人身受伤高危评分和重复催办判断，直接跳过机器人触发人工紧急接管；随后用 noul 打出 0.964 的高概率，把一段差点把客户推给竞品 Fabrikam 的回复草稿当场拦下；最后模拟客户要求按附件 B 重算报价却忘了传附件，模型看到最高置信度掉到阈值以下，主动选择停下来追问而不是硬编数字。待会儿在演示台里，我们也可以现场随便敲几句业务输入，直接看它怎么打分。')
 
 # ---------- 24 CLOSER: KEY TAKEAWAYS
@@ -741,7 +741,7 @@ tk=[
     '1   Route sub-tasks by capability — no single model wins all.',
     '2   Stop paying 100× for simple work — & keep prefix caches warm.',
     '3   Adopt Copilot Auto, Copilot Fusion & Foundry Router first.',
-    '4   Embed Microsoft-Decision-1.1 for choice, noul & score gates.',
+    '4   Use Microsoft-Decision-1.1 for fast routing, priority & safety gates.',
 ]
 tb(s,x,2100000,cx,None,paras=[{'text':t,'spaceAfterPt':10} for t in tk],size=14.2,color=INK,cy=2380000)
 tb(s,x,4660000,cx,None,paras=[
