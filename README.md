@@ -47,11 +47,11 @@ npm --prefix demo run demo:replay
 ```
 
 - **PPTX**：`dist/pptx/Auto-routing LLMs.pptx`
-- **本地讲者版 HTML**：`dist/html/index.html`（含讲者备注 `Notes N`、交互式 `Studio D` 及 `N`/`D` 快捷键，仅在本机 `file://` 或 `localhost` / `127.0.0.1` 下启用）
-- **GitHub Pages 公开版 HTML**：`docs/index.html`（纯净公开幻灯片，不含底部 `Notes`、`Studio` 栏及 `N`/`D` 快捷键）
-- **本地网页集成可视化 Auto-Routing Studio**：
-  - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；本地运行 `dist/html/index.html` 时，`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭；`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF。
-  - **本地离线回放**：直接在本机打开 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（或任意页按 `D`），即可在分色路由工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · Copilot CLI Auto & 多模型协同）**、**Demo 2（Cloud API · Foundry Model Router）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1）**——全部 15 个步骤的回放数据均由本机真实调用实测抓包生成（零模拟报文），终端右上角支持一键切换 **`Summary` | `{ } Raw Log`** 查看完整原始 CLI JSONL（`session.auto_mode_resolved` + `usage.json`）/ HTTP JSON 响应与数据出处。
+- **本地讲者版 HTML**：`dist/html/index.html`（含底部讲者工具栏 `Notes N` / `Studio D` 及 `N`/`D` 快捷键，仅在本机 `file://` 或 `localhost` / `127.0.0.1` 下启用）
+- **GitHub Pages 公开版 HTML**：`docs/index.html`（保留页面右上角 Demo 入口按钮与录制回放工作台，不含底部 `Notes`、`Studio` 栏、讲者备注及 `N`/`D` 快捷键）
+- **网页集成可视化 Auto-Routing Studio**：
+  - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；本地运行 `dist/html/index.html` 时，`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭，`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF。
+  - **GitHub Pages / 静态离线回放**：打开在线 Pages 或本地 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（本地版还可在任意页按 `D`），即可在分色路由工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · Copilot CLI Auto & 多模型协同）**、**Demo 2（Cloud API · Foundry Model Router）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1）**——全部 15 个步骤的回放数据均由本机真实调用实测抓包生成（零模拟报文），终端右上角支持一键切换 **`Summary` | `{ } Raw Log`** 查看完整原始 CLI JSONL（`session.auto_mode_resolved` + `usage.json`）/ HTTP JSON 响应与数据出处。
   - **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`，会自动检测并驱动本机 `copilot` CLI（真实运行 Demo 1 全部 5 步及自定义 Prompt 探测）、本机 `429 -> 200` HTTP 故障转移测试台（Demo 2 第 5 步），以及在配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`）后真实请求云端 Foundry Model Router 与 `/providers/microsoft/v1/systemone`。
 
 ## 视觉系统
