@@ -242,15 +242,38 @@ LIVE_DEMO = """
 <section id="live-demo" class="live-demo" role="dialog" aria-modal="true" aria-label="Visual Auto-Routing Studio" hidden>
   <div class="studio-shell">
     <header class="studio-top">
-      <div class="scenario-tabs" role="tablist" aria-label="Routing scenario">
-        <button type="button" role="tab" class="sc-tab active" data-kind="fusion" aria-selected="true">1 · Coding Agent <span class="tab-sub">Fusion</span></button>
-        <button type="button" role="tab" class="sc-tab" data-kind="foundry" aria-selected="false">2 · Cloud API <span class="tab-sub">Foundry</span></button>
-        <button type="button" role="tab" class="sc-tab" data-kind="decision" aria-selected="false">3 · App Controller <span class="tab-sub">Decision-1.1</span></button>
-      </div>
+      <div class="bar-select-group">
+        <div class="custom-select" id="cs-kind" data-value="fusion">
+          <button type="button" class="cs-trigger" id="cs-kind-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Demo">
+            <span class="cs-kicker">DEMO</span>
+            <span class="cs-label" id="cs-kind-label">Demo 1 · Coding Agent</span>
+            <svg class="cs-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="cs-menu" id="cs-kind-menu" role="listbox" tabindex="-1" hidden>
+            <li role="option" data-val="fusion" aria-selected="true" class="cs-option selected">
+              <span class="cs-opt-main">Demo 1 · Coding Agent</span>
+              <span class="cs-opt-sub">Copilot Auto &amp; Fusion · 5 steps</span>
+            </li>
+            <li role="option" data-val="foundry" aria-selected="false" class="cs-option">
+              <span class="cs-opt-main">Demo 2 · Cloud API</span>
+              <span class="cs-opt-sub">Foundry Model Router · 5 steps</span>
+            </li>
+            <li role="option" data-val="decision" aria-selected="false" class="cs-option">
+              <span class="cs-opt-main">Demo 3 · App Controller</span>
+              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 5 steps</span>
+            </li>
+          </ul>
+        </div>
 
-      <div class="step-pills" id="step-pills" role="group" aria-label="Scenario steps"></div>
+        <div class="custom-select cs-step-select" id="cs-step" data-value="1">
+          <button type="button" class="cs-trigger" id="cs-step-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Step">
+            <span class="cs-kicker cs-kicker-accent">STEP</span>
+            <span class="cs-label" id="cs-step-label">1 · Lightweight Single-Model Fast Path</span>
+            <svg class="cs-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <ul class="cs-menu cs-step-menu" id="cs-step-menu" role="listbox" tabindex="-1" hidden></ul>
+        </div>
 
-      <div class="studio-actions">
         <button id="live-demo-run" class="primary-run-btn" type="button">
           <span id="live-run-label">Run Step 1</span>
           <span aria-hidden="true">▶</span>
@@ -258,6 +281,9 @@ LIVE_DEMO = """
         <button id="live-demo-autoplay" class="ghost-btn autoplay-btn" type="button" title="Play all 5 steps sequentially">
           <span id="live-autoplay-label">Auto-Play</span>
         </button>
+      </div>
+
+      <div class="studio-status-group">
         <span class="status-badge" id="live-demo-status">Replay · Verified</span>
         <button id="live-demo-reset" class="ghost-btn" type="button" title="Reset scenario">Reset</button>
         <button id="live-demo-close" class="close-btn" type="button" aria-label="Close studio">✕</button>
@@ -414,34 +440,45 @@ img.a{object-fit:cover}
 .live-demo{position:fixed;inset:0;z-index:120;background:radial-gradient(circle at 12%% 0%%,#faf7f0 0%%,var(--bg) 62%%);color:var(--ink);font-family:var(--font-sans);padding:clamp(10px,1.5vw,20px);overflow:hidden}
 .live-demo[hidden]{display:none!important}
 .studio-shell{width:100%%;height:100%%;max-width:1540px;min-width:0;margin:0 auto;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px;min-height:0}
-.studio-top{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--edge);border-radius:13px;padding:7px 11px;box-shadow:0 4px 16px rgba(35,30,22,.05);flex-wrap:wrap;min-width:0}
-.scenario-tabs{display:inline-flex;background:var(--card);padding:3px;border-radius:9px;gap:3px;flex-shrink:0}
-.sc-tab{border:0;background:transparent;color:var(--muted);padding:6px 11px;border-radius:7px;font:700 12px/1 var(--font-sans);cursor:pointer;transition:all .14s ease;white-space:nowrap;display:inline-flex;align-items:baseline;gap:5px}
-.sc-tab .tab-sub{font:600 10px/1 var(--font-mono);opacity:.75}
-.sc-tab:hover{color:var(--ink)}
-.sc-tab.active{background:#fff;color:var(--accent);box-shadow:0 2px 6px rgba(35,30,22,.08)}
-
-.step-pills{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}
-.step-pill{border:1px solid var(--edge);background:#fff;color:var(--muted);border-radius:8px;padding:6px 9px;font:700 10.8px/1 var(--font-mono);cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .14s ease;white-space:nowrap}
-.step-pill:hover:not(:disabled){border-color:var(--accent);color:var(--ink)}
-.step-pill.active{background:rgba(63,96,126,.12);border-color:var(--accent);color:var(--accent)}
-.step-pill.done{border-color:#8ec4a8;color:var(--ok)}
-.step-pill.active.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
-.step-pill:disabled{opacity:.5;cursor:wait}
-
-.studio-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.primary-run-btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:9px;background:linear-gradient(135deg,var(--accent) 0%%,#2a455d 100%%);color:#fff;padding:8px 14px;font:700 12px/1 var(--font-sans);cursor:pointer;box-shadow:0 4px 12px rgba(44,73,99,.22);white-space:nowrap}
-.primary-run-btn:hover:not(:disabled){filter:brightness(1.06)}
-.primary-run-btn:disabled{opacity:.52;cursor:wait}
-.ghost-btn{border:1px solid var(--edge);background:#fff;color:var(--ink);border-radius:9px;padding:7px 11px;font:600 11.5px/1 var(--font-sans);cursor:pointer;white-space:nowrap}
-.ghost-btn:hover,.ghost-btn.active{background:var(--card);border-color:var(--accent);color:var(--accent)}
-.autoplay-btn.active{background:#fef4ea;border-color:#d48a42;color:#9a5313}
-.status-badge{border-radius:999px;padding:5px 10px;font:600 10.5px/1 var(--font-mono);background:var(--card);color:var(--muted);border:1px solid var(--edge);white-space:nowrap}
+.studio-top{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--edge);border-radius:14px;padding:8px 11px;box-shadow:0 6px 20px rgba(35,30,22,.05);flex-wrap:nowrap;position:relative;z-index:30;min-width:0}
+.bar-select-group{display:flex;align-items:center;gap:7px;min-width:0;flex:1}
+.studio-status-group{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.status-badge{border-radius:999px;padding:6px 11px;font:600 11px/1 var(--font-mono);background:var(--card);color:var(--muted);border:1px solid var(--edge);white-space:nowrap}
 .status-badge[data-tone="running"]{background:#fef4ea;border-color:#d48a42;color:#9a5313}
 .status-badge[data-tone="ok"]{background:var(--ok-bg);border-color:#286b4b;color:var(--ok)}
 .status-badge[data-tone="err"]{background:#faece8;border-color:var(--warn);color:var(--warn)}
-.close-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--edge);background:#fff;color:var(--ink);font-size:13px;cursor:pointer;display:grid;place-items:center}
+.ghost-btn{border:1px solid var(--edge);background:#fff;color:var(--ink);border-radius:9px;padding:8px 13px;font:600 12px/1 var(--font-sans);cursor:pointer;white-space:nowrap;transition:background .14s,border-color .14s}
+.ghost-btn:hover,.ghost-btn.active{background:var(--card);border-color:var(--accent);color:var(--accent)}
+.close-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--edge);background:#fff;color:var(--ink);font-size:14px;cursor:pointer;display:grid;place-items:center;transition:all .14s}
 .close-btn:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
+
+.custom-select{position:relative;min-width:190px;max-width:265px;flex:1 1 235px}
+.cs-step-select{min-width:215px;max-width:340px;flex:1.3 1 290px}
+.cs-trigger{width:100%%;display:flex;align-items:center;gap:8px;border:1px solid var(--edge);border-radius:9px;background:#fff;color:var(--ink);padding:6px 10px 6px 7px;font:600 12.5px/1.2 var(--font-sans);cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease}
+.cs-step-select .cs-trigger{border-color:rgba(63,96,126,.45)}
+.cs-trigger:hover:not(:disabled){border-color:var(--accent);box-shadow:0 3px 10px rgba(63,96,126,.10)}
+.cs-trigger[aria-expanded="true"]{border-color:var(--accent);box-shadow:0 0 0 3px rgba(63,96,126,.14)}
+.cs-trigger:disabled{opacity:.52;cursor:wait}
+.cs-kicker{background:var(--card);color:var(--muted);border-radius:5px;padding:4px 6px;font:800 9px/1 var(--font-mono);letter-spacing:.08em;flex-shrink:0}
+.cs-kicker-accent{background:rgba(63,96,126,.13);color:var(--accent)}
+.cs-label{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-chevron{width:14px;height:14px;color:var(--muted);flex-shrink:0;transition:transform .18s ease}
+.cs-trigger[aria-expanded="true"] .cs-chevron{transform:rotate(180deg);color:var(--accent)}
+.cs-menu{position:absolute;left:0;top:calc(100%% + 6px);min-width:100%%;width:max-content;max-width:410px;max-height:330px;overflow-y:auto;list-style:none;background:#fffdf9;border:1px solid var(--edge);border-radius:11px;padding:5px;box-shadow:0 18px 40px rgba(24,32,40,.16);z-index:80;animation:menuPop .14s cubic-bezier(.2,.8,.2,1)}
+.cs-menu[hidden]{display:none!important}
+@keyframes menuPop{from{opacity:0;transform:translateY(-4px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cs-option{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .12s ease}
+.cs-option:hover,.cs-option.focused{background:var(--bg)}
+.cs-option.selected{background:rgba(63,96,126,.11)}
+.cs-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cs-opt-main{font:600 12.5px/1.25 var(--font-sans);color:var(--ink)}
+.cs-option.selected .cs-opt-main{color:var(--accent);font-weight:700}
+.cs-opt-sub{font:500 10.5px/1.25 var(--font-mono);color:var(--muted)}
+.cs-opt-check{font:700 10.5px/1 var(--font-mono);color:#286b4b}
+.primary-run-btn{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:9px;background:linear-gradient(135deg,var(--accent) 0%%,#2a455d 100%%);color:#fff;padding:8px 16px;font:700 12.5px/1 var(--font-sans);cursor:pointer;box-shadow:0 5px 14px rgba(44,73,99,.22);white-space:nowrap;transition:transform .14s ease,opacity .14s}
+.primary-run-btn:hover:not(:disabled){transform:translateY(-1px)}
+.primary-run-btn:disabled{opacity:.52;cursor:wait}
+.autoplay-btn.active{background:#fef4ea;border-color:#d48a42;color:#9a5313}
 
 .demo-purpose-bar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--edge);border-left:4px solid var(--accent);border-radius:10px;padding:8px 14px;font-size:13px;line-height:1.35;color:var(--ink-soft);min-width:0}
 .purpose-kicker{background:rgba(63,96,126,.12);color:var(--accent);border-radius:5px;padding:3px 7px;font:800 9.5px/1 var(--font-mono);letter-spacing:.08em;flex-shrink:0}
@@ -532,19 +569,13 @@ img.a{object-fit:cover}
 .ev-chip.on{background:var(--ok-bg);border-color:#286b4b;color:var(--ok)}
 .ev-chip.denied{background:#faece8;border-color:var(--warn);color:var(--warn)}
 
-@media(max-width:1240px){
-  .status-badge,.sc-tab .tab-sub{display:none}
-  .sc-tab{padding:5px 9px;font-size:11.5px}
-  .step-pill{padding:5px 7px;font-size:10px}
-}
 @media(max-width:960px){
   .live-demo{overflow:auto}
   .studio-shell{height:auto}
-  .studio-top,.demo-purpose-bar{flex-wrap:wrap}
+  .studio-top,.bar-select-group,.demo-purpose-bar{flex-wrap:wrap}
   #purpose-desc{white-space:normal}
   .studio-grid{grid-template-columns:1fr;overflow:visible}
   .terminal-card{min-height:360px}
-}
 }
 @media print{@page{size:13.333in 7.5in;margin:0}
  html,body{overflow:visible;background:#fff}#deck-progress,.deck-hud,.notes-drawer,.live-demo,.live-demo-trigger{display:none!important}
@@ -590,7 +621,11 @@ function byId(id){return document.getElementById(id);}
 deck.isOverlayOpen=function(){return liveOpen;};
 addEventListener('keydown',function(ev){
  if(ev.altKey||ev.ctrlKey||ev.metaKey)return;
- if(liveOpen&&ev.key==='Escape'){ev.preventDefault();closeLiveDemo();}
+ if(liveOpen&&ev.key==='Escape'){
+  ev.preventDefault();
+  if(document.querySelector('.cs-menu:not([hidden])')){closeAllSelects();return;}
+  closeLiveDemo();
+ }
 },true);
 
 var SCENARIOS={
@@ -968,13 +1003,69 @@ function renderNodes(nodes){
  box.innerHTML=parts.join('');
 }
 
-function renderTabsAndPills(){
- document.querySelectorAll('.sc-tab').forEach(function(btn){
-  var on=btn.dataset.kind===curKind;
-  btn.classList.toggle('active',on);
-  btn.setAttribute('aria-selected',on?'true':'false');
-  btn.disabled=stepRunning;
+var KIND_LABELS={
+ fusion:'Demo 1 · Coding Agent',
+ foundry:'Demo 2 · Cloud API',
+ decision:'Demo 3 · App Controller'
+};
+
+function closeAllSelects(){
+ ['cs-kind','cs-step'].forEach(function(id){
+  var root=byId(id);if(!root)return;
+  var btn=root.querySelector('.cs-trigger'),menu=root.querySelector('.cs-menu');
+  btn.setAttribute('aria-expanded','false');
+  menu.hidden=true;
  });
+}
+function setupCustomSelect(rootId,onPick){
+ var root=byId(rootId),btn=root.querySelector('.cs-trigger'),menu=root.querySelector('.cs-menu');
+ btn.addEventListener('click',function(ev){
+  ev.stopPropagation();
+  if(btn.disabled)return;
+  var willOpen=menu.hidden;
+  closeAllSelects();
+  if(willOpen){
+   menu.hidden=false;
+   btn.setAttribute('aria-expanded','true');
+  }
+ });
+ btn.addEventListener('keydown',function(ev){
+  if(btn.disabled)return;
+  if(ev.key==='ArrowDown'||ev.key==='ArrowUp'||ev.key==='Enter'||ev.key===' '){
+   ev.preventDefault();
+   if(menu.hidden){closeAllSelects();menu.hidden=false;btn.setAttribute('aria-expanded','true');}
+   var opts=[].slice.call(menu.querySelectorAll('.cs-option'));
+   if(!opts.length)return;
+   var cur=opts.findIndex(function(o){return o.classList.contains('focused')||o.classList.contains('selected');});
+   if(ev.key==='ArrowDown')cur=(cur+1)%opts.length;
+   else if(ev.key==='ArrowUp')cur=(cur-1+opts.length)%opts.length;
+   else if((ev.key==='Enter'||ev.key===' ')&&cur>=0&&!menu.hidden){onPick(opts[cur].dataset.val);closeAllSelects();return;}
+   opts.forEach(function(o,idx){o.classList.toggle('focused',idx===cur);});
+   if(opts[cur])opts[cur].scrollIntoView({block:'nearest'});
+  }
+ });
+ menu.addEventListener('click',function(ev){
+  ev.stopPropagation();
+  var li=ev.target.closest('.cs-option');
+  if(!li)return;
+  onPick(li.dataset.val);
+  closeAllSelects();
+  btn.focus();
+ });
+}
+document.addEventListener('click',function(){if(liveOpen)closeAllSelects();});
+
+function renderTabsAndPills(keepExplicitRun){
+ var kRoot=byId('cs-kind');
+ if(kRoot){
+  kRoot.dataset.value=curKind;
+  byId('cs-kind-label').textContent=KIND_LABELS[curKind]||curKind;
+  kRoot.querySelectorAll('.cs-option').forEach(function(li){
+   var sel=li.dataset.val===curKind;
+   li.classList.toggle('selected',sel);
+   li.setAttribute('aria-selected',sel?'true':'false');
+  });
+ }
  var meta=SCENARIO_META[curKind];
  if(meta){
   byId('purpose-kicker').textContent=meta.kicker;
@@ -982,19 +1073,27 @@ function renderTabsAndPills(){
   byId('purpose-desc').textContent=meta.desc;
   byId('terminal-mode-title').textContent=meta.chrome;
  }
- var list=SCENARIOS[curKind].steps,pills=byId('step-pills');
- pills.innerHTML=list.map(function(st,idx){
-  var n=idx+1,act=n===curStep,dn=!!doneSet[curKind][n];
-  return '<button type="button" class="step-pill'+(act?' active':'')+(dn?' done':'')+'" data-step="'+n+'"'+(stepRunning?' disabled':'')+' title="'+escHtml(st.title)+'">'+(dn?'✓ ':'')+escHtml(st.short)+'</button>';
- }).join('');
- var nextUnrun=curStep;
- if(doneSet[curKind][curStep]&&curStep<list.length)nextUnrun=curStep+1;
- byId('live-run-label').textContent=(doneSet[curKind][curStep]&&curStep<list.length)?('Next: Step '+nextUnrun):('Run Step '+curStep);
+ var list=SCENARIOS[curKind].steps,sRoot=byId('cs-step'),sMenu=byId('cs-step-menu');
+ if(sRoot&&sMenu){
+  sRoot.dataset.value=String(curStep);
+  byId('cs-step-label').textContent=curStep+' · '+list[curStep-1].title;
+  sMenu.innerHTML=list.map(function(st,idx){
+   var n=idx+1,sel=n===curStep,dn=!!doneSet[curKind][n];
+   return '<li role="option" data-val="'+n+'" aria-selected="'+(sel?'true':'false')+'" class="cs-option'+(sel?' selected':'')+'">'
+    +'<div class="cs-opt-row"><span class="cs-opt-main">'+n+' · '+escHtml(st.title)+'</span>'+(dn?'<span class="cs-opt-check">✓ DONE</span>':'')+'</div>'
+    +'<span class="cs-opt-sub">'+escHtml(st.boundary)+'</span></li>';
+  }).join('');
+ }
+ if(stepRunning)closeAllSelects();
+ byId('cs-kind-btn').disabled=stepRunning;
+ byId('cs-step-btn').disabled=stepRunning;
+ var nextUnrun=(!keepExplicitRun&&doneSet[curKind][curStep]&&curStep<list.length)?curStep+1:curStep;
+ byId('live-run-label').textContent=(nextUnrun!==curStep)?('Next: Step '+nextUnrun):('Run Step '+curStep);
  byId('live-demo-run').dataset.targetStep=String(nextUnrun);
  byId('live-demo-run').disabled=stepRunning;
 }
 
-function renderVisualStep(kind,stepNum){
+function renderVisualStep(kind,stepNum,keepExplicitRun){
  var list=SCENARIOS[kind].steps,idx=Math.max(0,Math.min(list.length-1,(Number(stepNum)||1)-1)),g=list[idx];
  curKind=kind;curStep=idx+1;
  byId('terminal-mode-sub').textContent=g.pattern;
@@ -1023,7 +1122,7 @@ function renderVisualStep(kind,stepNum){
   if(saved.chip2)setChip('live-chip-2',saved.chip2,saved.chip2Tone);
   if(saved.chip3)setChip('live-chip-3',saved.chip3,saved.chip3Tone);
  }
- renderTabsAndPills();
+ renderTabsAndPills(keepExplicitRun);
 }
 
 function clearReplayTimers(){while(replayTimers.length)clearTimeout(replayTimers.pop());stepRunning=false;}
@@ -1263,6 +1362,7 @@ function runCustomProbe(cmd){
 }
 
 function closeLiveDemo(){
+ closeAllSelects();
  stopAutoPlay();clearReplayTimers();resolveStepWaiters(false);
  if(liveOpen&&!replayMode)fetch('/api/cancel',{method:'POST'}).catch(function(){});
  if(liveSource){liveSource.close();liveSource=null;}
@@ -1324,27 +1424,24 @@ async function toggleAutoPlay(){
  stopAutoPlay();
 }
 
-document.querySelectorAll('.sc-tab').forEach(function(btn){
- btn.addEventListener('click',function(){
-  if(stepRunning||btn.dataset.kind===curKind)return;
-  stopAutoPlay();
-  displayLog='';rawLog='';hintShown=false;
-  byId('live-demo-output').innerHTML='';
-  renderVisualStep(btn.dataset.kind,1);
-  showInitialHint();
-  flushTerminal();
-  setStatus(idleModeLabel(),replayMode?undefined:'ok');
- });
+setupCustomSelect('cs-kind',function(val){
+ if(stepRunning||val===curKind)return;
+ stopAutoPlay();
+ displayLog='';rawLog='';hintShown=false;
+ byId('live-demo-output').innerHTML='';
+ renderVisualStep(val,1,true);
+ showInitialHint();
+ flushTerminal();
+ setStatus(idleModeLabel(),replayMode?undefined:'ok');
+});
+setupCustomSelect('cs-step',function(val){
+ if(stepRunning)return;
+ stopAutoPlay();
+ renderVisualStep(curKind,Number(val)||1,true);
+ flushTerminal();
 });
 byId('btn-view-summary').addEventListener('click',function(){rawView=false;syncViewSwitch();flushTerminal();});
 byId('btn-view-raw').addEventListener('click',function(){rawView=true;syncViewSwitch();flushTerminal();});
-byId('step-pills').addEventListener('click',function(ev){
- var pill=ev.target.closest('.step-pill');
- if(!pill||stepRunning)return;
- stopAutoPlay();
- var target=Number(pill.dataset.step)||1;
- runSingleStep(curKind,target);
-});
 byId('live-demo-run').addEventListener('click',function(){
  if(stepRunning)return;
  stopAutoPlay();
