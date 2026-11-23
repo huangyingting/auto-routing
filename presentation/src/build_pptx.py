@@ -634,30 +634,30 @@ note(s,'既有接近满分的判断准度，单次调用又几乎不花钱，把
 
 # ---------- 21 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
 s=21
-header(s,'06 · LIVE DEMO 1','Copilot CLI Auto & multi-agent',cx=CW-3400000)
+header(s,'06 · LIVE DEMO 1','Copilot CLI Auto & Fusion live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
-tb(s,M+220000,cy0+130000,cx_-440000,'copilot --output-format json  ·  Live CLI telemetry',size=11,color=FOOT,font=MF,cy=280000)
+tb(s,M+220000,cy0+130000,cx_-440000,'copilot --model fusion --fusion-tier high  ·  1-call JSONL',size=11,color=FOOT,font=MF,cy=280000)
 rect(s,M+220000,cy0+440000,cx_-440000,14000,fill=EDGE)
 d1_code=(
-    '$ copilot -p "Read config.ts..." --model auto \\\n'
-    '    --output-format json --usage-output-file usage.json\n'
-    '-> session.auto_mode_resolved: mai-code-2-flash (0.019 AIU)\n\n'
-    '// Cascade & Critique harness over live Copilot CLI:\n'
-    '-> Judge (--deny-tool write): ESCALATE lock inversion\n'
-    '-> Repair (gpt-6.1-terra)   : 500/500 stress PASS\n'
-    '-> --resume <sid>           : 96% cacheReadTokens hit!'
+    '$ copilot --model fusion --fusion-tier high \\\n'
+    '    -p "..." --output-format json --usage-output-file u.json\n\n'
+    '// Server-resolved pattern per single CLI command:\n'
+    '-> Routine fix  : pattern="single"   (gpt-6.1-terra, 0 review)\n'
+    '-> Lock bug     : pattern="cascade"  (sol -> luna Judge 5/5)\n'
+    '-> 50k RPS RFC  : pattern="critique" (opus -> luna -> revise)\n'
+    '-> --resume <id>: 99% cacheReadTokens hit (5,655 / 5,733 tok)'
 )
-tb(s,M+220000,cy0+480000,cx_-440000,d1_code,size=11.5,color=CODE,font=MF,cy=2600000)
+tb(s,M+220000,cy0+480000,cx_-440000,d1_code,size=11.1,color=CODE,font=MF,cy=2600000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:fusion:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Single → Cascade → Escalate → Critique → 96% Cache','sizePt':11,'color':CY},
+    {'text':'Auto → Single → Native Cascade → Native Critique → 99% Cache','sizePt':10.6,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d1_cards=[
-    ('✓  Single & Cascade short-circuit','MAI Code 2 Flash (0.019 AIU) + node --test','Real session.auto_mode_resolved scores route easy lookups & clean patches to Flash without heavy repair.',CY),
-    ('↗  Judge-triggered escalation','Catches ABBA lock inversion in token-bucket.ts','Read-only Judge flags refill()/close() deadlock; GPT-6.1 Terra fixes it and passes 500× concurrent stress.',AMB),
-    ('⇄  Parallel Critique + 96% Cache','2× read-only Critics & --resume warm prefix','Parallel --deny-tool write Critics audit 50k-RPS design; follow-up turn hits 96% cacheReadTokens.',CY),
+    ('✓  Auto & Fusion Single fast path','categoryScores ≤ 0.10 & pattern="single"','Even on Fusion High, simple lookups & routine patches run 1 solver with zero review calls (3/3 node --test).',CY),
+    ('↗  1-command native Cascade','gpt-6.1-sol → gpt-6-luna Judge → Opus skipped','One CLI call fixes ABBA lock order; native Judge scores 5/5 (accept) & skips conditional Opus 5.5 repair.',CY),
+    ('⇄  1-command Critique + 99% Cache','Opus draft → Luna Critic → Opus revise','Native Critic flags Active-Active zero-RPO gap for Opus to revise; --resume hits 99% cacheReadTokens.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d1_cards):
     yy=1540000+idx*1520000
@@ -667,7 +667,7 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
 footer(s,'',22)
-note(s,'账算清楚了，接下来我们通过三组 100% 真实跑通并抓包的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 直接调用本机 GitHub Copilot CLI 的 JSONL 事件流。第一步去配置文件里读默认端口，从原始日志的 auto_mode_resolved 事件里能直接看到四个维度的打分全在 0.1 以下，自动命中轻量的 MAI Code 2 Flash；第二步做代码修改，小模型改完跑过本机三项 Node 单测，只读裁判复核放行，省掉重型返工；第三步面对隐蔽的并发双锁死锁，只读裁判当场抓出加锁顺序反转并触发升级，由 GPT-6.1 Terra 修复并通过五百次并发压测；第四步两个只读评审模型并行挑出限流方案的故障切换和分片热点漏洞；第五步用 resume 追问监控指标，usage.json 显示高达 96% 的输入 Token 直接命中热缓存。')
+note(s,'账算清楚了，接下来我们通过三组 100% 真实单命令跑通并抓包的交互 Demo，一步步看清这些机制在运行时到底是怎么工作的。\n第一个 Demo 直接调用本机 GitHub Copilot CLI 的原生 JSONL 事件流，每一步都是一条单独的 copilot 命令：第一步用 --model auto 读配置端口，四维需求分全在 0.1 以下，一步到位秒回；接下来三步保持完全相同的 --model fusion --fusion-tier high 参数，看服务端怎么按题换阵型——第二步改普通字符串处理，fusion_resolved 直接判定走 single 单模型，不浪费一分钱额外评审；第三步修隐蔽的双锁死锁，单条命令自动切到原生 cascade，由 gpt-6.1-sol 修代码、gpt-6-luna 裁判打出 5 分放行，自动省掉第三棒 Opus 返工并通过五百次并发压测；第四步写五万并发支付网关容灾方案，单条命令自动切到原生 critique，Opus 起草后由跨厂商的 Luna 挑出零数据丢失承诺的漏洞，再交回 Opus 修订；第五步用 resume 追问监控指标，usage.json 实测 99% 的输入 Token 直接命中热缓存。')
 
 # ---------- 22 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
 s=22

@@ -35,13 +35,17 @@ function send(event) {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function cleanupSessionStore() {
-  if (sessionStore.fusionDir) {
-    const dir = sessionStore.fusionDir;
-    delete sessionStore.fusionDir;
-    delete sessionStore.fusionSessionId;
-    delete sessionStore.prevFusionStats;
-    await rm(dir, { recursive: true, force: true }).catch(() => {});
+  for (const key of ["fusionDir", "autoDir"]) {
+    if (sessionStore[key]) {
+      const dir = sessionStore[key];
+      delete sessionStore[key];
+      await rm(dir, { recursive: true, force: true }).catch(() => {});
+    }
   }
+  delete sessionStore.fusionSessionId;
+  delete sessionStore.prevFusionStats;
+  delete sessionStore.autoSessionId;
+  delete sessionStore.prevAutoStats;
 }
 
 async function playRecorded(demo, step, note = null) {

@@ -25,8 +25,14 @@ function sanitizeString(str) {
     const ep = process.env.AZURE_FOUNDRY_ENDPOINT.replace(/\/+$/, "");
     out = out.split(ep).join("https://<foundry-resource>.cognitiveservices.azure.com");
   }
-  out = out.replace(/[A-Za-z]:\\\\Users\\\\[^"\\\s]+\\\\AppData\\\\Local\\\\Temp\\\\/g, "<temp-workspace>\\\\");
-  out = out.replace(/[A-Za-z]:\\Users\\[^"\s]+\\AppData\\Local\\Temp\\/g, "<temp-workspace>\\");
+  out = out.replace(/[A-Za-z]:\\+Users\\+[^"\\\s]+\\+AppData\\+Local\\+Temp\\+/g, (m) => {
+    const sep = m.includes("\\\\\\\\") ? "\\\\\\\\" : "\\\\";
+    return `<temp-workspace>${sep}`;
+  });
+  out = out.replace(/[A-Za-z]:\\+Users\\+[^"\\\s]+\\+\.copilot\\+/g, (m) => {
+    const sep = m.includes("\\\\\\\\") ? "\\\\\\\\" : "\\\\";
+    return `<user-home>${sep}.copilot${sep}`;
+  });
   return out;
 }
 
@@ -46,29 +52,35 @@ async function captureStep(runFn) {
 }
 
 async function main() {
-  const recordFusion = process.argv.includes("--record-fusion");
+  const recordFusion = process.argv.includes("--record-fusion") || process.argv.includes("--fusion-only");
+  const fusionOnly = process.argv.includes("--fusion-only");
   const data = JSON.parse(await readFile(outPath, "utf8"));
   const caps = detectLiveCapabilities();
   const sessionStore = {};
 
-  data.platform = "win32/x64 · Live-captured Copilot CLI 1.0.115-6 + Microsoft Foundry Model Router V1Preview + Microsoft-Decision-1.1";
+  data.platform = "win32/x64 · Live-captured Copilot CLI 1.0.115-7 (--model auto & --model fusion --fusion-tier high) + Microsoft Foundry Model Router V1Preview + Microsoft-Decision-1.1";
+
+  const stepsIdx = process.argv.indexOf("--steps");
+  const fusionSteps = stepsIdx >= 0 && process.argv[stepsIdx + 1]
+    ? process.argv[stepsIdx + 1].split(",").map((x) => Number.parseInt(x, 10)).filter(Boolean)
+    : [1, 2, 3, 4, 5];
 
   try {
     if (recordFusion && caps.copilotAvailable) {
-      for (let s = 1; s <= 5; s += 1) {
+      for (const s of fusionSteps) {
         console.log(`Recording live fusion step ${s}...`);
         data.steps.fusion[String(s)] = await captureStep((emit) => runFusionStepLive(s, emit, sessionStore));
         await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
       }
     }
-    if (caps.foundryReady) {
+    if (!fusionOnly && caps.foundryReady) {
       for (let s = 1; s <= 5; s += 1) {
         console.log(`Recording live foundry step ${s}...`);
         data.steps.foundry[String(s)] = await captureStep((emit) => runFoundryStepLive(s, emit));
         await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
       }
     }
-    if (caps.decisionReady) {
+    if (!fusionOnly && caps.decisionReady) {
       for (let s = 1; s <= 5; s += 1) {
         console.log(`Recording live decision step ${s}...`);
         data.steps.decision[String(s)] = await captureStep((emit) => runDecisionStepLive(s, emit));
@@ -76,8 +88,10 @@ async function main() {
       }
     }
   } finally {
-    if (sessionStore.fusionDir) {
-      await rm(sessionStore.fusionDir, { recursive: true, force: true }).catch(() => {});
+    for (const key of ["fusionDir", "autoDir"]) {
+      if (sessionStore[key]) {
+        await rm(sessionStore[key], { recursive: true, force: true }).catch(() => {});
+      }
     }
   }
 

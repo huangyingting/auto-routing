@@ -14,11 +14,11 @@ node demo/src/demo-cli.mjs --demo fusion --step 1 --live
 
 当本机已安装并登录 GitHub Copilot CLI（`copilot`）时，全部 5 个步骤都会在隔离临时工作区中对 `demo/fixtures/` 发起**真实 `copilot` CLI 调用**，并从 `--usage-output-file` 读取真实选中的模型、Token、缓存命中和 AI Credits（加 `--live` 则强制要求本机具备 `copilot`，绝不静默降级为回放）：
 
-1. **Single（简单配置查询）**：对 `fixtures/config.ts` 执行 `copilot --model auto`，验证自动命中轻量模型（如 `MAI Code 2 Flash`）并输出真实 `AI Credits` 与延迟。
-2. **Cascade · Judge 放行（常规修改 + 真实 `node --test`）**：主模型修复 `fixtures/format.mjs` 的 `\u00A0` / Tab 空白处理，宿主机真实运行 `node --test format.test.mjs` 通过后，交由只读 Judge 复核 `ACCEPT`，跳过昂贵重修。
-3. **Cascade · Judge 升级（并发死锁缺陷）**：只读 Judge 审查 `fixtures/token-bucket.ts` 识别锁顺序反转并给出 `ESCALATE`，随后启动修复并运行宿主 500 次并发交错压测验证零死锁。
-4. **Critique · 并行只读评审（50k RPS 分布式限流架构）**：主模型创建带 `--session-id` 的初稿，两个限制只读权限（`--deny-tool write --deny-tool shell`）的 Critic 通过 `Promise.all` 并行审查时钟漂移与热键分片，再恢复主会话综合修订。
-5. **Cache-Boundary 护栏**：通过 `--resume` 在同一会话发起追问，对比前后 `usage.json` 验证真实 `cacheReadTokens` 命中率与单轮增量 Credits。
+1. **Auto Fast Path（简单配置查询）**：对 `fixtures/config.ts` 单次执行 `copilot --model auto`，通过 `session.auto_mode_resolved` 验证轻量快速路由并初始化会话前缀缓存。
+2. **Fusion `Single`（常规代码修改 + 真实 `node --test`）**：单次执行 `copilot --model fusion --fusion-tier high` 修复 `fixtures/format.mjs`，验证即使在 `high` 档位下，`session.fusion_resolved` 也会对常规任务自动选择 `pattern="single"`（零额外评审开销）并通过 3/3 宿主单测。
+3. **Fusion 原生 `Cascade`（并发死锁修复）**：单次执行 `copilot --model fusion --fusion-tier high` 修复 `fixtures/token-bucket.ts`，服务端原生触发 `pattern="cascade"`（`gpt-6.1-sol` 修复 → `gpt-6-luna` Judge 打出 `5/5 accept` → 自动跳过条件 `claude-opus-5.5` Repair），并经宿主 500 次并发压测验证零死锁。
+4. **Fusion 原生 `Critique`（50k RPS 支付网关多活架构 RFC）**：单次执行 `copilot --model fusion --fusion-tier high`，服务端原生触发 `pattern="critique"`（`claude-opus-5.5` 起草 → 跨厂商 `gpt-6-luna` Critic 返回 `"assessment": "revise"` 指出跨区零 RPO 漏洞 → `session.fusion_handoff` 交回 `claude-opus-5.5` 完成高强度修订）。
+5. **Cache-Boundary 护栏（`--resume` 99% 缓存命中）**：单次执行 `copilot --model auto --resume <sid>` 发起同会话追问，通过 `usage.json` 验证模型锁定与高达 **99%** 的 `cacheReadTokens` 热缓存命中率。
 
 ## 2. Demo 2 · Microsoft Foundry `Model Router` & 多子任务协同
 

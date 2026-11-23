@@ -215,8 +215,10 @@ async function main() {
       await runTargetDemo(k, stepsToRun, mode, caps, recordings, sessionStore, showRaw);
     }
   } finally {
-    if (sessionStore.fusionDir) {
-      await rm(sessionStore.fusionDir, { recursive: true, force: true }).catch(() => {});
+    for (const key of ["fusionDir", "autoDir"]) {
+      if (sessionStore[key]) {
+        await rm(sessionStore[key], { recursive: true, force: true }).catch(() => {});
+      }
     }
   }
 }
