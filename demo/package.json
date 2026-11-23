@@ -9,7 +9,7 @@
   "scripts": {
     "build": "node --check src/live-runners.mjs && node --check src/demo-cli.mjs && node --check src/web-demo-server.mjs && node --check src/record-web-demo.mjs",
     "check": "npm run build",
-    "test": "npm run check && node src/demo-cli.mjs --demo all --replay && node src/demo-cli.mjs --demo foundry --step 5 --live",
+    "test": "npm run check && node src/demo-cli.mjs --demo all --replay",
     "demo:fusion": "node src/demo-cli.mjs --demo fusion",
     "demo:fusion:live": "node src/demo-cli.mjs --demo fusion --live",
     "demo:foundry": "node src/demo-cli.mjs --demo foundry",

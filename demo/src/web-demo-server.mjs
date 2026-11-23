@@ -2,7 +2,7 @@
 /**
  * Local Interactive Demo Studio server (http://127.0.0.1:8787).
  * Drives real live execution via GitHub Copilot CLI (`fusion`), Microsoft Foundry Model Router (`foundry`),
- * local HTTP 429->200 failover (`foundry` Step 5), and Microsoft-Decision-1.1 `/v1/systemone` (`decision`),
+ * and Microsoft-Decision-1.1 `/v1/systemone` (`decision`),
  * with optional fallback to verified recordings when cloud env vars are not set.
  */
 import { readFile, rm } from "node:fs/promises";
@@ -86,7 +86,7 @@ async function runStep(demo, step, mode = "auto") {
     }
 
     if (demo === "foundry") {
-      if (step === 5 || caps.foundryReady) {
+      if (caps.foundryReady) {
         await runFoundryStepLive(step, send);
         return;
       }
@@ -96,7 +96,7 @@ async function runStep(demo, step, mode = "auto") {
       await playRecorded(
         demo,
         step,
-        "AZURE_FOUNDRY_ENDPOINT not configured -> showing verified replay (Step 5 runs live local HTTP failover).",
+        "AZURE_FOUNDRY_ENDPOINT not configured -> showing verified replay.",
       );
       return;
     }

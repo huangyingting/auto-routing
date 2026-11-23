@@ -2,7 +2,6 @@ import { execFile, execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { copyFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -870,107 +869,8 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
   throw new Error(`Unknown fusion step: ${step}`);
 }
 
-export async function runLocalFailoverStep(emit, useLiveSecondary = false) {
-  let primaryHits = 0;
-  let secondaryHits = 0;
-
-  const upstream = http.createServer(async (req, res) => {
-    const u = new URL(req.url || "/", "http://127.0.0.1");
-    if (u.pathname === "/primary/chat/completions") {
-      primaryHits += 1;
-      res.writeHead(429, { "Content-Type": "application/json", "Retry-After": "1", Connection: "close" });
-      res.end(JSON.stringify({ error: { code: "RateLimitReached", message: "Primary deployment saturated (429)" } }));
-      return;
-    }
-    if (u.pathname === "/secondary/chat/completions") {
-      secondaryHits += 1;
-      if (useLiveSecondary && process.env.AZURE_FOUNDRY_ENDPOINT) {
-        const live = await callFoundryRouter({
-          messages: [{ role: "user", content: "Reply with exact JSON: {\"failover\":\"verified\"}" }],
-          mode: "balanced",
-        });
-        res.writeHead(200, { "Content-Type": "application/json", Connection: "close" });
-        res.end(JSON.stringify({ servedModel: live.json.model, liveCloud: true }));
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "application/json", Connection: "close" });
-      res.end(JSON.stringify({ servedModel: "gpt-5.6-sol", liveCloud: false, output: { failover: "verified" } }));
-      return;
-    }
-    res.writeHead(404, { Connection: "close" });
-    res.end();
-  });
-
-  await new Promise((resolve) => upstream.listen(0, "127.0.0.1", resolve));
-  const addr = upstream.address();
-  const baseUrl = `http://127.0.0.1:${addr.port}`;
-
-  try {
-    const start = performance.now();
-    const attempts = [];
-    const r1 = await fetch(`${baseUrl}/primary/chat/completions`, { method: "POST" });
-    attempts.push({ deployment: "gpt-6-sol (primary)", status: r1.status });
-
-    let finalBody = null;
-    if (r1.status === 429 || r1.status >= 500) {
-      const r2 = await fetch(`${baseUrl}/secondary/chat/completions`, { method: "POST" });
-      attempts.push({ deployment: "gpt-5.6-sol (allow-list #2)", status: r2.status });
-      finalBody = await r2.json();
-    }
-    const elapsedMs = Math.max(1, Math.round(performance.now() - start));
-    if (primaryHits !== 1 || secondaryHits !== 1 || !finalBody) {
-      throw new Error("Failover harness did not execute expected 429 -> 200 sequence.");
-    }
-    emit({
-      kind: "output",
-      text:
-        `[CONFIG] Local HTTP Failover Harness: /primary (returns 429) -> /secondary (returns 200 OK)\n` +
-        `[REQUEST] POST ${baseUrl}/primary/chat/completions  (peak traffic burst)\n` +
-        `✕ BLOCKED — Attempt 1 (${attempts[0].deployment}) failed with HTTP ${attempts[0].status} Too Many Requests\n` +
-        `✓ PASS — Automatic failover to ${attempts[1].deployment} succeeded with HTTP ${attempts[1].status} OK in ${elapsedMs} ms\n` +
-        `Why: Router absorbs 429 rate-limit bursts inside your compliance allow-list so callers see zero errors.\n` +
-        `[SOURCE] Raw Log: Real 127.0.0.1 HTTP 429->200 trace  |  Cloud Spec: Foundry routing_trace.attempts[] (Slide 15)\n`,
-    });
-    emit({
-      kind: "raw",
-      text:
-        `# PROVENANCE: Real local HTTP 429 -> 200 failover exchange on ${baseUrl} modeling Foundry routing_trace.attempts[].\n\n` +
-        JSON.stringify(
-          {
-            endpoint: baseUrl,
-            elapsedMs,
-            routing_trace: [{ latency_ms: elapsedMs, attempts }],
-            finalResponse: finalBody,
-          },
-          null,
-          2,
-        ),
-    });
-    emit({
-      kind: "route",
-      model: `${finalBody.servedModel} (200 OK)`,
-      meta: `Failover: 429 -> 200 (${elapsedMs} ms)`,
-      chip1: "Primary: HTTP 429 ✕",
-      chip1Tone: "denied",
-      chip2: `Fallback: 200 OK ✓`,
-      chip2Tone: "on",
-      chip3: `Failover: ${elapsedMs} ms ✓`,
-      chip3Tone: "on",
-    });
-  } finally {
-    upstream.closeAllConnections?.();
-    await new Promise((resolve) => upstream.close(resolve));
-  }
-}
-
 export async function runFoundryStepLive(step, emit) {
   emit({ kind: "step-start", demo: "foundry", step });
-
-  if (step === 5) {
-    await runLocalFailoverStep(emit, Boolean(process.env.AZURE_FOUNDRY_ENDPOINT));
-    emit({ kind: "step-done", demo: "foundry", step, code: 0 });
-    return;
-  }
 
   if (step === 1) {
     emit({
@@ -1079,6 +979,7 @@ export async function runFoundryStepLive(step, emit) {
       messages: msgs,
       mode: "balanced",
       sessionAffinity: { strategy: "adaptive" },
+      extraBody: { max_completion_tokens: 2000 },
     });
     const reply1 = turn1.json.choices?.[0]?.message?.content?.trim() || "";
     const turn2 = await callFoundryRouter({

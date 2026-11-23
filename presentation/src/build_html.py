@@ -256,7 +256,7 @@ LIVE_DEMO = """
             </li>
             <li role="option" data-val="foundry" aria-selected="false" class="cs-option">
               <span class="cs-opt-main">Demo 2 · Cloud API</span>
-              <span class="cs-opt-sub">Foundry Model Router · 5 steps</span>
+              <span class="cs-opt-sub">Foundry Model Router · 4 steps</span>
             </li>
             <li role="option" data-val="decision" aria-selected="false" class="cs-option">
               <span class="cs-opt-main">Demo 3 · App Controller</span>
@@ -278,7 +278,7 @@ LIVE_DEMO = """
           <span id="live-run-label">Run Step 1</span>
           <span aria-hidden="true">▶</span>
         </button>
-        <button id="live-demo-autoplay" class="ghost-btn autoplay-btn" type="button" title="Play all 5 steps sequentially">
+        <button id="live-demo-autoplay" class="ghost-btn autoplay-btn" type="button" title="Play all steps sequentially">
           <span id="live-autoplay-label">Auto-Play</span>
         </button>
       </div>
@@ -720,7 +720,7 @@ var SCENARIOS={
   ]
  },
  foundry:{
-  ledgerSave:'-76% + 0 Outages',
+  ledgerSave:'-76% + Cache Retain',
   steps:[
    {short:'① Gates',boundary:'Pre-Rank + Param Adapt',title:'Eligibility Gate & Cross-Provider Param Normalization',
     ctx:'POST /openai/v1/chat/completions · ModelRouterControls=V1Preview',
@@ -730,49 +730,49 @@ var SCENARIOS={
     pattern:'PRE-RANK GATE · PARAM NORMALIZATION',
     nodes:[
      {role:'1 · Request Gate',name:'json_object + temp',sub:'developer role normalized',state:'active'},
-     {role:'2 · ML Router',name:'27 ms Overhead',sub:'mode: "balanced"',state:'active'},
+     {role:'2 · ML Router',name:'30 ms Overhead',sub:'mode: "balanced"',state:'active'},
      {role:'3 · Selected Model',name:'gpt-5.6-luna',sub:'{"status":"eligible_ok"} ✓',state:'win'}
     ],
-    outcome:'✓ Live HTTP 200 OK served by gpt-5.6-luna-2026-07-09 in 27 ms router latency with valid json_object output!',
+    outcome:'✓ Live HTTP 200 OK served by gpt-5.6-luna-2026-07-09 in 30 ms router latency with valid json_object output!',
     what:'Foundry filters deployments by required capabilities (tools / json_object) before ranking, adapts cross-provider parameters automatically, and drains pre-paid PTU capacity first.',
-    code:'POST /openai/v1/chat/completions (ModelRouterControls=V1Preview) → gpt-5.6-luna (router=27 ms)',
+    code:'POST /openai/v1/chat/completions (ModelRouterControls=V1Preview) → gpt-5.6-luna (router=30 ms)',
     baseName:'Manual Multi-SDK',baseNums:'400 Param Errors ✕',baseMeta:'Breaks on role/temperature differences across labs',
-    agentName:'gpt-5.6-luna',agentNums:'27 ms Router · 200 OK',agentMeta:'JSON mode & params normalized',
-    chips:[['JSON Mode ✓','on'],['Params Normalized ✓','on'],['Router: 27 ms ✓','on']],risk:0},
-   {short:'② Flash',boundary:'1–2% Balanced Band',title:'Simple JSON Extraction Routed to DeepSeek Flash in 28 ms',
+    agentName:'gpt-5.6-luna',agentNums:'30 ms Router · 200 OK',agentMeta:'JSON mode & params normalized',
+    chips:[['JSON Mode ✓','on'],['Params Normalized ✓','on'],['Router: 30 ms ✓','on']],risk:0},
+   {short:'② Flash',boundary:'1–2% Balanced Band',title:'Simple JSON Extraction Routed to DeepSeek Flash in 27 ms',
     ctx:'POST /openai/v1/chat/completions · mode: "balanced"',
     prompt:'"Extract invoice_id and currency as JSON from: Invoice INV-2026-8841, Total: 4,250 EUR"',
-    scorer:'Foundry ML Ranker · 28 ms Overhead · 0 Reasoning Tokens',
+    scorer:'Foundry ML Ranker · 27 ms Overhead · 0 Reasoning Tokens',
     bars:[],
     pattern:'BALANCED BAND · CHEAPEST IN TOP 1–2%',
     nodes:[
-     {role:'ML Ranker',name:'28 ms Overhead',sub:'Top 1–2% quality band',state:'active'},
+     {role:'ML Ranker',name:'27 ms Overhead',sub:'Top 1–2% quality band',state:'active'},
      {role:'Selected Model',name:'DeepSeek-V4.1-Flash',sub:'reasoning_tokens = 0',state:'win'},
      {role:'JSON Output',name:'Valid 200 OK',sub:'{"invoice_id":"INV-2026-8841"}',state:'win'}
     ],
-    outcome:'✓ Live Foundry Router picked DeepSeek-V4.1-Flash in 28 ms with 0 wasted reasoning tokens!',
+    outcome:'✓ Live Foundry Router picked DeepSeek-V4.1-Flash in 27 ms with 0 wasted reasoning tokens!',
     what:'For straightforward JSON extraction, DeepSeek-V4.1-Flash scores within 1–2% of frontier quality — so Balanced mode selects it automatically at a fraction of frontier cost.',
-    code:'routing_trace: [{ latency_ms: 28, attempts: [{ model: "DeepSeek-V4.1-Flash", status: 200 }] }]',
+    code:'routing_trace: [{ latency_ms: 27, attempts: [{ model: "DeepSeek-V4.1-Flash", status: 200 }] }]',
     baseName:'Pinned Frontier',baseNums:'~25× Token Cost',baseMeta:'Burns frontier reasoning tokens on simple JSON',
-    agentName:'DeepSeek-V4.1-Flash',agentNums:'28 ms Router · 0 Reason',agentMeta:'Valid JSON · HTTP 200 OK',
-    chips:[['Router: 28 ms ✓','on'],['JSON Valid ✓','on'],['0 Reason Tok ✓','on']],risk:0},
+    agentName:'DeepSeek-V4.1-Flash',agentNums:'27 ms Router · 0 Reason',agentMeta:'Valid JSON · HTTP 200 OK',
+    chips:[['Router: 27 ms ✓','on'],['JSON Valid ✓','on'],['0 Reason Tok ✓','on']],risk:0},
    {short:'③ Escalate',boundary:'Difficulty Escalation + Affinity',title:'Same Endpoint Escalates Rust Proof & Retains Session',
     ctx:'Same endpoint · mode="balanced" · session_affinity="adaptive"',
     prompt:'"Design lock-free MPMC ring buffer in Rust with Acquire/Release & ABA epoch invariants" (+ Turn 2)',
-    scorer:'Foundry ML Ranker (27 ms) + Adaptive Fingerprint Session Affinity',
+    scorer:'Foundry ML Ranker (30 ms) + Adaptive Fingerprint Session Affinity',
     bars:[],
     pattern:'AUTO ESCALATION + RETAIN AFFINITY',
     nodes:[
-     {role:'Turn 1 Ranker',name:'27 ms Escalation',sub:'Flash drops below band',state:'active'},
+     {role:'Turn 1 Ranker',name:'30 ms Escalation',sub:'Flash drops below band',state:'active'},
      {role:'Selected Model',name:'gpt-6-luna',sub:'gpt-6-luna-2026-09-22',state:'win'},
      {role:'Turn 2 Affinity',name:'decision: "retain"',sub:'derived_fingerprint matched',state:'win'}
     ],
-    outcome:'✓ Escalated Turn 1 to gpt-6-luna-2026-09-22 (27 ms router) and returned session_affinity="retain" on Turn 2!',
+    outcome:'✓ Escalated Turn 1 to gpt-6-luna-2026-09-22 (30 ms router) and returned session_affinity="retain" on Turn 2!',
     what:'Without changing endpoint or code, formal concurrency proofs trigger automatic escalation to gpt-6-luna, and Turn 2 retains the same model via derived_fingerprint.',
-    code:'Turn 1 → gpt-6-luna (27 ms)  |  Turn 2 → session_affinity: { decision: "retain" }',
+    code:'Turn 1 → gpt-6-luna (30 ms)  |  Turn 2 → session_affinity: { decision: "retain" }',
     baseName:'Pinned Cheap Flash',baseNums:'Missed ABA Invariant ✕',baseMeta:'Under-powered on formal memory-ordering proofs',
-    agentName:'gpt-6-luna',agentNums:'27 ms · Affinity: retain',agentMeta:'2-turn live escalation + cache affinity',
-    chips:[['Router: 27 ms ✓','on'],['Affinity: retain ✓','on'],['2-Turn Live ✓','on']],risk:1},
+    agentName:'gpt-6-luna',agentNums:'30 ms · Affinity: retain',agentMeta:'2-turn live escalation + cache affinity',
+    chips:[['Router: 30 ms ✓','on'],['Affinity: retain ✓','on'],['2-Turn Live ✓','on']],risk:1},
    {short:'④ Cost→Quality',boundary:'Two-Stage Sub-Job Routing',title:'Two-Stage Routing: mode="cost" Extraction → mode="quality" Strategy',
     ctx:'2 live calls on fixtures/renewal-context.json',
     prompt:'Job 1 (mode="cost"): Extract renewal numbers → Job 2 (mode="quality"): Game-theoretic NRR strategy',
@@ -780,33 +780,16 @@ var SCENARIOS={
     bars:[],
     pattern:'TWO-STAGE ROUTING · COST → QUALITY',
     nodes:[
-     {role:'Job 1 · mode="cost"',name:'grok-4-1-fast',sub:'31 ms route · fast extraction',state:'active'},
+     {role:'Job 1 · mode="cost"',name:'grok-4-1-fast',sub:'28 ms route · fast extraction',state:'active'},
      {role:'Structured Handoff',name:'2 Compact Bullets',sub:'Trimmed context passed on',state:'active'},
-     {role:'Job 2 · mode="quality"',name:'gpt-5.6-terra',sub:'27 ms route · NRR strategy',state:'win'}
+     {role:'Job 2 · mode="quality"',name:'gpt-5.6-terra',sub:'29 ms route · NRR strategy',state:'win'}
     ],
     outcome:'✓ Live 2-call pipeline routed extraction to grok-4-1-fast-reasoning (mode="cost") and strategy to gpt-5.6-terra (mode="quality")!',
     what:'Instead of running an entire multi-step workflow on one expensive model, each sub-job passes its own routing_config.mode ("cost" vs "quality") to the same Foundry endpoint.',
     code:'Job 1 (mode:"cost") → grok-4-1-fast-reasoning  |  Job 2 (mode:"quality") → gpt-5.6-terra',
     baseName:'Monolithic Frontier Call',baseNums:'High Cost on Raw Docs',baseMeta:'Feeds raw unstructured JSON straight to top tier',
-    agentName:'grok-4-1 → gpt-5.6-terra',agentNums:'31 ms + 27 ms Route',agentMeta:'Multi-Job Cost + Quality',
-    chips:[['Job 1: grok-4-1-fast ✓','on'],['Job 2: gpt-5.6-terra ✓','on'],['Live Multi-Job ✓','on']],risk:0},
-   {short:'⑤ Failover',boundary:'Two-Tier Resilience',title:'Live HTTP 429 → 200 Automatic Subset Failover',
-    ctx:'Local 127.0.0.1 primary (429) → Live Foundry secondary (200 OK)',
-    prompt:'[Burst Test] Primary gpt-6-sol returns HTTP 429 RateLimitReached → retry fallback deployment',
-    scorer:'Local 127.0.0.1 HTTP 429 Server + Live Foundry Cloud Fallback',
-    bars:[],
-    pattern:'AUTOMATIC FAILOVER · ZERO APP ERROR',
-    nodes:[
-     {role:'Attempt 1',name:'gpt-6-sol (Primary)',sub:'HTTP 429 RateLimited ✕',state:'err'},
-     {role:'Failover Policy',name:'Auto-Retry #2',sub:'Stays inside allow-list',state:'active'},
-     {role:'Attempt 2 (Live)',name:'DeepSeek / Fallback',sub:'HTTP 200 OK Served ✓',state:'win'}
-    ],
-    outcome:'✓ Primary returned real HTTP 429 Too Many Requests; automatic failover succeeded with HTTP 200 OK!',
-    what:'When a primary deployment hits HTTP 429 rate limits during traffic spikes, automatic subset failover switches to the next-ranked approved model so callers see zero errors.',
-    code:'attempts: [{ deployment: "gpt-6-sol", status: 429 }, { deployment: "allow-list #2", status: 200 }]',
-    baseName:'Direct Deployment',baseNums:'HTTP 429 Exception ✕',baseMeta:'Caller fails or blocks on long retry timers',
-    agentName:'Automatic Failover',agentNums:'429 → 200 OK',agentMeta:'Zero caller-visible error',
-    chips:[['Primary: HTTP 429 ✕','denied'],['Fallback: 200 OK ✓','on'],['Zero App Error ✓','on']],risk:1}
+    agentName:'grok-4-1 → gpt-5.6-terra',agentNums:'28 ms + 29 ms Route',agentMeta:'Multi-Job Cost + Quality',
+    chips:[['Job 1: grok-4-1-fast ✓','on'],['Job 2: gpt-5.6-terra ✓','on'],['Live Multi-Job ✓','on']],risk:0}
   ]
  },
  decision:{
@@ -911,7 +894,7 @@ var SCENARIO_META={
  foundry:{
   kicker:'DEMO 2 · CLOUD API',
   title:'Microsoft Foundry Model Router',
-  desc:'One /chat/completions endpoint: cheap Flash on easy JSON, auto-escalation, and 429 failover.',
+  desc:'One /chat/completions endpoint: param normalization, cheap Flash on easy JSON, auto-escalation, and cost→quality sub-jobs.',
   chrome:'Foundry Router'
  },
  decision:{
@@ -1216,7 +1199,7 @@ function applyDemoEvent(data){
   var demo=data.demo,step=Number(data.step),total=SCENARIOS[demo].steps.length;
   doneSet[demo][step]=true;
   renderVisualStep(demo,step);
-  setStatus(step===total?'All 5 Verified ✓':'Step '+step+' Verified ✓','ok');
+  setStatus(step===total?'All '+total+' Verified ✓':'Step '+step+' Verified ✓','ok');
   resolveStepWaiters(true);
  }else if(data.kind==='step-error'){
   stepRunning=false;

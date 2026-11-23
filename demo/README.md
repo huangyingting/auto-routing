@@ -29,13 +29,12 @@ npm --prefix demo run demo:foundry
 npm --prefix demo run demo:foundry:live
 ```
 
-配置 `AZURE_FOUNDRY_ENDPOINT`（搭配 `AZURE_FOUNDRY_API_KEY`、`AZURE_ENTRA_TOKEN` 或 `az login`）后，第 1–4 步全部真实请求云端 `/openai/v1/chat/completions`（`Foundry-Features: ModelRouterControls=V1Preview`），第 5 步在无需云端配额的情况下也会真实拉起本机双端点 HTTP `429 -> 200` 故障转移验证：
+配置 `AZURE_FOUNDRY_ENDPOINT`（搭配 `AZURE_FOUNDRY_API_KEY`、`AZURE_ENTRA_TOKEN` 或 `az login`）后，全部 4 步均真实请求云端 `/openai/v1/chat/completions`（`Foundry-Features: ModelRouterControls=V1Preview`）：
 
 1. **资格门槛与跨厂商参数自适应实测**：携带 `developer` 角色、`temperature=0.2` 与 `json_object` 发起真实请求，验证参数归一化与 `200 OK`。
 2. **简单提取路由至轻量模型**：对 `fixtures/renewal-context.json` 中的发票文本发起 `mode: "balanced"` 提取，校验返回 JSON 与 `routing_trace` 毫秒耗时。
 3. **复杂形式化推理升级 + 自适应会话亲和**：同一端点发送 Rust 无锁队列证明与第 2 轮追问，验证模型升级与 `session_affinity` 保持。
 4. **客户续约多子任务协同**：依次以 `mode: "cost"` 检索信号、以 `mode: "quality"` 生成续约策略与幻灯片提纲。
-5. **真实 HTTP `429 -> 200` 故障转移测试台**：在本机 `127.0.0.1` 启动主备两个 HTTP 端点，主端点真实返回 `HTTP 429 Too Many Requests`，验证客户端/路由层自动切换备选端点（若已配 `AZURE_FOUNDRY_ENDPOINT` 则备选端点转发至真实云端 Foundry）。
 
 ## 3. Demo 3 · `Microsoft-Decision-1.1` 结构化决策与护栏
 
@@ -64,5 +63,5 @@ npm --prefix demo run demo:replay
 
 ## 网页交互式 Demo Studio
 
-- **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`，页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI、本机 `429 -> 200` 测试台以及已配置的云端 Foundry / Decision-1.1 端点。
+- **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`，页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI 以及已配置的云端 Foundry / Decision-1.1 端点。
 - **静态离线回放（GitHub Pages）**：直接双击打开 `dist/html/index.html` 时无需后端，使用 `presentation/assets/demo-recordings.json` 离线回放（可通过 `node demo/src/record-web-demo.mjs --record-fusion` 重新录制真实轨迹）。

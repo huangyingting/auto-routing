@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
  * CLI runner for the three Auto-Routing LLMs demos:
- *   1. fusion   - GitHub Copilot CLI Auto (HyDRA) & Multi-Model Cascade / Critique / Prefix Cache
- *   2. foundry  - Microsoft Foundry Model Router (/openai/v1/chat/completions + live HTTP 429->200 failover)
- *   3. decision - Microsoft-Decision-1.1 (/providers/microsoft/v1/systemone: choice, score, noul)
+ *   1. fusion   - GitHub Copilot CLI Auto (HyDRA) & Multi-Model Cascade / Critique / Prefix Cache (5 steps)
+ *   2. foundry  - Microsoft Foundry Model Router (/openai/v1/chat/completions, 4 live cloud steps)
+ *   3. decision - Microsoft-Decision-1.1 (/providers/microsoft/v1/systemone: choice, score, noul, 5 steps)
  *
  * Modes:
  *   Default  : Executes LIVE automatically whenever the required CLI / cloud endpoint is available
- *              (Copilot CLI for `fusion` & Step 5 local HTTP failover work out-of-the-box;
+ *              (Copilot CLI for `fusion` works out-of-the-box;
  *               Foundry Steps 1–4 & Decision-1.1 Steps 1–5 run live when AZURE_FOUNDRY_ENDPOINT is set).
  *   --live   : Strict live mode — never falls back to recorded traces; exits non-zero if prerequisites are missing.
  *   --replay : Plays verified pre-recorded traces from presentation/assets/demo-recordings.json.
- *   --step N : Runs only step N (1..5) of the selected demo.
+ *   --step N : Runs only step N of the selected demo.
  *   --probe  : Routes an arbitrary custom prompt live via Decision-1.1 or Copilot CLI Auto.
  */
 import { readFile, rm } from "node:fs/promises";
@@ -143,10 +143,6 @@ async function runTargetDemo(kind, stepsToRun, mode, caps, recordings, sessionSt
     }
 
     if (kind === "foundry") {
-      if (s === 5) {
-        await runFoundryStepLive(5, cliEmitter);
-        continue;
-      }
       if (!caps.foundryReady) {
         if (mode === "live") {
           throw new Error(
@@ -207,11 +203,11 @@ async function main() {
 
   const recordings = JSON.parse(await readFile(recordingsPath, "utf8"));
   const targets = demo === "all" ? ["fusion", "foundry", "decision"] : [demo];
-  const stepsToRun = step ? [step] : [1, 2, 3, 4, 5];
   const sessionStore = {};
 
   try {
     for (const k of targets) {
+      const stepsToRun = step ? [step] : k === "foundry" ? [1, 2, 3, 4] : [1, 2, 3, 4, 5];
       await runTargetDemo(k, stepsToRun, mode, caps, recordings, sessionStore, showRaw);
     }
   } finally {

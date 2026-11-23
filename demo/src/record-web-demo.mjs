@@ -2,7 +2,7 @@
 /**
  * Re-records live traces into presentation/assets/demo-recordings.json for available live backends
  * (Copilot CLI for `fusion` when --record-fusion is passed; Foundry & Decision-1.1 when AZURE_FOUNDRY_ENDPOINT is set),
- * and validates all 15 step recordings.
+ * and validates all 14 step recordings.
  */
 import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -74,7 +74,8 @@ async function main() {
       }
     }
     if (!fusionOnly && caps.foundryReady) {
-      for (let s = 1; s <= 5; s += 1) {
+      delete data.steps.foundry["5"];
+      for (let s = 1; s <= 4; s += 1) {
         console.log(`Recording live foundry step ${s}...`);
         data.steps.foundry[String(s)] = await captureStep((emit) => runFoundryStepLive(s, emit));
         await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");

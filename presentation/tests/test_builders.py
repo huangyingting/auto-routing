@@ -144,6 +144,14 @@ class BuilderTests(unittest.TestCase):
                 self.assertIn(kept, pages_doc)
             self.assertIn('isLocalOrigin', local_doc)
 
+    def test_recorded_demos_have_only_real_cloud_and_cli_steps(self):
+        rec_path = Path(__file__).resolve().parents[1] / 'assets' / 'demo-recordings.json'
+        rec = json.loads(rec_path.read_text(encoding='utf-8'))
+        self.assertEqual(sorted(rec['steps']['fusion'].keys()), ['1', '2', '3', '4', '5'])
+        self.assertEqual(sorted(rec['steps']['foundry'].keys()), ['1', '2', '3', '4'])
+        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4', '5'])
+        self.assertNotIn('Local HTTP Failover Harness', json.dumps(rec))
+
     @unittest.skipUnless(shutil.which('node'), 'node is required to syntax-check embedded JS')
     def test_embedded_javascript_has_valid_syntax(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -488,53 +488,6 @@
             "code": 0
           }
         }
-      ],
-      "5": [
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-start",
-            "demo": "foundry",
-            "step": 5
-          }
-        },
-        {
-          "delayMs": 160,
-          "event": {
-            "kind": "output",
-            "text": "[CONFIG] Local HTTP Failover Harness: /primary (returns 429) -> /secondary (returns 200 OK)\n[REQUEST] POST http://127.0.0.1:51159/primary/chat/completions  (peak traffic burst)\n✕ BLOCKED — Attempt 1 (gpt-6-sol (primary)) failed with HTTP 429 Too Many Requests\n✓ PASS — Automatic failover to gpt-5.6-sol (allow-list #2) succeeded with HTTP 200 OK in 985 ms\nWhy: Router absorbs 429 rate-limit bursts inside your compliance allow-list so callers see zero errors.\n[SOURCE] Raw Log: Real 127.0.0.1 HTTP 429->200 trace  |  Cloud Spec: Foundry routing_trace.attempts[] (Slide 15)\n"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "raw",
-            "text": "# PROVENANCE: Real local HTTP 429 -> 200 failover exchange on http://127.0.0.1:51159 modeling Foundry routing_trace.attempts[].\n\n{\n  \"endpoint\": \"http://127.0.0.1:51159\",\n  \"elapsedMs\": 985,\n  \"routing_trace\": [\n    {\n      \"latency_ms\": 985,\n      \"attempts\": [\n        {\n          \"deployment\": \"gpt-6-sol (primary)\",\n          \"status\": 429\n        },\n        {\n          \"deployment\": \"gpt-5.6-sol (allow-list #2)\",\n          \"status\": 200\n        }\n      ]\n    }\n  ],\n  \"finalResponse\": {\n    \"servedModel\": \"gpt-5.6-luna-2026-07-09\",\n    \"liveCloud\": true\n  }\n}"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "route",
-            "model": "gpt-5.6-luna-2026-07-09 (200 OK)",
-            "meta": "Failover: 429 -> 200 (985 ms)",
-            "chip1": "Primary: HTTP 429 ✕",
-            "chip1Tone": "denied",
-            "chip2": "Fallback: 200 OK ✓",
-            "chip2Tone": "on",
-            "chip3": "Failover: 985 ms ✓",
-            "chip3Tone": "on"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-done",
-            "demo": "foundry",
-            "step": 5,
-            "code": 0
-          }
-        }
       ]
     },
     "decision": {

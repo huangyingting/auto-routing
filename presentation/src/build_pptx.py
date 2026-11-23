@@ -692,13 +692,13 @@ d2_code=(
 tb(s,M+220000,cy0+480000,cx_-440000,d2_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:foundry:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Live Foundry V1Preview traces + 429→200 failover','sizePt':11,'color':CY},
+    {'text':'4 live Foundry V1Preview cloud traces (0 local mocks)','sizePt':11,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d2_cards=[
-    ('✓  27–28 ms ML routing & affinity','DeepSeek-V4.1-Flash vs. gpt-6-luna','Live V1Preview traces route simple JSON to Flash (0 reason tok) and escalate Rust proofs to Luna with retain affinity.',CY),
+    ('✓  Pre-rank gate & param normalization','developer role + json_object → gpt-5.6-luna','One V1Preview endpoint normalizes cross-provider params and serves valid JSON in 30 ms router overhead.',CY),
+    ('⚡  27–30 ms ML routing & retain affinity','DeepSeek-V4.1-Flash (JSON) vs. gpt-6-luna (Rust)','Routes simple JSON to Flash (0 reason tok) and escalates Rust proofs to Luna with retain affinity on Turn 2.',CY),
     ('⇄  Two-stage cost → quality routing','grok-4-1-fast (cost) → gpt-5.6-terra (quality)','Splits renewal analysis into two live calls: cheap extraction in cost mode followed by strategy in quality mode.',CY),
-    ('↺  Transparent HTTP 429 → 200 failover','Primary 429 burst → live fallback 200 OK','Fires a real HTTP 429 on primary and verifies automatic failover to the next approved model with zero caller error.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d2_cards):
     yy=1540000+idx*1520000
@@ -708,7 +708,7 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
 footer(s,'',23)
-note(s,'第二个 Demo 全部来自云端 Foundry Model Router 的真实接口抓包。第一步带上 developer 角色和 JSON 模式请求，验证参数自动归一并在 27 毫秒内完成路由。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器花 28 毫秒挑中了零推理开销的 DeepSeek-V4.1-Flash；换成 Rust 无锁队列的形式化证明时，27 毫秒内自动升级到 gpt-6-luna，并且在第二轮追问时通过消息指纹返回 retain 锁住热缓存。第四步演示怎么把续约分析拆成两棒实测调用：第一棒设成 cost 模式让 grok-4-1-fast 便宜捞出关键数字，第二棒设成 quality 模式交给 gpt-5.6-terra 做博弈策略推演。最后拉起真实主备服务，模拟主节点返回 429 限流并自动切到备选节点拿回 200 成功响应。')
+note(s,'第二个 Demo 的四步全部来自云端 Foundry Model Router 的真实接口抓包，没有任何本地模拟。第一步带上 developer 角色和 JSON 模式请求，验证参数自动归一并在 30 毫秒内完成路由。\n接着往同一个 balanced 接口连发两道难度悬殊的题：提取发票编号和币种时，排序器花 27 毫秒挑中了零推理开销的 DeepSeek-V4.1-Flash；换成 Rust 无锁队列的形式化证明时，30 毫秒内自动升级到 gpt-6-luna，并且在第二轮追问时通过消息指纹返回 retain 锁住热缓存。第四步演示怎么把续约分析拆成两棒实测调用：第一棒设成 cost 模式让 grok-4-1-fast 便宜捞出关键数字，第二棒设成 quality 模式交给 gpt-5.6-terra 做博弈策略推演。')
 
 # ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
 s=23
