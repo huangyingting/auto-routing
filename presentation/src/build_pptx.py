@@ -588,21 +588,17 @@ note(s,'有了这三个基础原语，平时写 Agent 最让人头疼的外围�
 # ---------- 19 DECISION-1.1 BENCHMARKS & INTERNAL WINS
 s=19
 header(s,'05 · MICROSOFT DECISION-1.1 · BENCHMARKS','#1 across 102 decision benchmarks')
-ix=M; iy=1540000; icw=5950000; ich=3400000
+ix=M; iy=1540000; icw=6150000; ich=4460000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
-img(s,'decision-aa-index.svg',ix+40000,iy+40000,icw-80000,ich-80000,'Vector SVG chart: Artificial Analysis Decision Index v2.1 vs Time per Task — Microsoft-Decision-1.1 scores 68 (+6 pts, 2.2x faster)',fit='contain')
-card_box(s,ix,5080000,icw,920000,[
-    {'text':'102-BENCHMARK BLIND EVAL  ·  385,246 QUESTIONS','sizePt':11,'bold':True,'color':CY,'spaceAfterPt':6},
-    {'text':'#1 overall (78.8%): Tools & agents 86.6 · Routing 81.7 · Safety 85.6 · Consistency 91.8','sizePt':12,'color':INK},
-],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=95000,font=MF)
+img(s,'decision-102-benchmarks.svg',ix+40000,iy+40000,icw-80000,ich-80000,'Vector SVG chart: Microsoft Decision benchmark report (Nov 14, 2026) — Microsoft-Decision-1.1 ranks #1 overall (78.8%) across 102 blind benchmarks (385,246 questions) and leads 7 of 9 capability categories',fit='contain')
 rx=ix+icw+240000; rw=W-M-rx
 card_box(s,rx,1540000,rw,1240000,[
-    {'text':'AA Decision Index v2.1: Score 68','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
-    {'text':'+6 pts & 2.2× faster than Decision-1; ahead of Jev 1.14 (66), Gemini Decision 1 (66) & GPT-6 Luna Decisions (60).','sizePt':12.4,'color':MUTED},
+    {'text':'#1 Overall Across 102 Blind Benchmarks','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
+    {'text':'78.8% mean accuracy over 385,246 zero-overlap questions — ahead of Jev 1.14 (78.1), Gemini Decision 1 (77.7) & GPT-6 Luna (73.4).','sizePt':12.4,'color':MUTED},
 ],fill=CARD,pad_x=200000,pad_y=95000)
 card_box(s,rx,2900000,rw,1240000,[
-    {'text':'Generalizes Across 7 of 9 Domains','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
-    {'text':'Leads classification, routing, tool selection, grounded rules, judging, safety & consistency with zero training overlap.','sizePt':12.4,'color':MUTED},
+    {'text':'Leads 7 of 9 Capabilities  ·  2.2× Faster','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
+    {'text':'#1 in routing, tools, safety, rules, reasoning, judging & consistency — plus Score 68 (+6 pts, 123 ms) on AA Decision Index v2.1.','sizePt':12.4,'color':MUTED},
 ],fill=CARD,pad_x=200000,pad_y=95000)
 card_box(s,rx,4260000,rw,1740000,[
     {'text':'Powering Microsoft & 4,000+ Customers','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
@@ -612,7 +608,7 @@ card_box(s,rx,4260000,rw,1740000,[
     {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':12.2,'color':INK},
 ],fill=CARD,pad_x=200000,pad_y=90000)
 footer(s,'',20)
-note(s,'看到接口这么轻巧、每次只激活 4B 参数、价格还只要几美分，大家心里肯定会问一句：它判断得够准吗？跟满血旗舰模型比会不会掉点？我们直接看硬指标。在第三方机构 Artificial Analysis 的决策指数评测里，Decision-1.1 拿到了全场最高的 68 分，平均耗时才 123 毫秒左右，把一众专用决策模型和通用旗舰都甩在了后面。\n在完全没有训练集重叠的 102 项公开基准、超过 38.5 万道盲测题里，它在工具调用、路由分流、安全风控、质量评判和一致性等七个核心领域全部排在榜首。上线才五周就已经有四千多家企业接进了生产环境；在微软内部，前面聊到的 Copilot 聊天转长任务、Cowork 动态调推理力度、Foundry 评测打分，还有比旗舰模型快 14 倍、便宜 200 倍的 Xbox 研究分析管线，底层全靠它在驱动。')
+note(s,'看到接口这么轻巧、每次只激活 4B 参数、价格还只要几美分，大家心里肯定会问一句：它判断得够准吗？会不会只在少数窄题库上刷分？这正是微软专门做大规模盲测的原因——单一窄榜单很容易被过拟合，所以团队直接拉了完全不在训练集里的 102 项基准（41 项公开 + 61 项真实企业场景，一共 38.5 万道题）对八款主流决策模型做盲测。\n结果非常扎实：Microsoft-Decision-1.1 以 78.8% 的平均准确率拿下总榜第一，在九大能力维度里一口气领跑了七项，包括大家最关心的路由分流（81.7%）、工具与 Agent 选择（86.6%）、安全风控（85.6%）和前后一致性（91.8%）；同时在第三方 Artificial Analysis Decision Index v2.1 上也比上一代暴涨 6 分达到 68 分、速度快了 2.2 倍（中位耗时约 123 毫秒），压过了 Google Gemini Decision 1、Jev 1.14 和 OpenAI GPT-6 Luna Decisions。上线才五周就有四千多家企业用进了生产，微软内部的 Copilot 分流、Cowork 力度调节、Foundry 评测裁判以及快 14 倍省 200 倍的 Xbox 分析管线全靠它驱动。\n\n参考来源：Microsoft Command Line — Microsoft-Decision-1.1 GA（2026 年 11 月 17 日，附 Microsoft Decision benchmark report 2026-11-14）。')
 
 # ---------- 20 CONTOSO 7.2X CAC CASE STUDY VECTOR SVG
 s=20

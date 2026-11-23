@@ -26,7 +26,7 @@ HTML embeds `.svg` files directly as native vector graphics (`data:image/svg+xml
 | `foundry-overview.png` | Official Microsoft Learn — Microsoft Foundry Auto (`"model": "auto"`) & Model Router overview across 40+ models & coding/agent SDKs | Slide 12 |
 | `foundry-router-flow.png` | Official Microsoft Learn — Foundry Model Router request flow (`Pool → Rank → PTU/PAYG → Failover`) | Slide 13 |
 | `hydra-pareto.png` | Official GitHub Blog — HyDRA 5-model production pool Pareto frontier (`arXiv:2605.17106`) | Slide 15 |
-| `decision-aa-index.svg` (`.png`) | Official Microsoft Command Line — Pure SVG of Artificial Analysis Decision Index v2.1 vs. Time per Task (`Microsoft-Decision-1.1`) | Slide 18 |
+| `decision-102-benchmarks.svg` (`.png`) | Official Microsoft Command Line (`Microsoft Decision benchmark report`, Nov 14, 2026) — `#1` overall (`78.8%`) across 102 blind benchmarks (385,246 questions) & leading 7 of 9 capability categories | Slide 20 |
 | `decision-cac-waterfall.svg` (`.png`) | Vector SVG of Microsoft Command Line `Decision-1.1` Cost-per-Lead Waterfall (`$13 → $1.81`, `7.2×`) & 32-reply `100%` router accuracy | Slide 21 |
 
 ## 3. Recorded interactive demo traces (`demo-recordings.json`)
