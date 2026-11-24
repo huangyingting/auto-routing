@@ -20,6 +20,7 @@ import {
 const demoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = path.resolve(demoRoot, "..");
 const htmlPath = path.join(repoRoot, "dist", "html", "index.html");
+const htmlZhPath = path.join(repoRoot, "dist", "html", "index.zh.html");
 const recordingsPath = path.join(repoRoot, "presentation", "assets", "demo-recordings.json");
 const port = Number.parseInt(process.env.AUTO_DEMO_PORT ?? "8787", 10);
 
@@ -128,6 +129,13 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
     const html = await readFile(htmlPath, "utf8");
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(html);
+    return;
+  }
+
+  if (req.method === "GET" && (url.pathname === "/index.zh.html" || url.pathname === "/zh" || url.pathname === "/zh/")) {
+    const html = await readFile(htmlZhPath, "utf8");
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     res.end(html);
     return;

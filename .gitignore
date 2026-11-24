@@ -6,6 +6,7 @@ __pycache__/
 dist/*
 !dist/README.md
 docs/index.html
+docs/zh/
 
 # Test and analysis caches
 .pytest_cache/

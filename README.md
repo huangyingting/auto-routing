@@ -46,9 +46,13 @@ npm --prefix demo run demo:decision
 npm --prefix demo run demo:replay
 ```
 
-- **PPTX**：`dist/pptx/Auto-routing LLMs.pptx`
-- **本地讲者版 HTML**：`dist/html/index.html`（含底部讲者工具栏 `Notes N` / `Studio D` 及 `N`/`D` 快捷键，仅在本机 `file://` 或 `localhost` / `127.0.0.1` 下启用）
-- **GitHub Pages 公开版 HTML**：`docs/index.html`（保留页面右上角 Demo 入口按钮与录制回放工作台，不含底部 `Notes`、`Studio` 栏、讲者备注及 `N`/`D` 快捷键）
+- **双语 PPTX（英文版配英文 Speaker Notes，中文版配中文 Speaker Notes）**：
+  - 英文版：`dist/pptx/Auto-routing LLMs.pptx`（English slides + English speaker notes）
+  - 中文版：`dist/pptx/Auto-routing LLMs (zh-CN).pptx`（中文幻灯片 + 自然口语中文讲者备注）
+- **本地讲者版双语 HTML**（左下角一键 `EN | 中文` 同步页码切换，底部含讲者工具栏 `Notes N` / `Studio D` 及 `N`/`D` 快捷键，仅在本机 `file://` 或 `localhost` / `127.0.0.1` 下启用）：
+  - 英文版：`dist/html/index.html`（英文课件 + 英文讲者备注）
+  - 中文版：`dist/html/index.zh.html`（中文课件 + 中文讲者备注；Live Bridge 下可通过 `/zh/` 访问）
+- **GitHub Pages 公开版双语 HTML**：`docs/index.html`（英文 `/`）与 `docs/zh/index.html`（中文 `/zh/`，左下角 `EN | 中文` 切换；保留右上角 Demo 入口按钮与录制回放工作台，不含底部 `Notes`、`Studio` 栏、讲者备注及 `N`/`D` 快捷键）
 - **网页集成可视化 Auto-Routing Studio**：
   - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；本地运行 `dist/html/index.html` 时，`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭，`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF。
   - **GitHub Pages / 静态离线回放**：打开在线 Pages 或本地 `dist/html/index.html`，在第 11、13、21 页对应产品处或第 22–24 页点击右上角按钮（本地版还可在任意页按 `D`），即可在分色路由工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · 单命令原生 `copilot --model auto` 与 `--model fusion --fusion-tier high` 的 Single / Cascade / Critique / 99% Cache，5 步）**、**Demo 2（Cloud API · Foundry Model Router，4 步）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1，5 步）**——全部 14 个步骤均由真实 CLI / 云端 HTTP 调用实测抓包生成（零本地模拟、零客户端拼装），终端右上角支持一键切换 **`Summary` | `{ } Raw Log`** 查看完整原始 CLI JSONL（`session.fusion_resolved`、`assistant.fusion_phase_completed`、`session.auto_mode_resolved` + `usage.json`）/ HTTP JSON 响应与数据出处。

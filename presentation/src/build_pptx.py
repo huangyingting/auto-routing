@@ -7,7 +7,7 @@ as a standalone .pptx with build-time layout & overlap verification.
 Usage:   pip install python-pptx pillow
          python -m presentation.src.build_pptx [--out "dist/pptx/Auto-routing LLMs.pptx"]
 """
-import argparse, os
+import argparse, copy, os
 from pptx import Presentation
 from pptx.util import Emu, Pt
 from pptx.dml.color import RGBColor
@@ -16,6 +16,10 @@ from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.oxml import parse_xml
 from pptx.oxml.ns import nsdecls
 from PIL import Image
+try:
+    from .i18n import EN_NOTES, ZH_TEXT_MAP, ZH_DEMO_LAUNCHERS
+except ImportError:
+    from i18n import EN_NOTES, ZH_TEXT_MAP, ZH_DEMO_LAUNCHERS
 
 # ===================== THEME & LAYOUT =====================
 W,H=12192000,6858000; M=457200; CW=W-2*M
@@ -43,18 +47,25 @@ REFS_RIGHT = [
 slides={}
 notes={}
 def P(s,op): slides.setdefault(s,[]).append(op)
-WF={'Inter Tight':0.50,'Segoe UI Variable Display':0.51,'Segoe UI Variable Text':0.50,'Calibri':0.50,'Consolas':0.55,'Inconsolata':0.50,'Plus Jakarta Sans':0.55,'Newsreader':0.58,'JetBrains Mono':0.62,'Aptos Display':0.56,'Aptos':0.53,'Cascadia Code':0.62,'Georgia':0.6,'Arial':0.56,'Courier New':0.62}
+WF={'Inter Tight':0.50,'Segoe UI Variable Display':0.51,'Segoe UI Variable Text':0.50,'Calibri':0.50,'Microsoft YaHei UI':0.50,'Consolas':0.55,'Inconsolata':0.50,'Plus Jakarta Sans':0.55,'Newsreader':0.58,'JetBrains Mono':0.62,'Aptos Display':0.56,'Aptos':0.53,'Cascadia Code':0.62,'Georgia':0.6,'Arial':0.56,'Courier New':0.62}
+def _disp_units(s):
+    return sum(1.85 if ord(ch) > 0x2E80 else 1.0 for ch in s)
 def nlines(text,size,cx,font,bold):
     f=WF[font]*(1.08 if bold else 1)
     cpl=max(1,int((cx-240000)/(size*12700*f)))
     n=0
     for para in text.split('\n'):
-        words=para.split(' '); line=0; cnt=1
-        for w_ in words:
-            L=len(w_)+(1 if line else 0)
-            if line+L>cpl and line>0: cnt+=1; line=len(w_)
-            else: line+=L
-        n+=cnt
+        has_cjk=any(ord(ch)>0x2E80 for ch in para)
+        if has_cjk:
+            u=_disp_units(para)
+            n+=max(1,int((u+cpl-1)//cpl)) if u>0 else 1
+        else:
+            words=para.split(' '); line=0; cnt=1
+            for w_ in words:
+                L=len(w_)+(1 if line else 0)
+                if line+L>cpl and line>0: cnt+=1; line=len(w_)
+                else: line+=L
+            n+=cnt
     return n
 def hgt(paras,cx,font,space_after=6.5):
     t=0
@@ -798,11 +809,39 @@ footer(s,'',26)
 note(s,'最后一页把今天提到的评测报告、官方文档、HyDRA 论文以及 Decision-1.1 的接入指南和开源题库都整理好了，PPT 和网页上都能直接点开，方便大家回去查阅。')
 
 
-# ===================== BUILD-TIME LAYOUT VALIDATOR =====================
-def validate_layout():
+# ===================== LOCALIZATION & LAYOUT VALIDATOR =====================
+def get_localized_slides(lang='en'):
+    if lang == 'en':
+        return slides
+    if lang != 'zh':
+        raise ValueError(f'Unsupported language: {lang}')
+    out = {}
+    for k, ops in slides.items():
+        new_ops = []
+        for o in ops:
+            no = copy.deepcopy(o)
+            if 'text' in no and no['text'] in ZH_TEXT_MAP:
+                no['text'] = ZH_TEXT_MAP[no['text']]
+            if 'paragraphs' in no:
+                for p in no['paragraphs']:
+                    if p.get('text') in ZH_TEXT_MAP:
+                        p['text'] = ZH_TEXT_MAP[p['text']]
+            new_ops.append(no)
+        out[k] = new_ops
+    return out
+
+def get_localized_notes(lang='en'):
+    if lang == 'zh':
+        return notes
+    if lang == 'en':
+        return {k: EN_NOTES.get(k, v) for k, v in notes.items()}
+    raise ValueError(f'Unsupported language: {lang}')
+
+def validate_layout(slide_map=None):
+    target = slides if slide_map is None else slide_map
     errors=[]
-    for k in sorted(slides):
-        ops=slides[k]
+    for k in sorted(target):
+        ops=target[k]
         for o in ops:
             if o['cx']<=0 or o['cy']<=0 or o['x']<0 or o['y']<0 or o['x']+o['cx']>W or o['y']+o['cy']>H:
                 errors.append(f'Slide {k+1}: {o["op"]} has invalid bounds')
@@ -831,12 +870,13 @@ PRESETS={'rect':MSO_SHAPE.RECTANGLE,'roundRect':MSO_SHAPE.ROUNDED_RECTANGLE,'ell
 ALIGN={'left':PP_ALIGN.LEFT,'center':PP_ALIGN.CENTER,'right':PP_ALIGN.RIGHT}
 rgb=lambda h:RGBColor.from_string(h)
 
-def write_text(tf,o):
+def write_text(tf,o,lang='en'):
     tf.word_wrap=True; tf.vertical_anchor=MSO_ANCHOR.MIDDLE
     tf.margin_left=Emu(76200); tf.margin_right=Emu(76200)
     tf.margin_top=Emu(57150); tf.margin_bottom=Emu(57150)
     paras=o.get('paragraphs') or [{'text':o['text']}]
     raw_font=o.get('fontFamily',BF)
+    eff_font='Microsoft YaHei UI' if (lang=='zh' and raw_font!=MF) else raw_font
     default_sa=o.get('spaceAfterPt', 2.0 if raw_font==MF else 6.5)
     for i,p in enumerate(paras):
         para=tf.paragraphs[0] if i==0 else tf.add_paragraph()
@@ -851,7 +891,7 @@ def write_text(tf,o):
             r=para.add_run(); r.text=line
             if p.get('href'): r.hyperlink.address=p['href']
             f=r.font
-            f.name=raw_font; f.size=Pt(sz)
+            f.name=eff_font; f.size=Pt(sz)
             f.bold=p.get('bold',o.get('bold',False)); f.color.rgb=rgb(p.get('color',o.get('color',INK)))
             if o.get('letterSpacingPt'): r._r.get_or_add_rPr().set('spc',str(int(o['letterSpacingPt']*100)))
 
@@ -930,12 +970,13 @@ def add_appear_animation(sl,item_shapes):
     )
     sl._element.insert_element_before(timing,'p:extLst')
 
-def add_pages_qr(sl, pages_url):
+def add_pages_qr(sl, pages_url, lang='en'):
     clean = (pages_url or '').strip()
     if not clean:
         return
     import io, re, qrcode
     display = re.sub(r'^https?://', '', clean).rstrip('/')
+    kicker = ZH_TEXT_MAP.get('SCAN FOR LIVE SLIDES & DEMO', 'SCAN FOR LIVE SLIDES & DEMO') if lang == 'zh' else 'SCAN FOR LIVE SLIDES & DEMO'
     card = sl.shapes.add_shape(PRESETS['roundRect'], Emu(740000), Emu(4190000), Emu(4720000), Emu(1930000))
     card.shadow.inherit = False
     card.fill.solid(); card.fill.fore_color.rgb = rgb(CODEBG)
@@ -951,26 +992,28 @@ def add_pages_qr(sl, pages_url):
     img_buf.seek(0)
     sl.shapes.add_picture(img_buf, Emu(875000), Emu(4325000), Emu(1660000), Emu(1660000))
     cap = sl.shapes.add_textbox(Emu(2710000), Emu(4780000), Emu(2640000), Emu(280000))
-    write_text(cap.text_frame, {'text': 'SCAN FOR LIVE SLIDES & DEMO', 'size': 8.5, 'bold': True, 'color': CY, 'font': BF})
+    write_text(cap.text_frame, {'text': kicker, 'sizePt': 8.5, 'bold': True, 'color': CY, 'fontFamily': BF}, lang=lang)
     url_tb = sl.shapes.add_textbox(Emu(2710000), Emu(5060000), Emu(2640000), Emu(380000))
-    write_text(url_tb.text_frame, {'text': display, 'size': 11, 'bold': True, 'color': INK, 'font': MF})
+    write_text(url_tb.text_frame, {'text': display, 'sizePt': 11, 'bold': True, 'color': INK, 'fontFamily': MF}, lang=lang)
     url_tb.text_frame.paragraphs[0].runs[0].hyperlink.address = clean
 
-def build(out,img_dir,pages_url=None):
-    validate_layout()
+def build(out,img_dir,pages_url=None,lang='en'):
+    loc_slides = get_localized_slides(lang)
+    loc_notes = get_localized_notes(lang)
+    validate_layout(loc_slides)
     out_dir=os.path.dirname(os.path.abspath(out))
     os.makedirs(out_dir,exist_ok=True)
     prs=Presentation(); prs.slide_width,prs.slide_height=Emu(W),Emu(H)
     blank=prs.slide_layouts[6]
-    for k in sorted(slides):
+    for k in sorted(loc_slides):
         sl=prs.slides.add_slide(blank)
         sl.background.fill.solid(); sl.background.fill.fore_color.rgb=rgb(BG)
         rendered=[]
-        for o in slides[k]:
+        for o in loc_slides[k]:
             op=o['op']
             if op=='add_image': add_picture(sl,o,img_dir)
             elif op=='add_text_box':
-                sh=sl.shapes.add_textbox(Emu(o['x']),Emu(o['y']),Emu(o['cx']),Emu(o['cy'])); write_text(sh.text_frame,o)
+                sh=sl.shapes.add_textbox(Emu(o['x']),Emu(o['y']),Emu(o['cx']),Emu(o['cy'])); write_text(sh.text_frame,o,lang=lang)
                 rendered.append(sh)
             elif op=='add_shape':
                 sh=sl.shapes.add_shape(PRESETS[o['preset']],Emu(o['x']),Emu(o['y']),Emu(o['cx']),Emu(o['cy']))
@@ -979,16 +1022,16 @@ def build(out,img_dir,pages_url=None):
                 if o.get('line'): sh.line.color.rgb=rgb(o['line']); sh.line.width=Emu(o.get('lineWidth',12700))
                 else: sh.line.fill.background()
                 if o.get('rot'): sh.rotation=o['rot']/60000
-                if 'text' in o: write_text(sh.text_frame,o)
+                if 'text' in o: write_text(sh.text_frame,o,lang=lang)
                 rendered.append(sh)
         if k==0 and pages_url:
-            add_pages_qr(sl, pages_url)
+            add_pages_qr(sl, pages_url, lang=lang)
         if k==3:
             add_appear_animation(sl,[rendered[start:start+6] for start in (4,10,16,22)])
         elif k==6:
             add_appear_animation(sl,[rendered[start:start+6] for start in (2,8,14,20)])
-        if k in notes: sl.notes_slide.notes_text_frame.text=notes[k]
-    prs.save(out); print(f'Saved {out}  ({len(prs.slides)} slides)')
+        if k in loc_notes: sl.notes_slide.notes_text_frame.text=loc_notes[k]
+    prs.save(out); print(f'Saved {out}  ({len(prs.slides)} slides, lang={lang})')
 
 if __name__=='__main__':
     here=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -997,4 +1040,5 @@ if __name__=='__main__':
     ap.add_argument('--out',default=os.path.join(root,'dist','pptx','Auto-routing LLMs.pptx'))
     ap.add_argument('--images',default=os.path.join(here,'assets','images'))
     ap.add_argument('--pages-url',default=os.environ.get('PAGES_URL'))
-    a=ap.parse_args(); build(a.out,a.images,pages_url=a.pages_url)
+    ap.add_argument('--lang',choices=('en','zh'),default='en')
+    a=ap.parse_args(); build(a.out,a.images,pages_url=a.pages_url,lang=a.lang)
