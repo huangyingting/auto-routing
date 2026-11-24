@@ -1101,10 +1101,10 @@ export async function runDecisionStepLive(step, emit) {
     });
     const probs = [];
     const times = [];
-    let firstRaw = "";
+    const rawTraces = [];
     for (let i = 0; i < 5; i += 1) {
       const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
-      if (i === 0) firstRaw = rawTrace;
+      rawTraces.push(`# --- Run #${i + 1} of 5 ---\n${rawTrace}`);
       const p = Number(json.answers?.ready_to_buy?.noul ?? json.ready_to_buy?.noul ?? 0);
       probs.push(p);
       times.push(wallMs);
@@ -1120,7 +1120,12 @@ export async function runDecisionStepLive(step, emit) {
         `Why: Single-pass decision engine returns deterministic probabilities with $0 output-token cost.\n` +
         `[SOURCE] Raw Log: 5x POST /providers/microsoft/v1/systemone (answers.ready_to_buy.noul)  |  Pricing: $0.042/1M in (Slide 17)\n`,
     });
-    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone HTTP JSON (Run #1 of 5).\n\n${firstRaw}` });
+    emit({
+      kind: "raw",
+      text:
+        `# PROVENANCE: Five live /providers/microsoft/v1/systemone HTTP requests and responses.\n\n` +
+        rawTraces.join("\n\n"),
+    });
     emit({
       kind: "route",
       model: `noul = ${probs[0].toFixed(4)}`,

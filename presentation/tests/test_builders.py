@@ -169,6 +169,13 @@ class BuilderTests(unittest.TestCase):
         self.assertEqual(sorted(rec['steps']['foundry'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4', '5'])
         self.assertNotIn('Local HTTP Failover Harness', json.dumps(rec))
+        decision_step_1_raw = next(
+            item['event']['text']
+            for item in rec['steps']['decision']['1']
+            if item['event']['kind'] == 'raw'
+        )
+        self.assertEqual(decision_step_1_raw.count('# --- Run #'), 5)
+        self.assertEqual(decision_step_1_raw.count('# HTTP 200 Response JSON'), 5)
 
     @unittest.skipUnless(shutil.which('node'), 'node is required to syntax-check embedded JS')
     def test_embedded_javascript_has_valid_syntax(self):

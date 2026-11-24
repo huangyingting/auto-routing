@@ -3,6 +3,7 @@
  * Re-records live traces into presentation/assets/demo-recordings.json for available live backends
  * (Copilot CLI for `fusion` when --record-fusion is passed; Foundry & Decision-1.1 when AZURE_FOUNDRY_ENDPOINT is set),
  * and validates all 14 step recordings.
+ * Use --decision-only --steps 1 to refresh only Decision-1.1 Step 1.
  */
 import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -54,6 +55,7 @@ async function captureStep(runFn) {
 async function main() {
   const recordFusion = process.argv.includes("--record-fusion") || process.argv.includes("--fusion-only");
   const fusionOnly = process.argv.includes("--fusion-only");
+  const decisionOnly = process.argv.includes("--decision-only");
   const data = JSON.parse(await readFile(outPath, "utf8"));
   const caps = detectLiveCapabilities();
   const sessionStore = {};
@@ -73,7 +75,7 @@ async function main() {
         await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
       }
     }
-    if (!fusionOnly && caps.foundryReady) {
+    if (!fusionOnly && !decisionOnly && caps.foundryReady) {
       delete data.steps.foundry["5"];
       for (let s = 1; s <= 4; s += 1) {
         console.log(`Recording live foundry step ${s}...`);
@@ -82,7 +84,8 @@ async function main() {
       }
     }
     if (!fusionOnly && caps.decisionReady) {
-      for (let s = 1; s <= 5; s += 1) {
+      const decisionSteps = decisionOnly ? fusionSteps : [1, 2, 3, 4, 5];
+      for (const s of decisionSteps) {
         console.log(`Recording live decision step ${s}...`);
         data.steps.decision[String(s)] = await captureStep((emit) => runDecisionStepLive(s, emit));
         await writeFile(outPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
