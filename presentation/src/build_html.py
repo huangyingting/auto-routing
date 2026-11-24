@@ -1583,7 +1583,7 @@ def build(out, img_dir, maxw, pages_url=None, presenter_tools=True, lang='en', a
         script_body = PUBLIC_JS
     html_lang = 'zh-CN' if lang == 'zh' else 'en'
     doc_title = (
-        '大模型自动路由 Auto-routing LLMs — 兼顾质量、成本与延迟的智能模型选择与 Microsoft-Decision-1.1 实战'
+        '大模型自动路由 Auto-routing LLMs — 兼顾效果、成本与速度的模型选型实践'
         if lang == 'zh'
         else 'Auto-routing LLMs — Balancing Quality, Cost &amp; Latency with Decision Models and Microsoft Copilot'
     )
