@@ -59,9 +59,29 @@ class BuilderTests(unittest.TestCase):
             doc = (root / 'index.zh.html').read_text(encoding='utf-8')
             for en_marker in ('id="studio-ledger"', 'id="btn-view-visual"', 'id="live-visual-stage"', 'CUMULATIVE LEDGER', 'CODE DIFF &amp; REVIEW'):
                 self.assertIn(en_marker, doc_en)
-            for expected in ('演示 1 · 编码 Agent', '运行步骤 1', '自动播放', '✦ 可视化', '累计成本与耗时', '代码对比与评审', '{ } 原始日志', 'Auto 快速路径：读取一行配置'):
+            for expected in (
+                '演示 1 · 编程 Agent',
+                '运行步骤 1',
+                '自动播放',
+                '✦ 可视化',
+                '累计成本与耗时',
+                '代码修改与评审',
+                '与固定使用大模型相比',
+                '所有消息都交给大模型',
+                '先请用户补充材料',
+                '{ } 原始日志',
+                'Auto 快速路径：读取一行配置',
+            ):
                 self.assertIn(expected, doc)
-            self.assertNotIn('Auto Fast Path: 1-Line Config Lookup', doc)
+            for forbidden in (
+                'Auto Fast Path: 1-Line Config Lookup',
+                'Demo 1 · Coding Agent',
+                'Payoff vs. Naive Baseline',
+                'All-Frontier Inbox',
+                'Reviewing every AI draft manually kills ROI',
+                'Fusion 高',
+            ):
+                self.assertNotIn(forbidden, doc)
             if shutil.which('node'):
                 scripts = re.findall(r'<script>(.*?)</script>', doc, flags=re.S)
                 self.assertGreaterEqual(len(scripts), 2)
