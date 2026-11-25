@@ -245,7 +245,7 @@ banner_box(s,M,5060000,5040000,860000,'Rule of thumb: switch models only at Turn
 rx=M+5040000+340000; rw=W-M-rx
 cache_cards=[
     ('Warm prefix cache = 10×–20× cheaper','Once a main model caches contracts, emails, repo files and 80+ tool schemas, follow-up turns pay ~10% cache-read rates.',CY),
-    ('Mid-session downgrades can cost MORE','Switching to a “cheaper” model on turn 5 invalidates the prefix cache and forces re-prefilling 50k+ tokens from scratch.',AMB),
+    ('Mid-session downgrades can cost MORE','Switching to a “cheaper” model mid-session invalidates the prefix cache and forces re-prefilling 50k+ tokens from scratch.',AMB),
     ('Route at natural cache boundaries','Pick on Turn 1, after context compaction, on isolated sub-agents, or only when task complexity shifts dramatically.',CY),
 ]
 for i,(t,d,col_) in enumerate(cache_cards):
@@ -255,7 +255,7 @@ for i,(t,d,col_) in enumerate(cache_cards):
         {'text':d,'sizePt':13.6,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=240000,pad_y=120000)
 footer(s,'',6)
-note(s,'看到模型之间有这么大的价差，很容易想到一个做法：干脆每一轮对话都重新算一次难度，遇到简单的追问就马上切到便宜的小模型。实际上这样做往往适得其反，因为会让前缀缓存失效。\n现在的 Agent 在第一轮对话时，通常会放入大量合同文本、代码文件和几十个工具定义。只要后续轮次继续用同一个模型，读取已缓存内容的单价一般只有原价的十分之一左右，响应也更快。如果在第五轮为了省一点费用切到另一个模型，原来的缓存就用不上了，新模型必须按全价把前面几万个 Token 重新处理一遍，结果反而更慢、更贵。因此更合理的做法是：只在会话刚开始、上下文压缩重置之后、独立的子任务，或者任务难度明显变化时才切换模型。\n\n参考来源：Charles Lamanna（M365 Copilot Auto）与 Joe Binder（GitHub Blog 前缀缓存感知路由技术解析）。')
+note(s,'看到模型之间有这么大的价差，很容易想到一个做法：干脆每一轮对话都重新算一次难度，遇到简单的追问就马上切到便宜的小模型。实际上这样做往往适得其反，因为会让前缀缓存失效。\n现在的 Agent 在第一轮对话时，通常会放入大量合同文本、代码文件和几十个工具定义。只要后续轮次继续用同一个模型，读取已缓存内容的单价一般只有原价的十分之一左右，响应也更快。如果在对话中途为了省一点费用切到另一个模型，原来的缓存就用不上了，新模型必须按全价把前面几万个 Token 重新处理一遍，结果反而更慢、更贵。因此更合理的做法是：只在会话刚开始、上下文压缩重置之后、独立的子任务，或者任务难度明显变化时才切换模型。\n\n参考来源：Charles Lamanna（M365 Copilot Auto）与 Joe Binder（GitHub Blog 前缀缓存感知路由技术解析）。')
 
 # ---------- 6 PART 3: MICROSOFT ROUTING LANDSCAPE (4 CARDS + APPEAR)
 s=6

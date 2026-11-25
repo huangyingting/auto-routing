@@ -48,6 +48,17 @@ class BuilderTests(unittest.TestCase):
         for k in en_slides:
             self.assertTrue(any('a' <= ch.lower() <= 'z' for ch in D.get_localized_notes('en')[k]))
             self.assertTrue(any(ord(ch) > 0x4E00 for ch in D.get_localized_notes('zh')[k]))
+        zh_text = '\n'.join(
+            op.get('text', '') or '\n'.join(p.get('text', '') for p in op.get('paragraphs', []))
+            for ops in zh_slides.values()
+            for op in ops
+            if op.get('op') == 'add_text_box'
+        )
+        zh_notes = '\n'.join(D.get_localized_notes('zh').values())
+        self.assertIn('在对话中途为了省一点费用切到另一个模型', zh_text)
+        self.assertIn('在对话中途为了省一点费用切到另一个模型', zh_notes)
+        self.assertNotIn('第五轮', zh_text + zh_notes)
+        self.assertNotIn('第 5 轮', zh_text + zh_notes)
 
     def test_chinese_demo_studio_localizes_controls_and_explanations(self):
         with tempfile.TemporaryDirectory() as directory:

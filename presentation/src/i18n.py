@@ -41,7 +41,7 @@ EN_NOTES = {
         "When engineers see a 163x cost gap, their first instinct is often: 'Let's score every single turn and downgrade to a cheap model whenever the user asks an easy follow-up!' "
         "Don't do that—it is the #1 auto-routing trap: breaking a warm prefix cache.\n"
         "Modern agents load tens of thousands of tokens—contracts, repo files, and 80-plus tool schemas—on Turn 1. As long as follow-up turns stay on that same model, "
-        "cached prompt reads cost roughly 90% less and return much faster. Switching to a 'cheaper' model on Turn 5 invalidates that cache and forces a full-price re-prefill of 50,000 tokens, costing more time and money. "
+        "cached prompt reads cost roughly 90% less and return much faster. Switching to a 'cheaper' model mid-conversation invalidates that cache and forces a full-price re-prefill of 50,000 tokens, costing more time and money. "
         "Route only at natural cache boundaries: Turn 1, right after context compaction, on isolated sub-agents, or when task difficulty jumps dramatically.\n\n"
         "Source: Charles Lamanna (M365 Copilot Auto) & Joe Binder (GitHub Blog on cache-aware routing)."
     ),
@@ -251,7 +251,8 @@ ZH_TEXT_MAP = {
     'Warm prefix cache = 10×–20× cheaper': '命中前缀缓存可节省 90% 左右输入成本',
     'Once a main model caches contracts, emails, repo files and 80+ tool schemas, follow-up turns pay ~10% cache-read rates.': '主模型在首轮缓存合同、代码文件和 80 多个工具定义后，后续轮次读取缓存的价格通常只有原价的约 10%。',
     'Mid-session downgrades can cost MORE': '对话中途换用小模型反而可能更贵',
-    'Switching to a “cheaper” model on turn 5 invalidates the prefix cache and forces re-prefilling 50k+ tokens from scratch.': '如果在第 5 轮切换到另一个便宜模型，原有缓存就会失效，新模型需要按全价重新处理 5 万多个 Token。',
+    'Switching to a “cheaper” model mid-session invalidates the prefix cache and forces re-prefilling 50k+ tokens from scratch.':
+        '如果在对话中途为了省一点费用切到另一个模型，原有缓存就会失效，新模型需要按全价重新处理前面 5 万多个 Token。',
     'Route at natural cache boundaries': '在自然的缓存边界处切换模型',
     'Pick on Turn 1, after context compaction, on isolated sub-agents, or only when task complexity shifts dramatically.': '只在会话开始、上下文压缩重置后、独立子任务，或任务难度明显变化时重新选择模型。',
 
