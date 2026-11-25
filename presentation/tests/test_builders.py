@@ -60,6 +60,21 @@ class BuilderTests(unittest.TestCase):
         self.assertNotIn('第五轮', zh_text + zh_notes)
         self.assertNotIn('第 5 轮', zh_text + zh_notes)
 
+    def test_slide_seven_chinese_tags_fit_on_one_line(self):
+        labels = {'办公场景', '编程协作', '云端接口', '业务判断'}
+        operations = [
+            op
+            for op in D.get_localized_slides('zh')[6]
+            if op.get('op') == 'add_shape' and op.get('text') in labels
+        ]
+        self.assertEqual({op['text'] for op in operations}, labels)
+        for op in operations:
+            self.assertEqual(
+                D.nlines(op['text'], op['sizePt'], op['cx'], op['fontFamily'], op['bold']),
+                1,
+                op['text'],
+            )
+
     def test_chinese_demo_studio_localizes_controls_and_explanations(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

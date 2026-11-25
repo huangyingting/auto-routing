@@ -1631,3 +1631,18 @@ ZH_DEMO_TEXT_MAP.update({
     '0.19 (Bounded)': '0.19（较低）',
     'Router Latency': '判断耗时',
 })
+
+ZH_TEXT_MAP.update({
+    'Workplace Auto': '办公场景',
+    'Coding Orchestrator': '编程协作',
+    'Cloud API Router': '云端接口',
+    'Software Controller': '业务判断',
+    'Routes >90% of queries: Chat → Cowork handoff, multi-provider selection, dynamic effort & sub-agents.':
+        '超过 90% 的办公请求由 Auto 处理：判断留在 Chat 还是转到 Cowork，在企业允许的范围内选模型，并按任务调整投入。',
+    'Matches each coding task to one model or a team: Single pass, Judge-gated Cascade, or parallel Critique.':
+        '简单任务由一个模型完成；并发问题先修复再检查；架构方案先起草，再让另一个模型专门找问题。',
+    '20 ms ML ranker across 45 models (7 providers): quality bands, cache affinity, param cleanup & PTU failover.':
+        '约 20 ms 在可用模型中完成选择；简单任务优先低成本模型，多轮追问尽量沿用原模型，遇到限流自动切换。',
+    'Purpose-built decision API that classifies, scores priority, and runs yes/no safety gates in ~123 ms at $0.042/1M.':
+        '直接为业务代码返回分类、优先级和是非概率，典型耗时约 123 ms，每百万输入 Token 费用为 $0.042。',
+})
