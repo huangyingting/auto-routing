@@ -558,6 +558,15 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         res.rawTrace,
     });
     emit({
+      kind: "artifact",
+      demo: "fusion",
+      step: 1,
+      answer: res.stdout.trim(),
+      scores: scores || null,
+      credits: res.usage.credits,
+      wallSec: Number(sec),
+    });
+    emit({
       kind: "route",
       model: res.usage.displayName,
       meta: `Live · ${cr} cr · ${sec}s`,
@@ -592,6 +601,8 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         readOnly: false,
       });
 
+      const beforeMjs = await readFile(path.join(fixturesDir, "format.mjs"), "utf8");
+      const afterMjs = await readFile(path.join(ws, "format.mjs"), "utf8");
       const testRun = await execFileAsync(process.execPath, ["--test", "format.test.mjs"], {
         cwd: ws,
         windowsHide: true,
@@ -619,6 +630,18 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         `# PROVENANCE: Single native CLI call (copilot --model fusion --fusion-tier high) + host node --test verification.\n\n` +
         res.rawTrace +
         `\n\n# --- Host Verification: node --test format.test.mjs ---\n${testRun.stdout.trim()}`,
+      });
+      emit({
+        kind: "artifact",
+        demo: "fusion",
+        step: 2,
+        file: "demo/fixtures/format.mjs",
+        before: beforeMjs,
+        after: afterMjs,
+        primaryModel: chosen,
+        pattern: fr.pattern || "single",
+        credits: res.usage.credits,
+        wallSec: Number(sec),
       });
       emit({
         kind: "route",
@@ -674,9 +697,15 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     const repairPhase = res.fusionPhases.find((p) => p.phaseKind === "repair");
     const judgeVerdict = judgePhase?.verdict || "accept";
     let judgeSummary = judgePhase?.content || "";
+    let judgeScore = 5;
+    let judgeRationale = judgeSummary;
     try {
       const jObj = JSON.parse(judgePhase?.content || "{}");
-      if (jObj.rationale) judgeSummary = `score=${jObj.score}/5 · ${jObj.rationale}`;
+      if (jObj.score !== undefined) judgeScore = jObj.score;
+      if (jObj.rationale) {
+        judgeRationale = jObj.rationale;
+        judgeSummary = `score=${jObj.score}/5 · ${jObj.rationale}`;
+      }
     } catch {}
     const totalCr = res.usage.credits.toFixed(3);
     const sec = (res.wallMs / 1000).toFixed(1);
@@ -700,6 +729,24 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         `# PROVENANCE: Single native CLI invocation (copilot --model fusion --fusion-tier high).\n` +
         `# All phases below (primary solver, judge review, conditional repair skip) were orchestrated natively by Copilot Fusion:\n\n` +
         res.rawTrace,
+      });
+      emit({
+        kind: "artifact",
+        demo: "fusion",
+        step: 3,
+        file: "demo/fixtures/token-bucket.ts",
+        before: buggyTs,
+        after: fixedTs,
+        solverModel: fr.primaryModel || "gpt-6.1-sol",
+        judgeModel: fr.judgeModel || "gpt-6-luna",
+        judgeVerdict,
+        judgeScore,
+        judgeRationale,
+        repairSkipped: !repairPhase,
+        repairModel: fr.repairModel || "claude-opus-5.5",
+        stressRuns,
+        credits: res.usage.credits,
+        wallSec: Number(sec),
       });
       emit({
         kind: "route",
@@ -746,10 +793,12 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       const revPhase = res.fusionPhases.find((p) => p.phaseKind === "revision");
       let criticAssessment = "revise";
       let criticFeedback = criticPhase?.content || "";
+      let criticEvidence = "";
       try {
         const cObj = JSON.parse(criticPhase?.content || "{}");
         criticAssessment = cObj.assessment || "revise";
         criticFeedback = cObj.feedback || criticFeedback;
+        criticEvidence = cObj.defect?.evidence || "";
       } catch {}
       const totalCr = res.usage.credits.toFixed(3);
       const sec = (res.wallMs / 1000).toFixed(1);
@@ -773,6 +822,20 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
           `# PROVENANCE: Single native CLI invocation (copilot --model fusion --fusion-tier high).\n` +
           `# Draft -> Critic -> Handoff -> Revision all executed natively inside one Copilot Fusion turn:\n\n` +
           res.rawTrace,
+      });
+      emit({
+        kind: "artifact",
+        demo: "fusion",
+        step: 4,
+        draftModel: draftPhase?.model || fr.primaryModel || "claude-opus-5.5",
+        criticModel: criticPhase?.model || fr.secondaryModel || "gpt-6-luna",
+        criticAssessment,
+        criticFeedback,
+        criticEvidence,
+        revModel: revPhase?.model || fr.primaryModel || "claude-opus-5.5",
+        cachedTokens: revPhase?.usage?.cachedTokens || 0,
+        credits: res.usage.credits,
+        wallSec: Number(sec),
       });
       emit({
         kind: "route",
@@ -852,6 +915,18 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         follow.rawTrace,
     });
     emit({
+      kind: "artifact",
+      demo: "fusion",
+      step: 5,
+      retainedModel: follow.usage.displayName,
+      cacheReadTokens: follow.usage.cacheReadTokens,
+      inputTokens: follow.usage.inputTokens,
+      hitPct,
+      metricsOutput: follow.stdout.trim(),
+      credits: follow.usage.credits,
+      wallSec: Number(sec),
+    });
+    emit({
       kind: "route",
       model: `${follow.usage.displayName} (Warm)`,
       meta: `${follow.usage.cacheReadTokens.toLocaleString()} cached tok`,
@@ -898,6 +973,15 @@ export async function runFoundryStepLive(step, emit) {
         `[SOURCE] Raw Log: POST /openai/v1/chat/completions (ModelRouterControls=V1Preview)  |  Spec: PTU order (Slide 14)\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live Microsoft Foundry Model Router HTTP JSON.\n\n${rawTrace}` });
+    emit({
+      kind: "artifact",
+      demo: "foundry",
+      step: 1,
+      servedModel: json.model,
+      routerMs: rMs,
+      wallMs,
+      jsonOutput: json.choices?.[0]?.message?.content?.trim() || "",
+    });
     emit({
       kind: "route",
       model: json.model,
@@ -946,6 +1030,16 @@ export async function runFoundryStepLive(step, emit) {
         `[SOURCE] Raw Log: response.model + model_selection_details.model_router_details.routing_trace\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live Microsoft Foundry Model Router HTTP JSON.\n\n${rawTrace}` });
+    emit({
+      kind: "artifact",
+      demo: "foundry",
+      step: 2,
+      servedModel: json.model,
+      routerMs: rMs,
+      wallMs,
+      reasoningTokens: reasonTok,
+      extracted: parsed,
+    });
     emit({
       kind: "route",
       model: json.model,
@@ -1009,6 +1103,16 @@ export async function runFoundryStepLive(step, emit) {
       text: `# PROVENANCE: Live 2-turn Foundry Model Router HTTP JSON.\n\n# --- Turn 1 ---\n${turn1.rawTrace}\n\n# --- Turn 2 ---\n${turn2.rawTrace}`,
     });
     emit({
+      kind: "artifact",
+      demo: "foundry",
+      step: 3,
+      turn1Model: turn1.json.model,
+      turn2Model: turn2.json.model,
+      routerMs: rMs,
+      affinityDecision,
+      turn2Reply: turn2.json.choices?.[0]?.message?.content?.trim() || "",
+    });
+    emit({
       kind: "route",
       model: turn1.json.model,
       meta: `Router: ${rMs} ms · Affinity: ${affinityDecision}`,
@@ -1064,6 +1168,17 @@ export async function runFoundryStepLive(step, emit) {
     });
     const shortM1 = job1.json.model.replace(/-\d{4}-\d{2}-\d{2}$/, "").replace(/-reasoning$/, "");
     const shortM2 = job2.json.model.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+    emit({
+      kind: "artifact",
+      demo: "foundry",
+      step: 4,
+      job1Model: job1.json.model,
+      job2Model: job2.json.model,
+      r1Ms,
+      r2Ms,
+      job1Text: job1.json.choices?.[0]?.message?.content?.trim() || "",
+      job2Text: job2.json.choices?.[0]?.message?.content?.trim() || "",
+    });
     emit({
       kind: "route",
       model: `${shortM1} → ${shortM2}`,
@@ -1127,6 +1242,15 @@ export async function runDecisionStepLive(step, emit) {
         rawTraces.join("\n\n"),
     });
     emit({
+      kind: "artifact",
+      demo: "decision",
+      step: 1,
+      probs,
+      times,
+      spread,
+      p50,
+    });
+    emit({
       kind: "route",
       model: `noul = ${probs[0].toFixed(4)}`,
       meta: `p50: ${p50} ms · spread ${spread.toFixed(1)} pt`,
@@ -1168,6 +1292,7 @@ export async function runDecisionStepLive(step, emit) {
     });
     let skipped = 0;
     const rawTraces = [];
+    const inboxItems = [];
     for (const msg of inbox) {
       const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state: msg, questions });
       rawTraces.push(rawTrace);
@@ -1175,6 +1300,7 @@ export async function runDecisionStepLive(step, emit) {
       const choice = ans.choice || "unknown";
       const conf = ans.probabilities?.[choice] ?? 0;
       if (choice !== "frontier_sol") skipped += 1;
+      inboxItems.push({ msg, choice, conf: Number(conf), wallMs });
       emit({
         kind: "output",
         text: `  "${msg}" -> choice="${choice}" (p=${Number(conf).toFixed(2)}, ${wallMs} ms)\n`,
@@ -1188,6 +1314,13 @@ export async function runDecisionStepLive(step, emit) {
         `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.route.{choice,probabilities})  |  Eval: Slide 21\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone batch HTTP JSON.\n\n${rawTraces.join("\n\n")}` });
+    emit({
+      kind: "artifact",
+      demo: "decision",
+      step: 2,
+      inboxItems,
+      skipped,
+    });
     emit({
       kind: "route",
       model: `choice · ${skipped}/4 skip Frontier`,
@@ -1246,6 +1379,17 @@ export async function runDecisionStepLive(step, emit) {
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live 3-question /providers/microsoft/v1/systemone HTTP JSON.\n\n${rawTrace}` });
     emit({
+      kind: "artifact",
+      demo: "decision",
+      step: 3,
+      team: team.choice || "safety_support",
+      teamConf,
+      score,
+      repeat: Number(repeat.noul ?? 0),
+      escalated,
+      wallMs,
+    });
+    emit({
       kind: "route",
       model: `score = ${score.toFixed(2)} (${team.choice || "safety"})`,
       meta: `3 answers in ${wallMs} ms`,
@@ -1291,6 +1435,15 @@ export async function runDecisionStepLive(step, emit) {
         `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.mentions_competitor.noul)  |  Case Study: Slide 21\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone outbound noul HTTP JSON.\n\n${rawTrace}` });
+    emit({
+      kind: "artifact",
+      demo: "decision",
+      step: 4,
+      comp,
+      disc,
+      held,
+      wallMs,
+    });
     emit({
       kind: "route",
       model: `noul = ${comp.toFixed(3)} ${held ? "HELD" : "OK"}`,
@@ -1341,6 +1494,15 @@ export async function runDecisionStepLive(step, emit) {
         `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  CAC ROI: Slide 21\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone abstention HTTP JSON.\n\n${rawTrace}` });
+    emit({
+      kind: "artifact",
+      demo: "decision",
+      step: 5,
+      choice: ans.choice || "request_missing_exhibit",
+      probs,
+      abstained,
+      wallMs,
+    });
     emit({
       kind: "route",
       model: abstained ? "Abstain · Ask User" : ans.choice,
@@ -1393,6 +1555,9 @@ export async function probeCustomPromptLive(prompt) {
       model: choice,
       meta: `Decision-1.1 · ${wallMs} ms`,
       summary: `Live /v1/systemone -> choice="${choice}" (p=${conf.toFixed(2)}), priority.score=${score.toFixed(2)} in ${wallMs} ms.`,
+      probabilities: rAns.probabilities || null,
+      priorityScore: score,
+      wallMs,
       rawTrace: `# PROVENANCE: Live /providers/microsoft/v1/systemone custom prompt probe.\n\n${rawTrace}`,
       chips: [
         [`Choice: ${choice} ✓`, "on"],

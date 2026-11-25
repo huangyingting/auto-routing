@@ -214,6 +214,9 @@ const server = http.createServer(async (req, res) => {
           model: live.model,
           meta: live.meta,
           summary: live.summary,
+          probabilities: live.probabilities || null,
+          priorityScore: live.priorityScore ?? null,
+          wallMs: live.wallMs ?? null,
           chips: live.chips,
         });
       } else {

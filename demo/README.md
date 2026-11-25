@@ -63,5 +63,6 @@ npm --prefix demo run demo:replay
 
 ## 网页交互式 Demo Studio
 
-- **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`，页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI 以及已配置的云端 Foundry / Decision-1.1 端点。
-- **静态离线回放（GitHub Pages）**：直接双击打开 `dist/html/index.html` 时无需后端，使用 `presentation/assets/demo-recordings.json` 离线回放（可通过 `node demo/src/record-web-demo.mjs --record-fusion` 重新录制真实轨迹）。
+- **三视图切换与累计账本**：默认打开 **`✦ Visual`（可视化视图）**，直观展示真实文件代码修改对比、Judge/Critic 评审意见、两阶段请求卡片、智能客服收件箱分流与发送前拦截高亮，并在顶部实时累计“固定大模型 vs 自动路由”的成本与耗时；同时保留 **`Summary`** 与 **`{ } Raw Log`** 供随时核验原始 JSONL / HTTP 报文。
+- **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`（中文版 `/zh/#22`），页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI 以及已配置的云端 Foundry / Decision-1.1 端点，并将实时补丁与返回结果同步渲染到可视化工作台。
+- **静态离线回放（GitHub Pages）**：直接打开 `dist/html/index.html` 或 `dist/html/index.zh.html` 时无需后端，使用 `presentation/assets/demo-recordings.json` 离线回放（可通过 `node demo/src/record-web-demo.mjs --record-fusion` 重新录制真实轨迹）。

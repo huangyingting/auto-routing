@@ -312,11 +312,33 @@ LIVE_DEMO = """
       </div>
     </header>
 
-    <div class="demo-purpose-bar" id="demo-purpose-bar">
-      <span class="purpose-kicker" id="purpose-kicker">DEMO 1 GOAL</span>
-      <strong id="purpose-title">Coding Agent Orchestration</strong>
-      <span class="purpose-sep" aria-hidden="true">—</span>
-      <span id="purpose-desc">See how GitHub Copilot Auto &amp; Fusion picks 1 fast model for easy edits, escalates hard bugs via Judge/Critics, and protects warm caches.</span>
+    <div class="purpose-ledger-row">
+      <div class="demo-purpose-bar" id="demo-purpose-bar">
+        <span class="purpose-kicker" id="purpose-kicker">DEMO 1 GOAL</span>
+        <strong id="purpose-title">Coding Agent Orchestration</strong>
+        <span class="purpose-sep" aria-hidden="true">—</span>
+        <span id="purpose-desc">See how GitHub Copilot Auto &amp; Fusion picks 1 fast model for easy edits, escalates hard bugs via Judge/Critics, and protects warm caches.</span>
+      </div>
+
+      <div class="studio-ledger" id="studio-ledger" aria-label="Cumulative cost and latency comparison">
+        <div class="ledger-meta">
+          <span class="ledger-kicker" id="ledger-kicker">CUMULATIVE LEDGER</span>
+          <span class="ledger-count" id="ledger-count">Preview · Step 1</span>
+        </div>
+        <div class="ledger-bars">
+          <div class="lbar-row">
+            <span class="lbar-lbl" id="ledger-base-lbl">Pinned Baseline</span>
+            <div class="lbar-track"><div class="lbar-fill base" id="ledger-base-bar" style="width:100%"></div></div>
+            <span class="lbar-val warn" id="ledger-base-val">0.450 AIU</span>
+          </div>
+          <div class="lbar-row">
+            <span class="lbar-lbl" id="ledger-auto-lbl">Auto-Routed</span>
+            <div class="lbar-track"><div class="lbar-fill auto" id="ledger-auto-bar" style="width:12%"></div></div>
+            <span class="lbar-val ok" id="ledger-auto-val">0.055 AIU</span>
+          </div>
+        </div>
+        <span class="ledger-delta" id="ledger-delta">-88% Cost</span>
+      </div>
     </div>
 
     <div class="studio-grid">
@@ -327,22 +349,26 @@ LIVE_DEMO = """
             <strong id="terminal-mode-title">GitHub Copilot CLI · Auto &amp; Fusion</strong>
             <span id="terminal-mode-sub">SINGLE · NO REVIEW OVERHEAD</span>
           </div>
-          <div class="term-legend" id="term-legend" aria-label="Color legend">
+          <span class="visual-kind-pill" id="visual-kind-pill">CODE DIFF &amp; REVIEW</span>
+          <div class="term-legend" id="term-legend" aria-label="Color legend" style="display:none">
             <span class="lg-item lg-pol">Config</span>
             <span class="lg-item lg-run">Request</span>
             <span class="lg-item lg-ok">✓ Pass</span>
             <span class="lg-item lg-err">✕ Hold</span>
             <span class="lg-item lg-src">Source</span>
           </div>
-          <div class="term-view-switch" role="group" aria-label="Terminal view mode">
-            <button type="button" class="tview-btn active" id="btn-view-summary">Summary</button>
+          <div class="term-view-switch" role="group" aria-label="Workbench view mode">
+            <button type="button" class="tview-btn active" id="btn-view-visual" title="Interactive Diff, Review &amp; Smart Inbox view">✦ Visual</button>
+            <button type="button" class="tview-btn" id="btn-view-summary">Summary</button>
             <button type="button" class="tview-btn" id="btn-view-raw" title="Inspect verbatim CLI JSONL / HTTP JSON and provenance">{ } Raw Log</button>
           </div>
         </div>
 
         <div class="route-strip" id="vis-nodes" aria-label="Routing flow"></div>
 
-        <pre class="studio-terminal" id="live-demo-output" role="log" aria-live="polite"></pre>
+        <div class="visual-stage" id="live-visual-stage" role="region" aria-label="Visual routing workbench"></div>
+
+        <pre class="studio-terminal" id="live-demo-output" role="log" aria-live="polite" hidden></pre>
 
         <form class="probe-form" id="live-probe-form">
           <span class="composer-prompt">route&gt;</span>
@@ -464,9 +490,9 @@ img.a{object-fit:cover}
 @keyframes pulseDot{0%%,100%%{box-shadow:0 0 0 3px rgba(126,226,184,.28)}50%%{box-shadow:0 0 0 7px rgba(126,226,184,.06)}}
 .trigger-arrow{font-size:14px;opacity:.88}
 
-.live-demo{position:fixed;inset:0;z-index:120;background:radial-gradient(circle at 12%% 0%%,#faf7f0 0%%,var(--bg) 62%%);color:var(--ink);font-family:var(--font-sans);padding:clamp(10px,1.5vw,20px);overflow:hidden}
+.live-demo{position:fixed;inset:0;z-index:120;background:radial-gradient(circle at 12%% 0%%,#faf7f0 0%%,var(--bg) 62%%);color:var(--ink);font-family:var(--font-sans);padding:clamp(8px,1.1vw,16px);overflow:hidden}
 .live-demo[hidden]{display:none!important}
-.studio-shell{width:100%%;height:100%%;max-width:1540px;min-width:0;margin:0 auto;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:10px;min-height:0}
+.studio-shell{width:100%%;height:100%%;max-width:1540px;min-width:0;margin:0 auto;display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:8px;min-height:0}
 .studio-top{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--edge);border-radius:14px;padding:8px 11px;box-shadow:0 6px 20px rgba(35,30,22,.05);flex-wrap:nowrap;position:relative;z-index:30;min-width:0}
 .bar-select-group{display:flex;align-items:center;gap:7px;min-width:0;flex:1}
 .studio-status-group{display:flex;align-items:center;gap:7px;flex-shrink:0}
@@ -507,17 +533,35 @@ img.a{object-fit:cover}
 .primary-run-btn:disabled{opacity:.52;cursor:wait}
 .autoplay-btn.active{background:#fef4ea;border-color:#d48a42;color:#9a5313}
 
-.demo-purpose-bar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--edge);border-left:4px solid var(--accent);border-radius:10px;padding:8px 14px;font-size:13px;line-height:1.35;color:var(--ink-soft);min-width:0}
+.purpose-ledger-row{display:grid;grid-template-columns:minmax(0,.85fr) minmax(500px,1.15fr);gap:10px;align-items:stretch;min-width:0}
+.demo-purpose-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--edge);border-left:4px solid var(--accent);border-radius:10px;padding:6px 12px;font-size:12.2px;line-height:1.3;color:var(--ink-soft);min-width:0}
 .purpose-kicker{background:rgba(63,96,126,.12);color:var(--accent);border-radius:5px;padding:3px 7px;font:800 9.5px/1 var(--font-mono);letter-spacing:.08em;flex-shrink:0}
 .demo-purpose-bar strong{color:var(--ink);font-weight:700;flex-shrink:0}
 .purpose-sep{color:var(--muted);flex-shrink:0}
 #purpose-desc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.studio-grid{display:grid;grid-template-columns:minmax(0,1.36fr) minmax(0,.92fr);gap:14px;min-height:0}
+.studio-ledger{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--edge);border-left:4px solid var(--ok);border-radius:10px;padding:5px 11px;min-width:0;box-shadow:0 4px 14px rgba(35,30,22,.04)}
+.ledger-meta{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.ledger-kicker{font:800 8.6px/1 var(--font-mono);letter-spacing:.07em;color:var(--accent)}
+.ledger-count{font:700 10px/1.1 var(--font-mono);color:var(--muted);white-space:nowrap}
+.ledger-bars{min-width:0;display:flex;flex-direction:column;gap:3px}
+.lbar-row{display:grid;grid-template-columns:76px minmax(34px,1fr) max-content;align-items:center;gap:6px;min-width:0}
+.lbar-lbl{font:700 9.8px/1 var(--font-sans);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbar-track{height:6px;border-radius:999px;background:rgba(140,132,118,.18);overflow:hidden;min-width:0}
+.lbar-fill{height:100%%;border-radius:999px;transition:width .36s cubic-bezier(.2,.8,.2,1)}
+.lbar-fill.base{background:linear-gradient(90deg,#c9644a,#b54c35)}
+.lbar-fill.auto{background:linear-gradient(90deg,#288057,#38a169)}
+.lbar-val{font:800 10px/1 var(--font-mono);white-space:nowrap;text-align:right}
+.lbar-val.warn{color:var(--warn)}
+.lbar-val.ok{color:var(--ok)}
+.ledger-delta{background:var(--ok-bg);border:1px solid rgba(40,107,75,.38);color:var(--ok);border-radius:999px;padding:4px 8px;font:800 10px/1 var(--font-mono);white-space:nowrap}
+
+.studio-grid{display:grid;grid-template-columns:minmax(0,1.38fr) minmax(0,.90fr);gap:14px;min-height:0}
 .terminal-card{display:flex;flex-direction:column;min-height:0;min-width:0;background:#0d151d;border-radius:14px;border:1px solid #243442;overflow:hidden;box-shadow:0 16px 38px rgba(16,24,32,.20)}
-.terminal-chrome{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#15212c;border-bottom:1px solid #233342;color:#b8cad8;font:500 11.5px var(--font-mono);min-width:0;flex-shrink:0}
+.terminal-chrome{display:flex;align-items:center;gap:9px;padding:9px 13px;background:#15212c;border-bottom:1px solid #233342;color:#b8cad8;font:500 11.5px var(--font-mono);min-width:0;flex-shrink:0}
 .chrome-dots{display:flex;gap:6px;flex-shrink:0}.chrome-dots span{width:9px;height:9px;border-radius:50%%;background:#3a4b59}.chrome-dots span:first-child{background:#d46a5e}.chrome-dots span:nth-child(2){background:#deb05b}.chrome-dots span:nth-child(3){background:#5fb384}
 .chrome-title{display:flex;align-items:baseline;gap:8px;min-width:0;flex:1;overflow:hidden}.chrome-title strong{color:#f2f7fb;font-weight:600;white-space:nowrap}.chrome-title span{display:none}
+.visual-kind-pill{font:700 9.5px/1 var(--font-mono);letter-spacing:.06em;color:#7dd3fc;background:rgba(125,211,252,.12);border:1px solid rgba(125,211,252,.28);padding:4px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0}
 .term-legend{display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
 .lg-item{font:700 9.8px/1 var(--font-mono);padding:3px 7px;border-radius:999px;border:1px solid transparent}
 .lg-pol{color:#93c5fd;background:rgba(147,197,253,.12);border-color:rgba(147,197,253,.28)}
@@ -530,8 +574,8 @@ img.a{object-fit:cover}
 .tview-btn:hover{color:#e2edf7}
 .tview-btn.active{background:#2d5d82;color:#fff}
 
-.route-strip{display:flex;align-items:stretch;gap:7px;padding:10px 14px;background:#111b25;border-bottom:1px solid #223241;flex-shrink:0;min-width:0}
-.tnode{flex:1 1 0;min-width:0;background:#172431;border:1px solid #293b4d;border-radius:9px;padding:7px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.route-strip{display:flex;align-items:stretch;gap:7px;padding:7px 12px;background:#111b25;border-bottom:1px solid #223241;flex-shrink:0;min-width:0}
+.tnode{flex:1 1 0;min-width:0;background:#172431;border:1px solid #293b4d;border-radius:8px;padding:5px 9px;display:flex;flex-direction:column;justify-content:center;gap:1px}
 .tnode-role{font:700 8.8px/1 var(--font-mono);letter-spacing:.06em;color:#8fa6b8;text-transform:uppercase}
 .tnode-name{font:700 12.5px/1.2 var(--font-sans);color:#eef4f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tnode-sub{font:500 10px/1.15 var(--font-mono);color:#9fb2c3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -544,7 +588,82 @@ img.a{object-fit:cover}
 .tnode[data-state="skip"]{opacity:.52;border-style:dashed}
 .tarrow{align-self:center;color:#6c8498;font:700 13px/1 var(--font-mono);flex-shrink:0}
 
+.studio-terminal[hidden],.visual-stage[hidden]{display:none!important}
 .studio-terminal{flex:1;min-height:0;overflow:auto;margin:0;padding:14px 16px;color:#cbd5e1;font:450 12.2px/1.56 var(--font-mono);white-space:pre-wrap;word-break:break-word;scrollbar-color:#445a6c #0d151d}
+
+.visual-stage{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:9px 12px;display:flex;flex-direction:column;gap:7px;background:linear-gradient(180deg,#0e1822 0%%,#0b131b 100%%);scrollbar-color:#445a6c #0d151d}
+.vs-state-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 10px;border-radius:8px;font:600 11.2px/1.25 var(--font-sans);border:1px solid #273b4e;background:#13202d;color:#cbd5e1}
+.vs-state-banner.done{background:rgba(34,197,94,.12);border-color:rgba(74,222,128,.40);color:#bbf7d0}
+.vs-state-banner.hold{background:rgba(248,113,113,.13);border-color:rgba(248,113,113,.45);color:#fecaca}
+.vs-state-banner.running{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.42);color:#fde68a}
+.vs-state-pill{font:800 9px/1 var(--font-mono);letter-spacing:.06em;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:#f8fafc;white-space:nowrap;flex-shrink:0}
+
+.vs-editor{border:1px solid #263849;border-radius:9px;overflow:hidden;background:#0a1118;flex-shrink:0}
+.vs-editor-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px;background:#14212e;border-bottom:1px solid #243647;font:700 10.8px/1.15 var(--font-mono);color:#93c5fd}
+.vs-editor-meta{font:600 9.8px/1 var(--font-mono);color:#94a3b8}
+.vs-diff{font:500 11.3px/1.38 var(--font-mono);padding:4px 0;overflow-x:auto}
+.dline{display:grid;grid-template-columns:22px minmax(0,1fr);padding:1px 10px;white-space:pre-wrap;word-break:break-word;color:#cbd5e1}
+.dline .dsign{color:#64748b;user-select:none;font-weight:700}
+.dline.del{background:rgba(239,68,68,.16);color:#fecaca;border-left:3px solid #ef4444;padding-left:7px}
+.dline.del .dsign{color:#f87171}
+.dline.add{background:rgba(34,197,94,.16);color:#bbf7d0;border-left:3px solid #22c55e;padding-left:7px}
+.dline.add .dsign{color:#4ade80}
+.dline.PendingAdd{display:none}
+
+.vs-annot{border-radius:9px;padding:7px 10px;border:1px solid #2b4257;background:#12202d;display:flex;flex-direction:column;gap:4px}
+.vs-annot.accept{border-color:rgba(74,222,128,.42);background:linear-gradient(180deg,rgba(22,101,52,.22),rgba(18,32,45,.92))}
+.vs-annot.critic{border-color:rgba(251,146,60,.48);background:linear-gradient(180deg,rgba(154,52,18,.24),rgba(18,32,45,.92))}
+.vs-annot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font:800 10px/1.15 var(--font-mono);letter-spacing:.04em;color:#7dd3fc}
+.vs-annot.accept .vs-annot-head{color:#4ade80}
+.vs-annot.critic .vs-annot-head{color:#fdba74}
+.vs-annot-body{font:450 11.5px/1.38 var(--font-sans);color:#e2e8f0}
+.vs-annot-foot{display:flex;flex-wrap:wrap;gap:5px;margin-top:1px}
+.vs-mini-tag{font:700 10px/1 var(--font-mono);padding:3px 8px;border-radius:999px;background:rgba(148,163,184,.14);color:#cbd5e1;border:1px solid rgba(148,163,184,.26)}
+.vs-mini-tag.ok{background:rgba(34,197,94,.15);color:#86efac;border-color:rgba(74,222,128,.36)}
+.vs-mini-tag.warn{background:rgba(248,113,113,.16);color:#fca5a5;border-color:rgba(248,113,113,.38)}
+
+.vs-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.vs-cols-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.vs-panel{border:1px solid #253748;border-radius:10px;background:#111c27;padding:9px 11px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.vs-panel.win{border-color:rgba(74,222,128,.42);background:rgba(20,83,45,.16)}
+.vs-panel.err{border-color:rgba(248,113,113,.45);background:rgba(127,29,29,.18)}
+.vs-pkicker{font:800 9.5px/1.1 var(--font-mono);letter-spacing:.06em;color:#93c5fd;text-transform:uppercase}
+.vs-panel.win .vs-pkicker{color:#4ade80}
+.vs-panel.err .vs-pkicker{color:#fca5a5}
+.vs-ptitle{font:700 12.5px/1.25 var(--font-sans);color:#f1f5f9}
+.vs-pbody{font:450 11.8px/1.45 var(--font-sans);color:#cbd5e1}
+.vs-mono-box{font:500 11px/1.42 var(--font-mono);background:#091017;border:1px solid #223344;border-radius:7px;padding:7px 9px;color:#e2e8f0;white-space:pre-wrap;word-break:break-word}
+
+.vs-meter-list{display:flex;flex-direction:column;gap:6px}
+.vs-meter{display:grid;grid-template-columns:138px minmax(50px,1fr) auto;align-items:center;gap:8px;font:600 11px/1.2 var(--font-mono);color:#cbd5e1}
+.vs-mtrack{height:7px;border-radius:999px;background:#1b2a38;overflow:hidden}
+.vs-mfill{height:100%%;border-radius:999px;background:#60a5fa;transition:width .35s ease}
+.vs-mfill.ok{background:#34d399}
+.vs-mfill.warn{background:#f87171}
+.vs-mfill.muted{background:#64748b}
+
+.vs-inbox{display:flex;flex-direction:column;gap:6px}
+.vs-msg-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;padding:7px 10px;border-radius:9px;background:#111d29;border:1px solid #243648}
+.vs-msg-row.skip{border-left:3px solid #34d399}
+.vs-msg-row.escalate{border-left:3px solid #60a5fa}
+.vs-msg-row.danger{border-left:3px solid #f87171;background:rgba(127,29,29,.16)}
+.vs-msg-txt{font:500 12px/1.35 var(--font-sans);color:#f1f5f9}
+.vs-msg-sub{font:500 10.5px/1.2 var(--font-mono);color:#94a3b8;margin-top:2px}
+.vs-route-pill{font:800 10px/1 var(--font-mono);padding:4px 8px;border-radius:999px;white-space:nowrap;border:1px solid rgba(148,163,184,.3);color:#e2e8f0;background:#1a2b3c}
+.vs-route-pill.ok{color:#86efac;border-color:rgba(74,222,128,.4);background:rgba(22,101,52,.28)}
+.vs-route-pill.accent{color:#93c5fd;border-color:rgba(147,197,253,.4);background:rgba(30,64,175,.28)}
+.vs-route-pill.warn{color:#fecaca;border-color:rgba(248,113,113,.45);background:rgba(153,27,27,.34)}
+
+.vs-runs-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.vs-run-cell{background:#0b131c;border:1px solid rgba(74,222,128,.35);border-radius:8px;padding:7px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.vs-run-lbl{font:700 9.5px/1 var(--font-mono);color:#94a3b8}
+.vs-run-val{font:800 13px/1.2 var(--font-mono);color:#4ade80}
+.vs-run-ms{font:600 9.5px/1 var(--font-mono);color:#cbd5e1}
+
+.hl-danger{background:rgba(239,68,68,.28);color:#fecaca;border-bottom:2px solid #f87171;padding:1px 4px;border-radius:4px;font-weight:700}
+.vs-cache-bar{height:14px;border-radius:999px;background:#1e293b;overflow:hidden;display:flex;border:1px solid #334155}
+.vs-cache-hit{background:linear-gradient(90deg,#10b981,#34d399);height:100%%}
+.vs-cache-new{background:#60a5fa;height:100%%}
 .tl{display:block;padding:1px 6px;border-radius:4px}
 .tl-hint{color:#94a3b8;font-style:italic}
 .tl-step{color:#7cc4f8;font-weight:700;margin-top:10px;padding-top:7px;border-top:1px dashed rgba(124,196,248,.24)}
@@ -565,24 +684,24 @@ img.a{object-fit:cover}
 .probe-form button{border:0;border-radius:7px;background:#3a7099;color:#fff;padding:7px 13px;font:700 12px/1 var(--font-sans);cursor:pointer;white-space:nowrap}
 .probe-form button:hover{filter:brightness(1.08)}
 
-.value-rail{display:flex;flex-direction:column;gap:14px;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden}
-.narrative-card,.compare-card{background:var(--surface);border:1px solid var(--edge);border-radius:14px;padding:16px 18px;box-shadow:0 6px 20px rgba(35,30,22,.04);min-width:0}
-.narrative-card{border-top:3px solid var(--accent);display:flex;flex-direction:column;gap:10px}
+.value-rail{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden}
+.narrative-card,.compare-card{background:var(--surface);border:1px solid var(--edge);border-radius:14px;padding:12px 15px;box-shadow:0 6px 20px rgba(35,30,22,.04);min-width:0}
+.narrative-card{border-top:3px solid var(--accent);display:flex;flex-direction:column;gap:7px}
 .narrative-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .step-badge{background:rgba(63,96,126,.12);color:var(--accent);border-radius:999px;padding:4px 10px;font:800 10px/1 var(--font-mono);letter-spacing:.08em;flex-shrink:0}
 .boundary-tag{color:var(--muted);font:600 11px/1 var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.narrative-card h3{font:700 19px/1.22 var(--font-display);color:var(--ink)}
-.explain-summary{color:var(--ink-soft);font-size:13.5px;line-height:1.52}
-.explain-code-wrap{background:var(--codebg);border:1px solid var(--edge);border-radius:9px;padding:9px 12px;margin-top:2px;min-width:0}
-.policy-kicker{font:800 9.5px/1 var(--font-mono);letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
-.explain-code-wrap pre{margin:0;font:600 11.2px/1.42 var(--font-mono);color:var(--accent);white-space:pre-wrap;word-break:break-word}
+.narrative-card h3{font:700 17.5px/1.2 var(--font-display);color:var(--ink)}
+.explain-summary{color:var(--ink-soft);font-size:13px;line-height:1.45}
+.explain-code-wrap{background:var(--codebg);border:1px solid var(--edge);border-radius:9px;padding:7px 10px;margin-top:1px;min-width:0}
+.policy-kicker{font:800 9px/1 var(--font-mono);letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+.explain-code-wrap pre{margin:0;font:600 10.8px/1.36 var(--font-mono);color:var(--accent);white-space:pre-wrap;word-break:break-word}
 
-.compare-card{display:flex;flex-direction:column;gap:13px}
+.compare-card{display:flex;flex-direction:column;gap:9px}
 .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.section-head strong{font:700 14px/1.1 var(--font-sans);color:var(--ink)}
-.section-head span{font:500 11px/1 var(--font-mono);color:var(--muted)}
-.identity-versus{display:grid;grid-template-columns:1fr 28px 1fr;gap:9px;align-items:stretch}
-.id-box{background:var(--card);border-radius:11px;padding:12px 13px;min-width:0;border-top:3px solid #8c8476;display:flex;flex-direction:column;gap:3px}
+.section-head strong{font:700 13.5px/1.1 var(--font-sans);color:var(--ink)}
+.section-head span{font:500 10.5px/1 var(--font-mono);color:var(--muted)}
+.identity-versus{display:grid;grid-template-columns:1fr 26px 1fr;gap:8px;align-items:stretch}
+.id-box{background:var(--card);border-radius:10px;padding:9px 11px;min-width:0;border-top:3px solid #8c8476;display:flex;flex-direction:column;gap:2px}
 .id-box.agent{border-top-color:var(--ok);background:linear-gradient(180deg,#ebf6f0 0%%,var(--card) 100%%)}
 .id-role{color:var(--muted);font:700 9px/1 var(--font-mono);letter-spacing:.07em}
 .id-name{font:800 14.5px/1.22 var(--font-sans);color:var(--ink);overflow-wrap:anywhere}
@@ -600,6 +719,7 @@ img.a{object-fit:cover}
   .live-demo{overflow:auto}
   .studio-shell{height:auto}
   .studio-top,.bar-select-group,.demo-purpose-bar{flex-wrap:wrap}
+  .purpose-ledger-row,.vs-cols,.vs-cols-3{grid-template-columns:1fr}
   #purpose-desc{white-space:normal}
   .studio-grid{grid-template-columns:1fr;overflow:visible}
   .terminal-card{min-height:360px}
@@ -920,25 +1040,60 @@ var SCENARIO_META={
   kicker:'DEMO 1 · CODING AGENT',
   title:'GitHub Copilot Auto & Fusion',
   desc:'Fast Single pass on easy code, Judge/Critic teams on hard bugs, and warm-cache retention.',
-  chrome:'Copilot CLI'
+  chrome:'Copilot CLI',
+  visualPill:'CODE DIFF & REVIEW'
  },
  foundry:{
   kicker:'DEMO 2 · CLOUD API',
   title:'Microsoft Foundry Model Router',
   desc:'One /chat/completions endpoint: param normalization, cheap Flash on easy JSON, auto-escalation, and cost→quality sub-jobs.',
-  chrome:'Foundry Router'
+  chrome:'Foundry Router',
+  visualPill:'API & SESSION INSPECTOR'
  },
  decision:{
   kicker:'DEMO 3 · APP CONTROLLER',
   title:'Microsoft-Decision-1.1 (/v1/systemone)',
   desc:'Replace slow LLM router prompts with 180 ms calibrated choice, score & noul gates ($0.042/1M).',
-  chrome:'Decision-1.1'
+  chrome:'Decision-1.1',
+  visualPill:'SMART INBOX & GUARDRAILS'
  }
 };
 
-var curKind='fusion',curStep=1,doneSet={fusion:{},foundry:{},decision:{}},lastLiveRoute={},liveMeta=null,liveSource=null;
+var LEDGER_SPECS={
+ fusion:{
+  unit:'AIU',
+  steps:[
+   {base:0.450,auto:0.055,baseSec:14.0,autoSec:8.5},
+   {base:3.600,auto:1.195,baseSec:46.0,autoSec:21.8},
+   {base:6.800,auto:2.651,baseSec:72.0,autoSec:32.4},
+   {base:18.500,auto:13.354,baseSec:118.0,autoSec:75.7},
+   {base:0.450,auto:0.024,baseSec:14.0,autoSec:7.5}
+  ]
+ },
+ foundry:{
+  unit:'$',
+  steps:[
+   {base:0.0120,auto:0.0024,baseSec:1.45,autoSec:0.78},
+   {base:0.0150,auto:0.0006,baseSec:1.82,autoSec:0.54},
+   {base:0.0320,auto:0.0095,baseSec:4.20,autoSec:2.15},
+   {base:0.0480,auto:0.0115,baseSec:5.40,autoSec:2.68}
+  ]
+ },
+ decision:{
+  unit:'$',
+  steps:[
+   {base:0.0225,auto:0.00007,baseSec:7.25,autoSec:1.74},
+   {base:0.6000,auto:0.15005,baseSec:15.20,autoSec:4.15},
+   {base:0.1500,auto:0.00002,baseSec:3.80,autoSec:0.37},
+   {base:0.2400,auto:0.00006,baseSec:12.00,autoSec:0.35},
+   {base:0.1500,auto:0.00002,baseSec:4.10,autoSec:0.35}
+  ]
+ }
+};
+
+var curKind='fusion',curStep=1,doneSet={fusion:{},foundry:{},decision:{}},lastLiveRoute={},lastArtifact={},activeProbeVisual=null,liveMeta=null,liveSource=null;
 function isLocalDemoHost(){return ['127.0.0.1','localhost'].includes(location.hostname)&&location.protocol.indexOf('http')===0;}
-var replayMode=!isLocalDemoHost(),replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],displayLog='',rawLog='',rawView=false,hintShown=false;
+var replayMode=!isLocalDemoHost(),replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],displayLog='',rawLog='',viewMode='visual',hintShown=false;
 
 function escHtml(s){
  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -975,25 +1130,278 @@ function getPreviewRawForCurrentStep(){
  return '# Run a step to capture its raw JSONL / HTTP payload.';
 }
 
+function fmtLedgerCost(unit,val){
+ if(unit==='AIU')return val.toFixed(val>=10?2:3)+' AIU';
+ if(val<0.001)return '$'+val.toFixed(5);
+ if(val<0.1)return '$'+val.toFixed(4);
+ return '$'+val.toFixed(2);
+}
+
+function updateLedger(){
+ var spec=LEDGER_SPECS[curKind];if(!spec)return;
+ var totalSteps=spec.steps.length,doneCount=0,bCost=0,aCost=0,bSec=0,aSec=0;
+ for(var i=0;i<totalSteps;i++){
+  if(doneSet[curKind][i+1]){
+   doneCount++;
+   var st=spec.steps[i],art=lastArtifact[curKind+':'+(i+1)];
+   bCost+=st.base;
+   aCost+=(art&&typeof art.credits==='number')?art.credits:st.auto;
+   bSec+=st.baseSec;
+   aSec+=(art&&typeof art.wallSec==='number')?art.wallSec:st.autoSec;
+  }
+ }
+ if(doneCount===0){
+  var cur=spec.steps[curStep-1]||spec.steps[0];
+  bCost=cur.base;aCost=cur.auto;bSec=cur.baseSec;aSec=cur.autoSec;
+  byId('ledger-count').textContent='Preview · Step '+curStep;
+ }else{
+  byId('ledger-count').textContent='Completed: '+doneCount+' / '+totalSteps;
+ }
+ var ratio=bCost>0?Math.max(4,Math.min(100,Math.round((aCost/bCost)*100))):50;
+ var rawPct=bCost>0?Math.max(0,(1-aCost/bCost)*100):0;
+ var saveStr=rawPct>=99.5?'99.7':String(Math.round(rawPct));
+ var speedX=aSec>0?(bSec/aSec):1;
+ byId('ledger-base-bar').style.width='100%';
+ byId('ledger-auto-bar').style.width=ratio+'%';
+ byId('ledger-base-val').textContent=fmtLedgerCost(spec.unit,bCost)+' · '+bSec.toFixed(1)+'s';
+ byId('ledger-auto-val').textContent=fmtLedgerCost(spec.unit,aCost)+' · '+aSec.toFixed(1)+'s';
+ byId('ledger-delta').textContent='-'+saveStr+'% Cost · '+speedX.toFixed(1)+'× Speed';
+}
+
+function renderDiffLines(rows,done){
+ return '<div class="vs-diff">'+rows.map(function(r){
+  var t=r[0],txt=r[1];
+  if(!done&&t==='+')return '';
+  var cls=t==='-'?(done?'dline del':'dline del'):(t==='+'?'dline add':'dline');
+  var sign=t==='-'?(done?'-':'!'):(t==='+'?'+':' ');
+  return '<div class="'+cls+'"><span class="dsign">'+sign+'</span><span>'+escHtml(txt)+'</span></div>';
+ }).join('')+'</div>';
+}
+
+function buildLiveDiffRows(before,after){
+ var bLines=String(before||'').replace(/\\r/g,'').split('\\n');
+ var aLines=String(after||'').replace(/\\r/g,'').split('\\n');
+ var p=0;
+ while(p<bLines.length&&p<aLines.length&&bLines[p]===aLines[p])p++;
+ var bEnd=bLines.length-1,aEnd=aLines.length-1;
+ while(bEnd>=p&&aEnd>=p&&bLines[bEnd]===aLines[aEnd]){bEnd--;aEnd--;}
+ var out=[],ctxStart=Math.max(0,p-2),ctxEnd=Math.min(aLines.length-1,aEnd+2);
+ for(var i=ctxStart;i<p;i++)out.push([' ',bLines[i]]);
+ for(var j=p;j<=bEnd;j++)out.push(['-',bLines[j]]);
+ for(var k=p;k<=aEnd;k++)out.push(['+',aLines[k]]);
+ for(var m=aEnd+1;m<=ctxEnd;m++)out.push([' ',aLines[m]]);
+ return out.slice(0,16);
+}
+
+function renderMeterRows(items){
+ return '<div class="vs-meter-list">'+items.map(function(it){
+  return '<div class="vs-meter"><span>'+escHtml(it.lbl)+'</span><div class="vs-mtrack"><div class="vs-mfill '+(it.tone||'')+'" style="width:'+Math.max(3,Math.min(100,it.pct))+'%"></div></div><span>'+escHtml(it.val)+'</span></div>';
+ }).join('')+'</div>';
+}
+
+function stateBannerHtml(done,running,isHold,pendingText,doneText){
+ if(running){
+  return '<div class="vs-state-banner running"><span>Running Step '+curStep+'… Routing &amp; verifying telemetry</span><span class="vs-state-pill">IN PROGRESS</span></div>';
+ }
+ if(!done){
+  return '<div class="vs-state-banner"><span>'+escHtml(pendingText)+'</span><span class="vs-state-pill">READY · CLICK RUN ▶</span></div>';
+ }
+ return '<div class="vs-state-banner '+(isHold?'hold':'done')+'"><span>'+escHtml(doneText)+'</span><span class="vs-state-pill">'+(isHold?'GUARDRAIL TRIGGERED':'VERIFIED ✓')+'</span></div>';
+}
+
+function renderVisualStage(){
+ var stage=byId('live-visual-stage');if(!stage)return;
+ if(activeProbeVisual){
+  var pv=activeProbeVisual;
+  stage.innerHTML='<div class="vs-state-banner '+(pv.isHold?'hold':'done')+'"><span>'+escHtml(pv.outcome)+'</span><span class="vs-state-pill">'+escHtml(pv.sourceBadge||'CUSTOM PROBE')+'</span></div>'
+   +'<div class="vs-panel"><span class="vs-pkicker">AUDIENCE / CUSTOM INPUT</span><div class="vs-ptitle">'+escHtml(pv.prompt)+'</div><div class="vs-pbody">'+escHtml(pv.scorer)+'</div></div>'
+   +'<div class="vs-panel win"><span class="vs-pkicker">CALIBRATED ROUTING SIGNALS</span>'+renderMeterRows(pv.bars||[])+'</div>';
+  return;
+ }
+ var done=!!doneSet[curKind][curStep],art=lastArtifact[curKind+':'+curStep]||{};
+ var h='';
+ if(curKind==='fusion'){
+  if(curStep===1){
+   var sc=art.scores||{reasoning:0.100,code_gen:0.047,debugging:0.002,tool_use:0.024};
+   h=stateBannerHtml(done,stepRunning,false,'Inspecting demo/fixtures/config.ts — Click Run Step 1 to route via Copilot Auto','✓ GPT-6 Luna answered in 1 CLI call (0.055 AIU) & warmed 5,655 prefix tokens')
+    +'<div class="vs-editor"><div class="vs-editor-head"><span>demo/fixtures/config.ts</span><span class="vs-editor-meta">Read-Only Lookup</span></div>'
+    +renderDiffLines([[' ','export const DEFAULT_PORT = 8787;'],[' ','export const PORT_ENV_VAR = "AUTO_DEMO_PORT";'],[' ','export const SERVICE_NAME = "auto-routing-demo";']],true)+'</div>'
+    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">4D CAPABILITY DEMAND (≤ 0.10 FAST PATH)</span>'
+    +renderMeterRows([
+      {lbl:'reasoning',val:Number(sc.reasoning||0.10).toFixed(3),pct:Math.round((sc.reasoning||0.10)*100),tone:'ok'},
+      {lbl:'code_gen',val:Number(sc.code_gen||0.047).toFixed(3),pct:Math.round((sc.code_gen||0.047)*100),tone:'ok'},
+      {lbl:'debugging',val:Number(sc.debugging||0.002).toFixed(3),pct:4,tone:'ok'},
+      {lbl:'tool_use',val:Number(sc.tool_use||0.024).toFixed(3),pct:5,tone:'ok'}
+    ])+'</div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">'+(done?'VERIFIED CLI OUTPUT':'EXPECTED CLI OUTPUT')+'</span>'
+    +'<div class="vs-mono-box">'+escHtml(done?(art.answer||'DEFAULT_PORT=8787 (AUTO_DEMO_PORT)'):'Waiting for copilot --model auto...')+'</div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">GPT-6 Luna · 0.055 AIU</span><span class="vs-mini-tag">0 Judge Overhead</span><span class="vs-mini-tag ok">5,655 Cache Write</span></div></div></div>';
+  }else if(curStep===2){
+   var rows2=(art.before&&art.after)?buildLiveDiffRows(art.before,art.after):[
+    [' ','export function greetingFormatter(name) {'],
+    [' ','  const raw = String(name ?? "");'],
+    ['-','  const cleaned = raw.replace(/^[ ]+|[ ]+$/g, "");'],
+    ['+','  const cleaned = raw.trim();'],
+    [' ','  return cleaned ? `Hello, ${cleaned}!` : "Hello, friend!";'],
+    [' ','}']
+   ];
+   h=stateBannerHtml(done,stepRunning,false,'Bug in format.mjs: space-only regex misses \\t and Unicode NBSP (\\u00A0)','✓ Patched in 1 Single-pattern pass by '+(art.primaryModel||'gpt-6.1-terra')+' · 3/3 node --test PASS')
+    +'<div class="vs-editor"><div class="vs-editor-head"><span>demo/fixtures/format.mjs</span><span class="vs-editor-meta">'+(done?'PATCHED · 3/3 TESTS PASS':'BUGGY INPUT · 2/3 TESTS FAILING')+'</span></div>'
+    +renderDiffLines(rows2,done)+'</div>'
+    +'<div class="vs-annot '+(done?'accept':'')+'"><div class="vs-annot-head"><span>FUSION ORCHESTRATOR · PATTERN = "SINGLE"</span><span>phasePlan: []</span></div>'
+    +'<div class="vs-annot-body">'+(done?'Even with --fusion-tier high enabled, capability demand stayed bounded (0.231), so Fusion skipped Judge/Critic calls and verified 3/3 unit tests in one pass.':'Fusion High will inspect 4D capability scores first before deciding whether multi-model review is worth paying for.')+'</div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">Solver: '+(art.primaryModel||'gpt-6.1-terra')+'</span><span class="vs-mini-tag ok">node --test: '+(done?'3/3 PASS ✓':'Pending')+'</span><span class="vs-mini-tag">Judge Calls: 0</span></div></div>';
+  }else if(curStep===3){
+   var rows3=(art.before&&art.after)?buildLiveDiffRows(art.before,art.after):[
+    [' ','  async refill(amount: number): Promise<void> {'],
+    ['-','    await this.drainLock.acquire(); // BUG: inverted vs close()!'],
+    ['-','    try { await this.stateLock.acquire();'],
+    ['+','    await this.stateLock.acquire(); // Matches close(): stateLock -> drainLock'],
+    ['+','    try { await this.drainLock.acquire();'],
+    [' ','      if (!this.closed) this.tokens = Math.min(this.capacity, this.tokens + amount);']
+   ];
+   h=stateBannerHtml(done,stepRunning,false,'Concurrency Deadlock in token-bucket.ts: refill() locks drain→state while close() locks state→drain','✓ Cascade Complete: Solver patched lock order, Judge accepted (5/5), Opus 5.5 repair skipped!')
+    +'<div class="vs-editor"><div class="vs-editor-head"><span>demo/fixtures/token-bucket.ts</span><span class="vs-editor-meta">'+(done?'DEADLOCK FIXED · 500/500 RACES PASS':'ABBA LOCK-ORDER INVERSION')+'</span></div>'
+    +renderDiffLines(rows3,done)+'</div>'
+    +'<div class="vs-annot '+(done?'accept':'')+'"><div class="vs-annot-head"><span>NATIVE JUDGE ANNOTATION · '+escHtml(art.judgeModel||'gpt-6-luna')+'</span><span>'+(done?'VERDICT: ACCEPT ('+(art.judgeScore||5)+'/5)':'AWAITING SOLVER PATCH')+'</span></div>'
+    +'<div class="vs-annot-body">'+escHtml(done?(art.judgeRationale||'Reordering refill() to acquire stateLock before drainLock matches close() (stateLock -> drainLock), eliminating the ABBA cycle while preserving mutual exclusion.'):'Native Cascade runs Primary Solver (gpt-6.1-sol) then cross-checks with Judge (gpt-6-luna), triggering claude-opus-5.5 repair ONLY if Judge rejects.')+'</div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">1 · Solver: '+escHtml(art.solverModel||'gpt-6.1-sol')+'</span><span class="vs-mini-tag ok">2 · Judge: ACCEPT ✓</span><span class="vs-mini-tag">3 · Repair ('+escHtml(art.repairModel||'claude-opus-5.5')+'): SKIPPED ($ Saved)</span></div></div>';
+  }else if(curStep===4){
+   h=stateBannerHtml(done,stepRunning,false,'Architecture RFC Task: 50k RPS multi-region payment gateway with strict RPO = 0','✓ Cross-Lab Critic (gpt-6-luna) caught an Active-Active RPO=0 data-loss gap & Opus 5.5 revised!')
+    +'<div class="vs-cols-3">'
+    +'<div class="vs-panel"><span class="vs-pkicker">1 · DRAFT ('+escHtml(art.draftModel||'claude-opus-5.5')+')</span><div class="vs-ptitle">Active-Active Shard Leases</div><div class="vs-pbody">Proposes per-merchant shard leases with monotonic <code>fencing_token</code> checks and claims Active-Active achieves <strong>RPO = 0</strong>.</div></div>'
+    +'<div class="vs-panel '+(done?'err':'')+'"><span class="vs-pkicker">2 · CRITIC ('+escHtml(art.criticModel||'gpt-6-luna')+')</span><div class="vs-ptitle">'+(done?'assessment = "revise" ✕':'Cross-Lab Audit')+'</div><div class="vs-pbody">'+escHtml(done?(art.criticFeedback||'Lease fencing prevents conflicting writers, but an acknowledged payment committed only in Region A is still lost if Region A fails before cross-region replication.'):'Audits failure modes, quorum math, and RPO/RTO claims across model families.')+'</div></div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">3 · REVISION ('+escHtml(art.revModel||'claude-opus-5.5')+')</span><div class="vs-ptitle">'+(done?'3-Region Sync Quorum ✓':'Handoff Revision')+'</div><div class="vs-pbody">'+(done?'Upgrades ledger storage to synchronous 3-region Raft quorum commit (Spanner / CockroachDB, 18–35 ms WAN budget) for true RPO = 0.':'Applies Critic JSON via session.fusion_handoff while reusing warm prompt cache.')+'</div></div>'
+    +'</div>'
+    +'<div class="vs-annot critic"><div class="vs-annot-head"><span>WHY CROSS-LAB CRITIQUE MATTERS</span><span>7,917 CACHED TOKENS REUSED</span></div><div class="vs-annot-body">A single model rarely catches its own blind spot on distributed consensus vs. lease fencing — pairing Claude Opus 5.5 with GPT-6 Luna caught a real RPO=0 production flaw in one CLI command.</div></div>';
+  }else{
+   var hitPct=art.hitPct||99,cRead=art.cacheReadTokens||5655,inTok=art.inputTokens||5733;
+   var newTok=Math.max(0,inTok-cRead);
+   h=stateBannerHtml(done,stepRunning,false,'Resuming warm session (--resume) to add Prometheus metrics without switching models','✓ Retained '+(art.retainedModel||'GPT-6 Luna')+' — 99% prefix cache hit ('+cRead.toLocaleString()+' / '+inTok.toLocaleString()+' tokens, 0.024 AIU)!')
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">PROMPT PREFIX CACHE RETENTION ('+hitPct+'% HIT)</span>'
+    +'<div class="vs-cache-bar"><div class="vs-cache-hit" style="width:'+(done?98.6:15)+'%"></div><div class="vs-cache-new" style="width:'+(done?1.4:85)+'%"></div></div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">cacheReadTokens: '+(done?cRead.toLocaleString():'5,655 warm')+' (98.6%)</span><span class="vs-mini-tag">New Turn Tokens: '+newTok+' (1.4%)</span><span class="vs-mini-tag ok">Cost: 0.024 AIU (vs ~0.45 cold)</span></div></div>'
+    +'<div class="vs-editor"><div class="vs-editor-head"><span>metrics.prom (Generated Output)</span><span class="vs-editor-meta">7.5 s · Warm Session</span></div>'
+    +'<div class="vs-mono-box" style="border:0;border-radius:0">'+escHtml(done?(art.metricsOutput||'# TYPE demo_http_requests_total counter\\ndemo_http_requests_total{method="GET",status="200"} 1\\n# TYPE demo_port_info gauge\\ndemo_port_info{env_var="AUTO_DEMO_PORT",port="8787"} 1'):'# Click Run Step 5 to generate Prometheus metrics using cached context...')+'</div></div>';
+  }
+ }else if(curKind==='foundry'){
+  if(curStep===1){
+   h=stateBannerHtml(done,stepRunning,false,'Sending OpenAI-style developer role + json_object + temperature=0.2 to Foundry model="auto"','✓ Pre-rank gate filtered candidates & normalized params in '+(art.routerMs||30)+' ms → '+(art.servedModel||'gpt-5.6-luna-2026-07-09'))
+    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">UNIFIED REQUEST PAYLOAD</span>'
+    +'<div class="vs-mono-box">{\\n  "model": "auto",\\n  "routing_config": { "mode": "balanced" },\\n  "response_format": { "type": "json_object" },\\n  "temperature": 0.2,\\n  "messages": [{ "role": "developer", ... }]\\n}</div></div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">PRE-RANK CAPABILITY GATE &amp; RESPONSE</span>'
+    +'<div class="vs-pbody">1. Filtered out pool models lacking strict <code>json_object</code><br>2. Normalized <code>role="developer"</code> &amp; <code>temperature</code><br>3. Ranked eligible pool in <strong>'+(art.routerMs||30)+' ms</strong></div>'
+    +'<div class="vs-mono-box">'+escHtml(done?(art.jsonOutput||'{"status":"eligible_ok"}'):'{"status": "pending_run"}')+'</div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">Model: '+escHtml(art.servedModel||'gpt-5.6-luna')+'</span><span class="vs-mini-tag ok">HTTP 200 OK</span></div></div></div>';
+  }else if(curStep===2){
+   var ext=art.extracted||{invoice_id:'INV-2026-8841',currency:'EUR'};
+   h=stateBannerHtml(done,stepRunning,false,'Incoming EU Invoice: Simple 2-field JSON extraction under mode="balanced"','✓ Routed in '+(art.routerMs||27)+' ms to '+(art.servedModel||'DeepSeek-V4.1-Flash')+' with 0 wasted reasoning tokens!')
+    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">INCOMING DOCUMENT</span><div class="vs-ptitle">Northwind EU Invoice Text</div><div class="vs-mono-box">"Invoice INV-2026-8841\\nCustomer: Northwind EU GmbH\\nTotal: 4,250 EUR"</div></div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">STRUCTURED EXTRACTION CARD</span>'
+    +'<div class="vs-mono-box">{\\n  "invoice_id": "'+escHtml(ext.invoice_id||'INV-2026-8841')+'",\\n  "currency": "'+escHtml(ext.currency||'EUR')+'"\\n}</div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">'+escHtml(art.servedModel||'DeepSeek-V4.1-Flash')+'</span><span class="vs-mini-tag ok">Router: '+(art.routerMs||27)+' ms</span><span class="vs-mini-tag ok">reasoning_tokens: 0</span></div></div></div>'
+    +'<div class="vs-annot accept"><div class="vs-annot-head"><span>1–2% BALANCED QUALITY BAND</span><span>~96% CHEAPER THAN FRONTIER</span></div><div class="vs-annot-body">Because Flash scores within 1–2% of the #1 frontier model on structured field extraction, Balanced mode picks Flash automatically without burning reasoning tokens.</div></div>';
+  }else if(curStep===3){
+   h=stateBannerHtml(done,stepRunning,false,'Same /chat/completions endpoint now receives a 2-turn Rust lock-free concurrency proof','✓ Auto-escalated Turn 1 to '+(art.turn1Model||'gpt-6-luna-2026-09-22')+' & retained session on Turn 2!')
+    +'<div class="vs-inbox">'
+    +'<div class="vs-msg-row escalate"><div><div class="vs-msg-txt"><strong>Turn 1:</strong> Design a lock-free MPMC ring buffer in Rust with Acquire/Release &amp; ABA epoch invariants.</div><div class="vs-msg-sub">Flash drops below 1–2% band → Router escalates in '+(art.routerMs||30)+' ms to '+escHtml(art.turn1Model||'gpt-6-luna-2026-09-22')+'</div></div><span class="vs-route-pill accent">ESCALATED · LUNA</span></div>'
+    +'<div class="vs-msg-row '+(done?'skip':'')+'"><div><div class="vs-msg-txt"><strong>Turn 2 Follow-up:</strong> Add a 3-bullet check for wrap-around index overflow when <code>head - tail == capacity</code>.</div><div class="vs-msg-sub">'+(done?'derived_fingerprint matched → session_affinity.decision = "'+(art.affinityDecision||'retain')+'" (KV cache preserved)':'Adaptive session_affinity hashes conversation prefix to avoid mid-thread model thrashing')+'</div></div><span class="vs-route-pill ok">AFFINITY: RETAIN ✓</span></div>'
+    +'</div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">TURN 2 VERIFIED INVARIANTS</span><div class="vs-mono-box">'+escHtml(done?(art.turn2Reply||'• Wrap-safe full check: wrapping_sub(head, tail) == capacity (power-of-two mask index)\\n• Sequence stamp: cell.seq == pos for enqueue, pos + 1 for dequeue (prevents ABA)\\n• Ordering: Load tail Relaxed/Acquire; publish slot via Release store on cell.seq'):'Click Run Step 3 to execute both live turns on Foundry Model Router...')+'</div></div>';
+  }else{
+   h=stateBannerHtml(done,stepRunning,false,'Enterprise Account Workflow on demo/fixtures/renewal-context.json (Northwind Logistics · $432K ARR)','✓ Stage 1 extracted facts via '+(art.job1Model||'grok-4-1-fast-reasoning')+' → Stage 2 synthesized 129.2% NRR strategy via '+(art.job2Model||'gpt-5.6-terra')+'!')
+    +'<div class="vs-cols">'
+    +'<div class="vs-panel"><span class="vs-pkicker">JOB 1 · mode = "cost" ('+(art.r1Ms||28)+' ms)</span><div class="vs-ptitle">'+escHtml(art.job1Model||'grok-4-1-fast-reasoning')+'</div><div class="vs-mono-box">'+escHtml(done?(art.job1Text||'• Current: 1,200 seats ($432K ARR, 96.4% active), +350 Q1 expansion seats\\n• Rival quoted $26/seat (-13%) but lacks SAML SSO & SOC2 Type II'):'Extracts compact renewal facts from raw JSON at minimal token cost...')+'</div></div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">JOB 2 · mode = "quality" ('+(art.r2Ms||29)+' ms)</span><div class="vs-ptitle">'+escHtml(art.job2Model||'gpt-5.6-terra-2026-07-09')+'</div><div class="vs-mono-box">'+escHtml(done?(art.job2Text||'• Hold $30/seat base; tier +350 seats at $27/seat → $558K ARR (129.2% NRR)\\n• Anchor security moat: SAML SSO + SOC2 Type II eliminates rival $26 bid'):'Synthesizes executive pricing & negotiation playbook from compact Stage 1 facts...')+'</div></div>'
+    +'</div>';
+  }
+ }else{
+  if(curStep===1){
+   var ps=art.probs||[0.9835,0.9835,0.9835,0.9835,0.9835];
+   var ts=art.times||[340,343,352,334,368];
+   h=stateBannerHtml(done,stepRunning,false,'Customer Sales Message: Testing 5 consecutive /v1/systemone calls for probability drift','✓ 5/5 live HTTP calls returned noul = 0.9835 with 0.0000 pt spread ($0 output tokens)!')
+    +'<div class="vs-panel"><span class="vs-pkicker">INBOUND CUSTOMER MESSAGE</span><div class="vs-ptitle">"Is the Harbor sectional still 15% off? We’d love it before my in-laws visit on the 20th."</div><div class="vs-pbody">Question: <code>ready_to_buy (type: "noul")</code> — Does customer show concrete purchase timeline &amp; buying intent?</div></div>'
+    +'<div class="vs-runs-grid">'+ps.map(function(p,idx){
+      return '<div class="vs-run-cell"><span class="vs-run-lbl">RUN #'+(idx+1)+'</span><span class="vs-run-val">'+(done?Number(p).toFixed(4):'—')+'</span><span class="vs-run-ms">'+(done?(ts[idx]||345)+' ms':'ready')+'</span></div>';
+    }).join('')+'</div>'
+    +'<div class="vs-annot accept"><div class="vs-annot-head"><span>CALIBRATED SYSTEM-ONE PRIMITIVE</span><span>SPREAD: 0.00 PT · 54 IN TOK · 0 OUT TOK</span></div><div class="vs-annot-body">Deterministic single forward-pass log-prob scoring: no sampling temperature drift, no JSON formatting retries, and $0 output token charges.</div></div>';
+  }else if(curStep===2){
+   var items=art.inboxItems||[
+    {msg:'Thanks! 👍',choice:'no_reply',conf:1.00,wallMs:344},
+    {msg:'Please unsubscribe me / STOP',choice:'code_template',conf:1.00,wallMs:352},
+    {msg:'Is the 15% spring promo valid on the Aspen king frame?',choice:'fast_slm',conf:1.00,wallMs:339},
+    {msg:'Compare the 10-year structural warranty on Harbor vs CloudSlope if we move overseas.',choice:'frontier_sol',conf:1.00,wallMs:348}
+   ];
+   h=stateBannerHtml(done,stepRunning,false,'Smart Support Inbox: 4 incoming customer messages waiting for tier assignment','✓ Routed 4/4 messages with p = 1.00 confidence — 3 of 4 bypassed the $15/1M Frontier LLM!')
+    +'<div class="vs-inbox">'+items.map(function(it){
+      var isFront=it.choice==='frontier_sol';
+      var pillCls=isFront?'accent':'ok';
+      var subTxt=it.choice==='no_reply'?'$0 LLM · Auto-acknowledge & close':(it.choice==='code_template'?'$0 LLM · Deterministic opt-out handler':(it.choice==='fast_slm'?'Cheap SLM · Promo FAQ lookup':'Escalated · Multi-clause cross-border warranty analysis'));
+      return '<div class="vs-msg-row '+(isFront?'escalate':'skip')+'"><div><div class="vs-msg-txt">"'+escHtml(it.msg)+'"</div><div class="vs-msg-sub">'+escHtml(subTxt)+' · '+(done?it.wallMs+' ms':'ready')+'</div></div><span class="vs-route-pill '+pillCls+'">'+(done?(escHtml(it.choice)+' ('+it.conf.toFixed(2)+')'):'PENDING')+'</span></div>';
+    }).join('')+'</div>';
+  }else if(curStep===3){
+   var scVal=art.score!==undefined?art.score:1.97;
+   h=stateBannerHtml(done,stepRunning,done,'Urgent Inbound Ticket: Evaluating team + priority[0..3] + repeat_complaint in 1 HTTP call','✕ AUTO-BOT BLOCKED in '+(art.wallMs||366)+' ms — Routed to safety_support & paged human specialist!')
+    +'<div class="vs-msg-row danger"><div><div class="vs-msg-txt">"The bed frame collapsed last night and my husband hurt his back. This is the third time I’m writing in!"</div><div class="vs-msg-sub">Single /v1/systemone call evaluates 3 typed questions simultaneously</div></div><span class="vs-route-pill warn">'+(done?'HUMAN PAGED ✕':'HIGH RISK')+'</span></div>'
+    +'<div class="vs-panel err"><span class="vs-pkicker">SIMULTANEOUS 3-PRIMITIVE READOUT ('+(art.wallMs||366)+' MS)</span>'
+    +renderMeterRows([
+      {lbl:'team: safety_support',val:done?'p = 0.998':'pending',pct:done?100:10,tone:'warn'},
+      {lbl:'priority (0..3 score)',val:done?(scVal.toFixed(2)+' / 3.0'):'pending',pct:done?Math.round((scVal/3)*100):10,tone:'warn'},
+      {lbl:'repeat_complaint',val:done?'noul = 0.998':'pending',pct:done?100:10,tone:'warn'},
+      {lbl:'Auto-Bot Permitted',val:'0% — Blocked',pct:3,tone:'ok'}
+    ])+'</div>';
+  }else if(curStep===4){
+   var compVal=art.comp!==undefined?art.comp:0.970;
+   var discVal=art.disc!==undefined?art.disc:0.000;
+   h=stateBannerHtml(done,stepRunning,done,'Screening AI-generated outbound reply before customer delivery (threshold ≥ 0.50)','✕ SEND INTERCEPTED in '+(art.wallMs||347)+' ms — Competitor promo (0.970 ≥ 0.50) held for human review!')
+    +'<div class="vs-panel err"><span class="vs-pkicker">OUTBOUND AGENT DRAFT COMPOSER (PRE-SEND GATE)</span>'
+    +'<div class="vs-ptitle">"Honestly, <mark class="hl-danger">Fabrikam has a similar sofa for $749</mark>. Here’s the link."</div>'
+    +'<div class="vs-pbody">Without pre-send <code>noul</code> screening, either unsafe replies leak to customers or humans must review 100% of drafts ($0.24/msg).</div></div>'
+    +'<div class="vs-panel"><span class="vs-pkicker">PARALLEL POLICY GATES ('+(art.wallMs||347)+' MS · $0.00006)</span>'
+    +renderMeterRows([
+      {lbl:'mentions_competitor',val:done?(compVal.toFixed(3)+' ≥ 0.50 HOLD ✕'):'threshold 0.50',pct:done?Math.round(compVal*100):8,tone:'warn'},
+      {lbl:'unapproved_discount',val:done?(discVal.toFixed(3)+' < 0.50 Clean ✓'):'threshold 0.50',pct:done?Math.max(3,Math.round(discVal*100)):3,tone:'ok'}
+    ])+'</div>';
+  }else{
+   h=stateBannerHtml(done,stepRunning,done,'Legal Comparison Request: Checking attached_documents completeness before Frontier call','✕ ABSTAINED in '+(art.wallMs||347)+' ms — Missing Exhibit B caught (p = 0.99994); zero hallucination!')
+    +'<div class="vs-panel"><span class="vs-pkicker">LEGAL WORKSPACE STATE</span><div class="vs-ptitle">"Compare the renewal termination notice window in Contract A vs Exhibit B."</div>'
+    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">📄 Contract_A.pdf · Attached (Sec 9.2: 60 days)</span><span class="vs-mini-tag warn">⚠️ Exhibit_B.pdf · MISSING FROM STATE ✕</span></div></div>'
+    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">ACTION PROBABILITIES</span>'
+    +renderMeterRows([
+      {lbl:'request_missing_exhibit',val:done?'0.9999 · SELECTED':'pending',pct:done?100:12,tone:'warn'},
+      {lbl:'frontier_compare',val:done?'0.0001':'pending',pct:3,tone:'muted'},
+      {lbl:'fast_extract',val:done?'0.0000':'pending',pct:3,tone:'muted'}
+    ])+'</div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">SAFE ASSISTANT ACTION</span><div class="vs-pbody">'+(done?'<strong>Asked Customer:</strong> "Contract A specifies 60 days prior written notice, but <strong>Exhibit B is not attached</strong>. Please upload Exhibit B so I can compare both clauses accurately."':'Instead of letting a frontier LLM guess missing Exhibit B terms, Decision-1.1 catches missing context upfront.')+'</div></div></div>';
+  }
+ }
+ stage.innerHTML=h;
+}
+
 function syncViewSwitch(){
- byId('btn-view-summary').classList.toggle('active',!rawView);
- byId('btn-view-raw').classList.toggle('active',rawView);
- byId('term-legend').style.display=rawView?'none':'flex';
+ byId('btn-view-visual').classList.toggle('active',viewMode==='visual');
+ byId('btn-view-summary').classList.toggle('active',viewMode==='summary');
+ byId('btn-view-raw').classList.toggle('active',viewMode==='raw');
+ byId('term-legend').style.display=viewMode==='summary'?'flex':'none';
+ byId('visual-kind-pill').style.display=viewMode==='visual'?'inline-block':'none';
+ byId('live-visual-stage').hidden=(viewMode!=='visual');
+ byId('live-demo-output').hidden=(viewMode==='visual');
 }
 
 function flushTerminal(){
+ if(viewMode==='visual'){renderVisualStage();return;}
  var out=byId('live-demo-output');
- var src=rawView?(rawLog||getPreviewRawForCurrentStep()):displayLog;
+ var src=(viewMode==='raw')?(rawLog||getPreviewRawForCurrentStep()):displayLog;
  out.innerHTML=renderTerminalHtml(src);
- out.scrollTop=rawView&&!rawLog?0:out.scrollHeight;
+ out.scrollTop=(viewMode==='raw'&&!rawLog)?0:out.scrollHeight;
 }
 function appendTerminal(chunk){
  displayLog+=chunk;
- if(!rawView)flushTerminal();
+ if(viewMode==='summary')flushTerminal();
 }
 function appendRaw(chunk){
  rawLog+=chunk;
- if(rawView)flushTerminal();
+ if(viewMode==='raw')flushTerminal();
 }
 
 function setStatus(label,tone){var el=byId('live-demo-status');el.textContent=label;if(tone)el.dataset.tone=tone;else delete el.dataset.tone;}
@@ -1086,6 +1494,7 @@ function renderTabsAndPills(keepExplicitRun){
   byId('purpose-title').textContent=meta.title;
   byId('purpose-desc').textContent=meta.desc;
   byId('terminal-mode-title').textContent=meta.chrome;
+  byId('visual-kind-pill').textContent=meta.visualPill;
  }
  var list=SCENARIOS[curKind].steps,sRoot=byId('cs-step'),sMenu=byId('cs-step-menu');
  if(sRoot&&sMenu){
@@ -1137,6 +1546,8 @@ function renderVisualStep(kind,stepNum,keepExplicitRun){
   if(saved.chip3)setChip('live-chip-3',saved.chip3,saved.chip3Tone);
  }
  renderTabsAndPills(keepExplicitRun);
+ updateLedger();
+ renderVisualStage();
 }
 
 function clearReplayTimers(){while(replayTimers.length)clearTimeout(replayTimers.pop());stepRunning=false;}
@@ -1159,7 +1570,9 @@ function resetScenario(keepKind){
  stopAutoPlay();clearReplayTimers();resolveStepWaiters(false);
  var k=keepKind||curKind;
  doneSet[k]={};
+ activeProbeVisual=null;
  Object.keys(lastLiveRoute).forEach(function(key){if(key.indexOf(k+':')===0)delete lastLiveRoute[key];});
+ Object.keys(lastArtifact).forEach(function(key){if(key.indexOf(k+':')===0)delete lastArtifact[key];});
  if(!replayMode)fetch('/api/cancel',{method:'POST'}).catch(function(){});
  displayLog='';rawLog='';hintShown=false;
  byId('live-demo-output').innerHTML='';
@@ -1170,6 +1583,14 @@ function resetScenario(keepKind){
 }
 
 function applyLocalProbeCard(r){
+ activeProbeVisual={
+  prompt:r.prompt,
+  scorer:r.scorer,
+  bars:r.bars,
+  outcome:r.outcome,
+  isHold:/Blocked|HELD|Injury|Escalated/i.test(r.outcome+' '+r.title),
+  sourceBadge:replayMode?'CUSTOM PROBE':'PROBING LIVE…'
+ };
  byId('terminal-mode-sub').textContent=r.pattern;
  renderNodes(r.nodes);
  byId('explain-step-badge').textContent='CUSTOM PROBE';
@@ -1186,6 +1607,7 @@ function applyLocalProbeCard(r){
  setChip('live-chip-1',r.chips[0][0],r.chips[0][1]);
  setChip('live-chip-2',r.chips[1][0],r.chips[1][1]);
  setChip('live-chip-3',r.chips[2][0],r.chips[2][1]);
+ renderVisualStage();
 }
 
 function applyDemoEvent(data){
@@ -1194,6 +1616,10 @@ function applyDemoEvent(data){
   appendTerminal(data.text);
  }else if(data.kind==='raw'){
   appendRaw(data.text);
+ }else if(data.kind==='artifact'){
+  lastArtifact[(data.demo||curKind)+':'+(data.step||curStep)]=data;
+  updateLedger();
+  renderVisualStage();
  }else if(data.kind==='route'){
   lastLiveRoute[curKind+':'+curStep]=data;
   if(data.model)byId('live-agent-user').textContent=data.model;
@@ -1212,14 +1638,33 @@ function applyDemoEvent(data){
    setChip('live-chip-2',data.chips[1][0],data.chips[1][1]);
    setChip('live-chip-3',data.chips[2][0],data.chips[2][1]);
   }
+  if(activeProbeVisual){
+   activeProbeVisual.outcome='✓ '+data.summary;
+   activeProbeVisual.sourceBadge=data.source||'LIVE PROBE ✓';
+   if(data.probabilities){
+    var pBars=Object.keys(data.probabilities).map(function(k){
+     var p=Number(data.probabilities[k]||0);
+     return {lbl:k,val:'p = '+p.toFixed(3)+(k===data.model?' · SELECTED':''),pct:Math.max(3,Math.round(p*100)),tone:k===data.model?(k==='safety_human_escalation'?'warn':'ok'):'muted'};
+    });
+    if(typeof data.priorityScore==='number'){
+     pBars.push({lbl:'priority.score (0..3)',val:data.priorityScore.toFixed(2)+' / 3.0',pct:Math.max(4,Math.round((data.priorityScore/3)*100)),tone:data.priorityScore>=2?'warn':'ok'});
+    }
+    activeProbeVisual.bars=pBars;
+    activeProbeVisual.isHold=(data.model==='safety_human_escalation');
+   }
+   renderVisualStage();
+  }
   setStatus('Live Probe ✓','ok');
  }else if(data.kind==='probe-fallback'){
   stepRunning=false;renderTabsAndPills();
+  if(activeProbeVisual){activeProbeVisual.sourceBadge='RULE PREVIEW ✓';renderVisualStage();}
   setStatus('Probe Routed ✓','ok');
  }else if(data.kind==='step-start'){
   stepRunning=true;
+  activeProbeVisual=null;
   curKind=data.demo;curStep=Number(data.step);
   delete lastLiveRoute[curKind+':'+curStep];
+  delete lastArtifact[curKind+':'+curStep];
   setStatus((replayMode?'Running Step ':'Running Live Step ')+curStep+'…','running');
   renderVisualStep(curKind,curStep);
   var title=SCENARIOS[curKind].steps[curStep-1].title;
@@ -1237,6 +1682,7 @@ function applyDemoEvent(data){
   setStatus('Error','err');
   appendTerminal('\\n[Error] '+data.error+'\\n');
   renderTabsAndPills();
+  renderVisualStage();
   resolveStepWaiters(false);
  }
 }
@@ -1400,9 +1846,12 @@ async function openLiveDemo(preferredKind,preferredStep){
  if(deck.closeNotes)deck.closeNotes();
  byId('live-demo').hidden=false;liveOpen=true;
  replayMode=!isLocalDemoHost();
+ activeProbeVisual=null;
  var k=preferredKind||'fusion',s=Number(preferredStep)||1;
+ syncViewSwitch();
  renderVisualStep(k,s);
  showInitialHint();
+ flushTerminal();
  setStatus(idleModeLabel());
  if(!replayMode)await connectLive();
 }
@@ -1441,6 +1890,7 @@ async function toggleAutoPlay(){
 setupCustomSelect('cs-kind',function(val){
  if(stepRunning||val===curKind)return;
  stopAutoPlay();
+ activeProbeVisual=null;
  displayLog='';rawLog='';hintShown=false;
  byId('live-demo-output').innerHTML='';
  renderVisualStep(val,1,true);
@@ -1451,11 +1901,13 @@ setupCustomSelect('cs-kind',function(val){
 setupCustomSelect('cs-step',function(val){
  if(stepRunning)return;
  stopAutoPlay();
+ activeProbeVisual=null;
  renderVisualStep(curKind,Number(val)||1,true);
  flushTerminal();
 });
-byId('btn-view-summary').addEventListener('click',function(){rawView=false;syncViewSwitch();flushTerminal();});
-byId('btn-view-raw').addEventListener('click',function(){rawView=true;syncViewSwitch();flushTerminal();});
+byId('btn-view-visual').addEventListener('click',function(){viewMode='visual';syncViewSwitch();flushTerminal();});
+byId('btn-view-summary').addEventListener('click',function(){viewMode='summary';syncViewSwitch();flushTerminal();});
+byId('btn-view-raw').addEventListener('click',function(){viewMode='raw';syncViewSwitch();flushTerminal();});
 byId('live-demo-run').addEventListener('click',function(){
  if(stepRunning)return;
  stopAutoPlay();

@@ -53,11 +53,22 @@ class BuilderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             with patch.object(D, 'slides', {21: []}), patch.object(D, 'notes', {21: '中文备注'}):
+                H.build(str(root / 'index.html'), str(root), 1600, lang='en')
                 H.build(str(root / 'index.zh.html'), str(root), 1600, lang='zh')
+            doc_en = (root / 'index.html').read_text(encoding='utf-8')
             doc = (root / 'index.zh.html').read_text(encoding='utf-8')
-            for expected in ('演示 1 · 编码 Agent', '运行步骤 1', '自动播放', '{ } 原始日志', 'Auto 快速路径：读取一行配置'):
+            for en_marker in ('id="studio-ledger"', 'id="btn-view-visual"', 'id="live-visual-stage"', 'CUMULATIVE LEDGER', 'CODE DIFF &amp; REVIEW'):
+                self.assertIn(en_marker, doc_en)
+            for expected in ('演示 1 · 编码 Agent', '运行步骤 1', '自动播放', '✦ 可视化', '累计成本与耗时', '代码对比与评审', '{ } 原始日志', 'Auto 快速路径：读取一行配置'):
                 self.assertIn(expected, doc)
             self.assertNotIn('Auto Fast Path: 1-Line Config Lookup', doc)
+            if shutil.which('node'):
+                scripts = re.findall(r'<script>(.*?)</script>', doc, flags=re.S)
+                self.assertGreaterEqual(len(scripts), 2)
+                for idx, script_body in enumerate(scripts):
+                    js_path = root / f'zh_script_{idx}.js'
+                    js_path.write_text(script_body, encoding='utf-8')
+                    subprocess.run(['node', '--check', str(js_path)], check=True)
 
     def test_paragraph_spacing_and_links_survive_both_renderers(self):
         with patch.object(D, 'slides', {}):
