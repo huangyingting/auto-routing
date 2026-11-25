@@ -1013,7 +1013,7 @@ ZH_DEMO_TEXT_MAP.update({
     '0.055 AIU · Single': '0.055 AIU · Single 单模型',
     'pattern: single · 3/3 PASS': 'pattern: single · 3/3 测试通过',
     '1 CLI call · 0 review calls': '1 次 CLI 调用 · 0 次额外评审',
-    'Native Cascade · 2.651 cr': '原生 Cascade · 2.651 AIU',
+    'Native Cascade · 2.651 cr': '修复并检查 · 2.651 AIU',
     '1 CLI call · Opus repair skipped': '1 次 CLI 调用 · 跳过 Opus 修复',
     'Native Critique · 3 phases': '原生 Critique · 3 个阶段',
     '1 CLI call · Cross-lab review': '1 次 CLI 调用 · 跨模型审阅',
@@ -1167,4 +1167,464 @@ ZH_DEMO_TEXT_MAP.update({
         'AI 回复发给客户之前，先检查是否提到竞品或承诺未批准的折扣（阈值 ≥ 0.50）',
     'Legal Comparison Request: Checking attached_documents completeness before Frontier call':
         '合同对比请求：先确认引用的附件是否都已上传，再决定是否调用大模型',
+})
+
+# Demo 2 采用更适合现场讲解的中文：先说发生了什么，再保留技术字段供核对。
+ZH_TEXT_MAP.update({
+    'Foundry Model Router live': 'Foundry Model Router：自动选模型',
+    '✓  Pre-rank gate & param normalization': '✓  一套请求参数，Foundry 自动处理模型差异',
+    'One V1Preview endpoint normalizes cross-provider params and serves valid JSON in 30 ms router overhead.':
+        '业务代码只发一套请求；Foundry 会先排除不支持 JSON 的模型，再把参数调整成目标模型能接受的格式，30 ms 后返回正确结果。',
+    '⚡  27–30 ms ML routing & retain affinity': '⚡  简单任务用轻量模型，难题自动升级',
+    'DeepSeek-V4.1-Flash (JSON) vs. gpt-6-luna (Rust)':
+        '发票字段提取用 DeepSeek Flash；Rust 并发推导改用 gpt-6-luna',
+    'Routes simple JSON to Flash (0 reason tok) and escalates Rust proofs to Luna with retain affinity on Turn 2.':
+        '接口和配置都不变：简单提取选便宜快速的 Flash；复杂并发推导升级到 Luna，第二轮追问继续沿用同一模型。',
+    '⇄  Two-stage cost → quality routing': '⇄  一个流程拆成两步：整理数据省成本，制定方案保质量',
+    'grok-4-1-fast (cost) → gpt-5.6-terra (quality)':
+        'grok-4-1-fast 整理数据 → gpt-5.6-terra 制定方案',
+    'Splits renewal analysis into two live calls: cheap extraction in cost mode followed by strategy in quality mode.':
+        '先让低成本模型从原始材料中整理关键数字，再把精简后的结果交给更强模型制定续约方案。',
+})
+
+ZH_DEMO_TEXT_MAP.update({
+    'One /chat/completions endpoint: param normalization, cheap Flash on easy JSON, auto-escalation, and cost→quality sub-jobs.':
+        '业务代码只调用一个 /chat/completions 接口：简单任务选轻量模型，任务变难自动升级，连续追问尽量沿用原模型。',
+
+    'Eligibility Gate & Cross-Provider Param Normalization':
+        '一套请求参数，Foundry 自动处理模型差异',
+    'Pre-Rank + Param Adapt': '先排除不兼容模型，再处理参数差异',
+    'Foundry filters deployments by required capabilities (tools / json_object) before ranking, adapts cross-provider parameters automatically, and drains pre-paid PTU capacity first.':
+        '业务代码不必分别适配各家模型。Foundry 先排除不支持 JSON 输出的模型，再把 role、temperature 等参数调整成目标模型能接受的格式。',
+    'Manual Multi-SDK': '业务代码分别适配每家模型',
+    '400 Param Errors ✕': '参数不兼容，容易返回 400 ✕',
+    'Breaks on role/temperature differences across labs':
+        '不同模型对 role 和 temperature 的支持方式并不一样',
+    'JSON mode & params normalized': '30 ms 完成选模和参数转换',
+    'Sending OpenAI-style developer role + json_object + temperature=0.2 to Foundry model="auto"':
+        '向 model="auto" 发送常见的 OpenAI 格式请求',
+    'UNIFIED REQUEST PAYLOAD': '业务代码发出的请求',
+    'PRE-RANK CAPABILITY GATE &amp; RESPONSE': 'Foundry 会先做三件事',
+    '1. Filtered out pool models lacking strict <code>json_object</code><br>2. Normalized <code>role="developer"</code> &amp; <code>temperature</code><br>3. Ranked eligible pool in <strong>':
+        '1. 只保留支持 <code>json_object</code> 的模型<br>2. 把 <code>developer</code> 角色和采样参数转换成目标模型支持的格式<br>3. 在可用模型中完成选择，耗时 <strong>',
+    '1 · Request Gate': '1 · 检查请求要求',
+    'json_object + temp': '需要 JSON 输出和 temperature',
+    'developer role normalized': '自动处理 developer 角色',
+    '2 · ML Router': '2 · 从可用模型中选择',
+    '30 ms Overhead': '耗时 30 ms',
+    'mode: "balanced"': '使用 balanced 模式',
+    '3 · Selected Model': '3 · 实际调用的模型',
+
+    'Simple JSON Extraction Routed to DeepSeek Flash in 27 ms':
+        '只提取两个字段，自动选择便宜的 DeepSeek Flash',
+    '1–2% Balanced Band': '简单任务不必使用高成本大模型',
+    'For straightforward JSON extraction, DeepSeek-V4.1-Flash scores within 1–2% of frontier quality — so Balanced mode selects it automatically at a fraction of frontier cost.':
+        '这里只是从发票里提取编号和币种。Flash 的效果已经足够，因此 Balanced 模式会自动选它，既快又省。',
+    'Pinned Frontier': '固定使用高成本大模型',
+    '~25× Token Cost': 'Token 费用约高 25 倍',
+    'Burns frontier reasoning tokens on simple JSON': '提取两个字段也要支付大模型推理费用',
+    '27 ms Router · 0 Reason': '27 ms 选定模型 · 0 推理 Token',
+    'Incoming EU Invoice: Simple 2-field JSON extraction under mode="balanced"':
+        '收到一张账单，只需要提取发票编号和币种',
+    'INCOMING DOCUMENT': '原始账单',
+    'Northwind EU Invoice Text': 'Northwind 发票内容',
+    'STRUCTURED EXTRACTION CARD': '提取结果',
+    '1–2% BALANCED QUALITY BAND': '为什么选择 Flash',
+    '~96% CHEAPER THAN FRONTIER': '费用比固定大模型低约 96%',
+    'Because Flash scores within 1–2% of the #1 frontier model on structured field extraction, Balanced mode picks Flash automatically without burning reasoning tokens.':
+        '在字段提取这类任务上，Flash 与最高分模型的预测效果只差 1–2%，没必要为大模型支付更高费用。',
+    'ML Ranker': '快速选模',
+    'Top 1–2% quality band': '效果已经足够接近最高分',
+    'reasoning_tokens = 0': '推理 Token = 0',
+    'Valid 200 OK': '返回正确结果',
+
+    'Same Endpoint Escalates Rust Proof & Retains Session':
+        '任务变难时自动升级，追问时继续使用原模型',
+    'Difficulty Escalation + Affinity': '难题自动升级，连续对话不乱换模型',
+    'Without changing endpoint or code, formal concurrency proofs trigger automatic escalation to gpt-6-luna, and Turn 2 retains the same model via derived_fingerprint.':
+        '接口和配置都没有改变。任务从字段提取变成 Rust 并发推导后，系统自动升级到 gpt-6-luna；第二轮追问继续使用它，避免重新建立上下文。',
+    'Pinned Cheap Flash': '固定使用轻量模型',
+    'Missed ABA Invariant ✕': '可能漏掉 ABA 等并发约束 ✕',
+    'Under-powered on formal memory-ordering proofs': '复杂的内存序推导超出了轻量模型的能力',
+    'Turn 1 Ranker': '第 1 轮判断任务难度',
+    '30 ms Escalation': '30 ms 内升级模型',
+    'Flash drops below band': '轻量模型不再满足要求',
+    'Turn 2 Affinity': '第 2 轮继续使用原模型',
+    'decision: "retain"': 'decision: "retain"',
+    'derived_fingerprint matched': '识别为同一段对话',
+    'Same /chat/completions endpoint now receives a 2-turn Rust lock-free concurrency proof':
+        '同一个接口，接着处理两轮 Rust 无锁并发问题',
+    'Flash drops below 1–2% band → Router escalates in ':
+        '轻量模型已经不够用，路由耗时 ',
+    'Adaptive session_affinity hashes conversation prefix to avoid mid-thread model thrashing':
+        '系统识别出这是同一段对话，因此第二轮继续使用原模型，不重新读取全部上下文',
+    'TURN 2 VERIFIED INVARIANTS': '第 2 轮补充的关键约束',
+
+    'Two-Stage Routing: mode="cost" Extraction → mode="quality" Strategy':
+        '把续约分析拆成两步：先省成本，再保质量',
+    'Two-Stage Sub-Job Routing': '不同步骤使用不同档位',
+    'Instead of running an entire multi-step workflow on one expensive model, each sub-job passes its own routing_config.mode ("cost" vs "quality") to the same Foundry endpoint.':
+        '第一步只是整理数字，用低成本模式；第二步需要制定谈判方案，再切到质量优先。高价模型只处理真正复杂的部分。',
+    'Monolithic Frontier Call': '整份材料直接交给大模型',
+    'High Cost on Raw Docs': '原始材料全部占用高价模型上下文',
+    'Feeds raw unstructured JSON straight to top tier': '连整理数据这一步也由大模型完成',
+    'Multi-Job Cost + Quality': '整理数据省成本，制定方案保质量',
+    'Enterprise Account Workflow on demo/fixtures/renewal-context.json (Northwind Logistics · $432K ARR)':
+        '续约分析：Northwind Logistics，当前 ARR 为 $432K',
+    'JOB 1 · mode="cost"': '第 1 步 · 低成本整理数据',
+    '28 ms route · fast extraction': '28 ms 选定模型 · 提取关键数字',
+    '2 Compact Bullets': '整理成两条摘要',
+    'Trimmed context passed on': '只把关键数据交给下一步',
+    'JOB 2 · mode="quality"': '第 2 步 · 高质量制定方案',
+    '29 ms route · NRR strategy': '29 ms 选定模型 · 制定续约方案',
+    'JOB 1 · mode = "cost" (': '第 1 步 · 低成本整理数据（',
+    'JOB 2 · mode = "quality" (': '第 2 步 · 高质量制定方案（',
+    'Extracts compact renewal facts from raw JSON at minimal token cost...':
+        '从原始 JSON 中整理续约的关键数字...',
+    'Synthesizes executive pricing & negotiation playbook from compact Stage 1 facts...':
+        '根据精简后的数据制定报价和谈判方案...',
+
+    'Router: 30 ms ✓': '选模耗时：30 ms ✓',
+    'Router: 27 ms ✓': '选模耗时：27 ms ✓',
+})
+
+ZH_TEXT_MAP.update({
+    'Copilot CLI Auto & Fusion live':
+        'Copilot Auto 与 Fusion：按任务难度执行',
+    'Auto → Single → Native Cascade → Native Critique → 99% Cache':
+        '简单任务单模型 → 难题增加检查 → 方案先审后改 → 连续追问复用 99% 缓存',
+    '✓  Auto & Fusion Single fast path': '✓  简单任务只用一个模型',
+    'categoryScores ≤ 0.10 & pattern="single"':
+        '四项任务难度都很低，因此选择 pattern="single"',
+    'Even on Fusion High, simple lookups & routine patches run 1 solver with zero review calls (3/3 node --test).':
+        '即使开启 Fusion High，读取配置和常规修改也只调用一个模型；不增加评审费用，并通过 3 项单元测试。',
+    '↗  1-command native Cascade': '↗  并发难题：先修复，再独立检查',
+    'gpt-6.1-sol → gpt-6-luna Judge → Opus skipped':
+        'gpt-6.1-sol 修复 → gpt-6-luna 检查 → 无需调用 Opus 重做',
+    'One CLI call fixes ABBA lock order; native Judge scores 5/5 (accept) & skips conditional Opus 5.5 repair.':
+        '一条命令先修正两把锁的顺序，再由另一个模型检查；结果 5/5 通过，因此不再调用 Opus 重做。',
+    '⇄  1-command Critique + 99% Cache': '⇄  架构方案先审后改，追问继续复用缓存',
+    'Opus draft → Luna Critic → Opus revise':
+        'Opus 写初稿 → Luna 找问题 → Opus 根据意见修订',
+    'Native Critic flags Active-Active zero-RPO gap for Opus to revise; --resume hits 99% cacheReadTokens.':
+        'Luna 指出双活方案并不能自动保证 RPO=0；Opus 补上跨区域同步方案。随后用 --resume 追问时，99% 的输入直接从缓存读取。',
+
+    'Decision-1.1 agent controller':
+        'Decision-1.1：先判断，再决定',
+    '✓  Zero-spread routing (choice & noul)': '✓  同一个问题连续跑 5 次，结果没有波动',
+    '5/5 identical 0.9835 · 4/4 inbox p=1.00':
+        '5 次都返回 0.9835 · 4 条客服消息全部正确分流',
+    '5 consecutive live calls return 0.00 pt spread; 3 of 4 routine inbox messages skip the frontier LLM.':
+        '同一条消息连续调用 5 次，结果完全一致；4 条客服消息里有 3 条不用调用高成本大模型。',
+    '!  3-in-1 safety triage (choice+score+noul)':
+        '!  受伤投诉：一次请求完成分组、定级并转人工',
+    'safety_support (0.998) + score 1.97 + repeat 1.00':
+        '负责团队 safety_support (0.998) · 紧急程度 1.97 · 重复投诉 1.00',
+    'One 348 ms call classifies injury risk, scores urgency & flags 3rd repeat contact — blocking bot reply.':
+        '一次调用同时判断负责团队、紧急程度和是否重复投诉，并立即停用自动回复、转交人工专员。',
+    '✕  Outbound guardrail & missing-doc abstain':
+        '✕  不当回复发送前拦下，资料不全时先向用户询问',
+    'Rival promo noul=0.970 & missing Exhibit B p=0.9999':
+        '推荐竞品概率 0.970 · 缺少附件 B 的概率 0.9999',
+    'Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.':
+        '草稿里推荐了竞品 Fabrikam，因此发送前暂停；合同附件 B 没上传时，先请用户补充，不让模型猜。',
+})
+
+ZH_DEMO_TEXT_MAP.update({
+    'Fast Single pass on easy code, Judge/Critic teams on hard bugs, and warm-cache retention.':
+        '简单任务只用一个模型；遇到难题再增加独立检查；连续追问继续使用原模型和缓存。',
+
+    'Auto Fast Path: 1-Line Config Lookup': '简单任务只用一个模型：读取一行配置',
+    'auto_v2 Fast Path': '任务很简单，直接走单模型',
+    'One copilot --model auto call emits session.auto_mode_resolved with 4D categoryScores (all ≤ 0.10) and routes straight to GPT-6 Luna.':
+        '这里只是读取端口号，不需要额外检查。Auto 判断任务很简单，直接交给 GPT-6 Luna，一次返回结果。',
+    'Pays frontier tokens on a 1-line config lookup': '读取一行配置也要支付高成本模型费用',
+    '1 CLI call · auto_v2 fast path': '1 次 CLI 调用 · 没有额外评审',
+    'auto_mode_resolved': 'Auto 判断任务难度',
+    'categoryScores ≤ 0.10': '四项任务难度都很低',
+    'reason=0.100 · debug=0.002': '推理 0.100 · 调试 0.002',
+    'Chosen Model': '实际调用的模型',
+    'Judge / Critic': '额外检查',
+    'Bypassed': '无需调用',
+    '$0 review overhead': '没有额外评审费用',
+    'Inspecting demo/fixtures/config.ts — Click Run Step 1 to route via Copilot Auto':
+        '读取 demo/fixtures/config.ts 中的默认端口；点击“运行步骤 1”查看 Auto 会选择哪个模型',
+    'Read-Only Lookup': '只读取配置，不修改文件',
+    '4D CAPABILITY DEMAND (≤ 0.10 FAST PATH)': '系统判断这项任务有多难（四项都很低）',
+    'VERIFIED CLI OUTPUT': '实际返回结果',
+    'EXPECTED CLI OUTPUT': '运行后会在这里显示结果',
+    'Waiting for copilot --model auto...': '等待执行 copilot --model auto...',
+    '0 Judge Overhead': '没有额外检查',
+    '5,655 Cache Write': '同时写入 5,655 个缓存 Token',
+
+    'Fusion High: Picks pattern="single" on Routine Patch':
+        '常规修改：Fusion High 也只用一个模型',
+    'Fusion Single Pattern': '一个模型已经足够',
+    'Even on Fusion High, Copilot Fusion checks 4D capability scores first and picks pattern="single" (phasePlan: []) when 1 solver is sufficient.':
+        '虽然开启了 Fusion High，但这项修改并不复杂。系统判断一个模型就够了，因此不会为了“多模型”而增加额外调用。',
+    'Blind Multi-Agent': '不管难度，每次都调用多个模型',
+    '2–3× Calls Always': '每次固定调用 2–3 个模型',
+    'Wastes Judge/Critic tokens on routine fixes': '常规修改也要多付评审费用',
+    'Fusion Orchestrator · pattern = "single"': 'Fusion 判断：一个模型就够了',
+    'FUSION ORCHESTRATOR · PATTERN = "SINGLE"': 'Fusion 判断：一个模型就够了',
+    'Even with --fusion-tier high enabled, capability demand stayed bounded (0.231), so Fusion skipped Judge/Critic calls and verified 3/3 unit tests in one pass.':
+        '即使开启 --fusion-tier high，这项任务的难度也只有 0.231。Fusion 没有增加额外检查，一次修改就通过了 3 项测试。',
+    'Fusion High will inspect 4D capability scores first before deciding whether multi-model review is worth paying for.':
+        'Fusion High 会先判断任务难度；只有确实需要时，才会增加第二个模型检查。',
+    'Judge Calls: 0': '额外检查：0 次',
+
+    'Fusion High: Native pattern="cascade" (Solver + Judge)':
+        '并发死锁：先修复，再由另一个模型检查',
+    'Native 1-Call Cascade': '发现并发风险后增加独立检查',
+    'One copilot --model fusion --fusion-tier high command orchestrates Solver (gpt-6.1-sol) + Judge (gpt-6-luna) server-side, skipping conditional Opus 5.5 repair when Judge returns verdict="accept".':
+        '同一条命令先让 gpt-6.1-sol 修复加锁顺序，再让 gpt-6-luna 独立检查。检查通过后，不再调用 Opus 重做。',
+    'Unreviewed Single Pass': '只修改，不检查',
+    'Race Risk / Full Opus': '可能漏掉并发问题，或直接使用最贵模型',
+    'Either skips concurrency review or pays full Opus up front':
+        '要么没有独立检查，要么从一开始就支付最高档费用',
+    '1 · Primary Solver': '1 · 先修复代码',
+    '2 · Native Judge': '2 · 另一个模型检查',
+    '3 · Repair (Cond.)': '3 · 有问题才重做',
+    'DEADLOCK FIXED · 500/500 RACES PASS': '死锁已修复 · 500 次并发测试全部通过',
+    'NATIVE JUDGE ANNOTATION · ': '独立检查结果 · ',
+    'Native Cascade runs Primary Solver (gpt-6.1-sol) then cross-checks with Judge (gpt-6-luna), triggering claude-opus-5.5 repair ONLY if Judge rejects.':
+        '先由 gpt-6.1-sol 修改，再由 gpt-6-luna 检查；只有检查不通过时，才会调用 claude-opus-5.5 重做。',
+    '1 · Solver: ': '1 · 修改：',
+    '2 · Judge: ACCEPT ✓': '2 · 检查通过 ✓',
+    '3 · Repair (claude-opus-5.5):': '3 · 重做（claude-opus-5.5）：',
+
+    'Fusion High: Native pattern="critique" (Draft → Critic → Revise)':
+        '架构方案：一个模型起草，另一个模型专门找问题',
+    'Native 1-Call Critique': '初稿 → 独立审阅 → 修订',
+    'On high-stakes architecture prompts, one --model fusion --fusion-tier high call drafts on Opus 5.5, critiques on cross-family GPT-6 Luna, and hands off via session.fusion_handoff for a high-effort Opus 5.5 revision.':
+        'Opus 5.5 先写初稿，GPT-6 Luna 专门找漏洞，再把意见交回 Opus 修订。整个过程仍然只需一条 Fusion 命令。',
+    'Single-Model Draft': '只让一个模型从头写到尾',
+    'Zero-RPO Blind Spot ✕': '没有发现 RPO=0 的前提漏洞 ✕',
+    'Conflates writer fencing with cross-region commit durability':
+        '把“避免重复写入”误当成“跨区域数据不会丢”',
+    'Cross-Lab Audit': '换一个模型专门找问题',
+    'Audits failure modes, quorum math, and RPO/RTO claims across model families.':
+        '重点检查故障场景、多数派写入，以及 RPO/RTO 的结论是否成立。',
+    'WHY CROSS-LAB CRITIQUE MATTERS': '为什么要换一个模型检查',
+    'A single model rarely catches its own blind spot on distributed consensus vs. lease fencing — pairing Claude Opus 5.5 with GPT-6 Luna caught a real RPO=0 production flaw in one CLI command.':
+        '一个模型很难发现自己的概念混淆。这里让 GPT-6 Luna 单独检查，找出了“防止重复写入并不等于跨区域数据零丢失”这个关键问题。',
+
+    'Prefix-Cache Guard: 99% Cache Hit via --resume':
+        '连续追问不换模型：99% 的输入直接复用缓存',
+    'Warm Prefix Retention': '沿用原会话和原模型',
+    'usage.json exposes exact cacheReadTokens and cacheExpiresAt. Keeping the session model on follow-up turns reuses 99% of prompt tokens instead of paying full prefill on a cold model.':
+        '通过 --resume 继续原会话，5,655 个 Token 直接从缓存读取。这样不用换模型后重新处理全部上下文。',
+    'Cold Mid-Turn Switch': '追问时切到另一个模型',
+    '0% Cache · Full Price': '原缓存失效 · 全部重新读取',
+    'Invalidates warm prefix & re-prefills full context':
+        '新模型无法使用原缓存，需要重新处理全部上下文',
+    'Resumed Session': '继续原会话',
+    'Cold Model Switch': '切换到新模型',
+    'Avoided': '没有发生',
+    'Retained Model': '继续使用原模型',
+    'PROMPT PREFIX CACHE RETENTION (': '前缀缓存复用情况（',
+    'New Turn Tokens: ': '本轮新增加的 Token：',
+    'Cost: 0.024 AIU (vs ~0.45 cold)':
+        '本轮费用：0.024 AIU（重新读取全部上下文约 0.45 AIU）',
+
+    'Replace slow LLM router prompts with 180 ms calibrated choice, score & noul gates ($0.042/1M).':
+        '先用 choice、score 和 noul 做分流、定级和发送前检查；只有真正需要生成内容时才调用大模型。',
+    '5× Live Repeat Probe: 0.9835 with 0.00 pt Spread':
+        '同一个问题连续跑 5 次，结果都为 0.9835',
+    'Calibrated System-One': '同一输入结果稳定',
+    'Unlike generative LLM judges that drift across runs and bill for output prose, Decision-1.1 returns deterministic calibrated probabilities in a single forward pass.':
+        '同一个问题连续运行 5 次都返回 0.9835。程序可以直接用这个数做判断，不必解析一段可能变化的生成式文字。',
+    'Generative LLM Judge': '用生成式大模型做判断',
+    '340× pricier + non-deterministic prose': '费用高约 340 倍，结果还可能变化',
+    'Customer Sales Message: Testing 5 consecutive /v1/systemone calls for probability drift':
+        '同一条购买咨询连续提交 5 次，检查结果会不会变化',
+    'CALIBRATED SYSTEM-ONE PRIMITIVE': '为什么结果稳定',
+    'Deterministic single forward-pass log-prob scoring: no sampling temperature drift, no JSON formatting retries, and $0 output token charges.':
+        '一次前向计算直接返回概率，不受随机采样影响，也不用为了 JSON 格式反复重试；输出 Token 费用为 $0。',
+
+    'Check 1 (choice): 4/4 Live Inbox Triage (3/4 Skip Frontier)':
+        '4 条客户消息，3 条不需要调用大模型',
+    'Pre-LLM Inbox Filter': '先把常规消息挡在大模型前面',
+    'Spending ~$0.000013 on a calibrated choice check filters out acknowledgements, opt-outs, and simple FAQ lookups before they ever touch a $15/1M frontier LLM.':
+        '“谢谢”、退订和简单促销咨询不需要大模型。先做一次低成本判断，只把真正复杂的问题交给高成本模型。',
+
+    'Check 2 (choice + score + noul): Live Injury Triage & Escalation':
+        '受伤投诉：一次请求完成分组、定级并转人工',
+    '3-in-1 Multi-Question Call': '一次请求同时返回三项判断',
+    'Packing choice, score, and noul into a single /v1/systemone request classifies the team, computes calibrated urgency, and flags repeat complaints in one round-trip.':
+        '一次 /v1/systemone 请求同时返回负责团队、紧急程度和是否重复投诉，业务代码可以马上停用自动回复并通知人工专员。',
+
+    'Check 3 (noul): Live Outbound Guardrail Blocks Rival Promo':
+        '回复发出前，拦下推荐竞品的草稿',
+    'Pre-Send Guardrail': '发送前再检查一次',
+    'A $0.00006 pre-send noul check catches competitor promotions or unauthorized discounts automatically so clean drafts ship without 100% manual human review.':
+        '发送前只检查是否提到竞品或承诺未批准的折扣。只有命中风险的草稿才转人工，不必逐条审核所有回复。',
+
+    'Missing Document Caught: Abstains Instead of Hallucinating':
+        '缺少附件时停下来问，不让模型猜',
+    'Missing-Context Guard': '资料不全时先向用户询问',
+    'Before calling an expensive frontier model to compare legal clauses, Decision-1.1 verifies all referenced exhibits exist in state — stopping to ask when one is missing.':
+        '用户要求对比合同条款，但附件 B 没有上传。系统先请用户补充材料，不把不完整的内容交给大模型猜测。',
+
+    'Smart Support Inbox: 4 incoming customer messages waiting for tier assignment':
+        '客服收件箱：先判断 4 条消息该由业务代码、小模型还是大模型处理',
+    'Urgent Inbound Ticket: Evaluating team + priority[0..3] + repeat_complaint in 1 HTTP call':
+        '受伤投诉：一次请求同时判断负责团队、紧急程度和是否重复投诉',
+    'Screening AI-generated outbound reply before customer delivery (threshold ≥ 0.50)':
+        'AI 回复发给客户前，先检查是否提到竞品或承诺未批准的折扣',
+    'Legal Comparison Request: Checking attached_documents completeness before Frontier call':
+        '比较合同前先检查引用的附件是否都已上传',
+
+    'Outbound Policy Gate': '发送前内容检查',
+    'Competitor / Policy Leak Intercepted': '回复中推荐了竞品，发送前已拦下',
+    'Decision-1.1 noul check caught a rival recommendation in 165 ms for $0.00004, holding the unsafe draft automatically.':
+        'Decision-1.1 用 165 ms 发现草稿在推荐竞品，费用 $0.00004；系统在发送前暂停，并转人工确认。',
+    'Unchecked Auto-Send': '未经检查直接发送',
+    'Lost Lead ✕': '可能把客户推给竞品 ✕',
+    'Sends customer to rival': '草稿会把客户引向竞品',
+    'MD-1.1 noul Gate': 'Decision-1.1 发送前检查',
+    '$0.00004 · HELD': '$0.00004 · 已暂停',
+    '165 ms pre-send block': '165 ms 完成发送前检查',
+
+    'Calibrated P0–P3 Score': 'P0–P3 紧急程度',
+    'High-Severity Injury / Dispute Escalated to Human': '发现受伤或严重争议，立即转人工',
+    'Combined choice + score call detects physical harm or severe dispute risk in one pass and skips autonomous bot replies.':
+        '一次请求同时判断负责团队和紧急程度；发现人身伤害或严重争议后，立即停用自动回复并通知人工专员。',
+    'Generic Chatbot': '普通自动回复机器人',
+    'PR / Legal Risk ✕': '可能带来客诉或法律风险 ✕',
+    'Tone-deaf automated reply': '对严重投诉仍发送普通话术',
+    'P3 Human Specialist': 'P3 人工专员',
+    '178 ms Escalation': '178 ms 完成人工升级',
+    '$0.00003 triage check': '判断费用 $0.00003',
+
+    'Zero-LLM Short-Circuit': '不调用大模型',
+    'Trivial Turn Handled Without Burning LLM Credits': '“谢谢”和“退订”直接由业务代码处理',
+    'Acknowledgements and opt-outs never need a $15/1M frontier model. Decision-1.1 routes them to deterministic code for $0.000013.':
+        '感谢和退订不需要大模型。Decision-1.1 先判断消息类型，再交给业务代码处理，费用只有 $0.000013。',
+    'Always Frontier': '所有消息都调用大模型',
+    '$0.150 · 3.8 s': '$0.150 · 3.8 秒',
+    '11,500× pricier overkill': '简单消息也支付高价模型费用',
+    'Code Short-Circuit': '业务代码直接处理',
+    '$0.000013 · 0.14 s': '$0.000013 · 0.14 秒',
+    'Zero LLM tokens generated': '没有生成式大模型 Token',
+
+    'Sub-Task Specialization': '按工作内容分工',
+    'Multi-Modal Deliverable Split Across Specialist Models': '检索、写作和配图分别交给合适的模型',
+    'Instead of forcing one model to search, write, and draw, Auto dispatches each sub-task to the lab that leads that capability.':
+        '不让一个模型同时负责检索、写作和配图；Auto 把每一部分交给更合适的模型。',
+    'Single General Model': '全部交给一个通用模型',
+    'Slow · Weak Art': '检索慢，配图也弱',
+    'Overpays on search & visuals': '检索和配图也支付高价模型费用',
+    'SLM + Opus + Image': 'SLM + Opus + 图像模型',
+    '-68% Cost · Best Fit': '费用降低 68% · 各做所长',
+    '3 specialist models combined': '三类模型分工完成',
+
+    '1–2% Quality Band Win': '效果接近时选择更便宜的模型',
+    'Everyday Prompt Served Fast at 1/12th Frontier Cost': '常规请求用轻量模型快速完成',
+    'When lightweight models score within 1–2% of frontier quality, Balanced routing picks the fast model automatically.':
+        '当轻量模型与最高分模型的预测效果只差 1–2% 时，Balanced 会自动选择更快、更便宜的模型。',
+    'Single Fast Pass · Balanced Band': '一次完成 · 轻量模型已经够用',
+    'Always Frontier': '所有请求都用大模型',
+    '$0.045 · 3.4 s': '$0.045 · 3.4 秒',
+    '12× unnecessary spend': '多花约 12 倍费用',
+    'Flash / Haiku 5.5': 'Flash / Haiku 5.5',
+    '$0.003 · 0.8 s': '$0.003 · 0.8 秒',
+    '22 ms router · Single pass': '22 ms 选模 · 一次完成',
+
+    '✓ Blocked competitor promotion before customer saw it (mentions_competitor.noul = 0.964 ≥ 0.50)!':
+        '✓ 发现草稿在推荐竞品，已在发送给客户前暂停（mentions_competitor.noul = 0.964 ≥ 0.50）',
+    'Microsoft-Decision-1.1 Outbound Guardrail · 165 ms ($0.00004)':
+        'Microsoft-Decision-1.1 · 165 ms 完成发送前检查（$0.00004）',
+    'Draft Input': '待发送草稿',
+    'Outbound Reply': 'AI 生成的客户回复',
+    'Rival reference spotted': '发现竞品推荐',
+    'MD-1.1 noul': 'Decision-1.1 检查',
+    'Action': '系统处理',
+    'Routed to human queue': '转到人工审核队列',
+    'mentions_competitor (noul)': '是否提到竞品（noul）',
+    'policy_violation': '是否需要暂停发送',
+    'Auto-Send Allowed': '是否允许自动发送',
+
+    '✓ Scored P3 Immediate Human (2.92 / 3.0) in 178 ms — bypassed generative bot and paged safety specialist!':
+        '✓ 178 ms 内判断为 P3，需要立即人工处理（2.92 / 3.0）；已停用自动回复并通知安全专员',
+    'Microsoft-Decision-1.1 Combined choice + score · 178 ms':
+        'Microsoft-Decision-1.1 · 一次请求同时分组和定级（178 ms）',
+    'Inbound Msg': '收到的客户消息',
+    'High-Risk Signal': '发现受伤或严重争议信号',
+    'Injury / legal / repeat': '受伤、法律风险或重复投诉',
+    'MD-1.1 score': 'Decision-1.1 紧急程度',
+    '178 ms single call': '一次调用耗时 178 ms',
+    'Page Human P3': '立即通知 P3 人工专员',
+    'Bot bypassed immediately': '自动回复已停用',
+    'team: safety_support': '负责团队：safety_support',
+    'priority (P0..P3 score)': '紧急程度（P0–P3）',
+    'human_escalation (noul)': '是否需要立即转人工',
+    'Bot Reply Permitted': '是否允许机器人回复',
+
+    '✓ Short-circuited in 142 ms ($0.000013) — handled in deterministic code with $0 generative LLM cost!':
+        '✓ 142 ms 内完成判断（$0.000013），随后由业务代码直接处理，大模型费用为 $0',
+    'Microsoft-Decision-1.1 choice Router · 142 ms ($0.000013)':
+        'Microsoft-Decision-1.1 · 142 ms 完成消息分流（$0.000013）',
+    'Routine Ack / Opt-Out': '感谢或退订等常规消息',
+    'Zero reasoning needed': '不需要生成式推理',
+    'MD-1.1 choice': 'Decision-1.1 分流',
+    'Execution': '后续处理',
+    'Code Handler ($0)': '业务代码处理（$0）',
+    '100% LLM skipped': '无需调用生成式大模型',
+    'code_or_no_reply': '业务代码处理或无需回复',
+    'LLM Tokens Spent': '生成式大模型 Token',
+    '0 tokens ($0)': '0 Token（$0）',
+
+    '✓ Split into 3 specialized sub-jobs: SLM retrieval + Claude Opus 5.5 narrative + GPT Image 2.5 visuals!':
+        '✓ 将任务拆成三部分：SLM 查资料、Claude Opus 5.5 整理内容、GPT Image 2.5 生成配图',
+    'Microsoft Copilot Auto · Experience Gate + Sub-Agent Router':
+        'Microsoft Copilot Auto · 按工作内容拆分任务',
+    '1 · Grounding': '1 · 查找相关资料',
+    'Fast SLM': '快速 SLM',
+    'Emails, Teams & files': '邮件、Teams 和文件',
+    '2 · Reasoning': '2 · 整理分析内容',
+    'Strategy & slide structure': '策略和幻灯片结构',
+    '3 · Visuals': '3 · 生成配图',
+    'Charts & hero graphics': '图表与主视觉',
+    'Chat → Cowork Handoff': '是否转到 Cowork',
+    'Work IQ Search (SLM)': 'Work IQ 检索（SLM）',
+    'Narrative & Deck (Opus 5.5)': '内容与幻灯片（Opus 5.5）',
+    'Visuals (GPT Image 2.5)': '配图（GPT Image 2.5）',
+    'Assigned ✓': '已分配 ✓',
+
+    '✓ Detected deep formal/concurrency complexity — escalated to Frontier reasoning + read-only Critic audit!':
+        '✓ 发现任务包含复杂并发和形式化推导，已升级到更强模型，并增加一次只读复核',
+    'HyDRA / Foundry Ranker · High Reasoning & Verification Demand':
+        'HyDRA / Foundry · 任务需要较强推理和独立复核',
+    'Router (~21ms)': '快速判断（约 21 ms）',
+    'Crossed Band': '轻量模型不再够用',
+    'Cheap models excluded': '不再选择轻量模型',
+    'Primary': '主模型',
+    'Deep reasoning tier': '使用深度推理',
+    'Verifier': '复核模型',
+    'Read-Only Critic': '只读复核',
+    'Audits edge cases': '专门检查边界情况',
+    'Reasoning Demand': '推理难度',
+    'Debugging / Formal': '调试与形式化推导',
+    'Flash / Haiku Fit': '轻量模型匹配度',
+    'Frontier + Critic Fit': '强模型加复核的匹配度',
+    '0.93 (High)': '0.93（高）',
+    '0.88 (High)': '0.88（高）',
+    '64% (Out of band)': '64%（不够用）',
+    '97% · SELECTED': '97% · 已选择',
+
+    '✓ Bounded task complexity — served in one fast pass on Flash/Haiku within 1% of frontier quality (-92% cost)!':
+        '✓ 任务难度不高，使用轻量模型一次完成；预测效果与最高分只差约 1%，费用降低 92%',
+    'Foundry / HyDRA Ranker · 22 ms Overhead (Within 1–2% Band)':
+        'Foundry / HyDRA · 22 ms 完成判断（与最高分差距在 1–2% 以内）',
+    '22 ms Check': '22 ms 完成判断',
+    'Within 1–2% of #1': '与最高分差距在 1–2% 以内',
+    'Fast single pass': '轻量模型一次完成',
+    'Frontier Tier': '高成本大模型',
+    'Saved!': '无需调用',
+    '-92% token cost': 'Token 费用降低 92%',
+    '98.8% fit · WINNER': '匹配度 98.8% · 已选择',
+    '99.4% fit (20× cost)': '匹配度 99.4%（费用高约 20 倍）',
+    '0.19 (Bounded)': '0.19（较低）',
+    'Router Latency': '判断耗时',
 })

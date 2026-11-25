@@ -70,7 +70,10 @@ class BuilderTests(unittest.TestCase):
                 '所有消息都交给大模型',
                 '先请用户补充材料',
                 '{ } 原始日志',
-                'Auto 快速路径：读取一行配置',
+                '业务代码只调用一个 /chat/completions 接口',
+                '简单任务只用一个模型',
+                '4 条客户消息，3 条不需要调用大模型',
+                '任务难度不高，使用轻量模型一次完成',
             ):
                 self.assertIn(expected, doc)
             for forbidden in (
@@ -80,6 +83,13 @@ class BuilderTests(unittest.TestCase):
                 'All-Frontier Inbox',
                 'Reviewing every AI draft manually kills ROI',
                 'Fusion 高',
+                '条件筛选与跨厂商参数转换',
+                '路由选型与多轮缓存保持',
+                '原生 Cascade',
+                '受伤投诉分流与人工升级',
+                '缺少上下文检查',
+                'Bounded task complexity',
+                'Within 1–2% of #1',
             ):
                 self.assertNotIn(forbidden, doc)
             if shutil.which('node'):
