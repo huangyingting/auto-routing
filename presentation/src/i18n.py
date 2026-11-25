@@ -560,6 +560,8 @@ ZH_DEMO_TEXT_MAP = {
     'Summary': '摘要',
     '{ } Raw Log': '{ } 原始日志',
     'Inspect verbatim CLI JSONL / HTTP JSON and provenance': '查看未经改写的 CLI JSONL / HTTP JSON 与来源',
+    "Inspect the current step's verbatim CLI JSONL / HTTP JSON and provenance":
+        '查看当前步骤未经改写的 CLI JSONL / HTTP JSON 与来源',
     'Routing flow': '路由流程',
     'ROUTING RULE / API CALL': '路由规则 / API 调用',
     'Chosen Model': '选中的模型',

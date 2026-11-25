@@ -360,7 +360,7 @@ LIVE_DEMO = """
           <div class="term-view-switch" role="group" aria-label="Workbench view mode">
             <button type="button" class="tview-btn active" id="btn-view-visual" title="Interactive Diff, Review &amp; Smart Inbox view">✦ Visual</button>
             <button type="button" class="tview-btn" id="btn-view-summary">Summary</button>
-            <button type="button" class="tview-btn" id="btn-view-raw" title="Inspect verbatim CLI JSONL / HTTP JSON and provenance">{ } Raw Log</button>
+            <button type="button" class="tview-btn" id="btn-view-raw" title="Inspect the current step's verbatim CLI JSONL / HTTP JSON and provenance">{ } Raw Log</button>
           </div>
         </div>
 
@@ -1663,13 +1663,14 @@ function applyDemoEvent(data){
   stepRunning=true;
   activeProbeVisual=null;
   curKind=data.demo;curStep=Number(data.step);
+  rawLog='';
   delete lastLiveRoute[curKind+':'+curStep];
   delete lastArtifact[curKind+':'+curStep];
   setStatus((replayMode?'Running Step ':'Running Live Step ')+curStep+'…','running');
   renderVisualStep(curKind,curStep);
   var title=SCENARIOS[curKind].steps[curStep-1].title;
   appendTerminal((displayLog?'\\n':'')+'──▶ [Step '+curStep+'] '+title+'\\n');
-  appendRaw((rawLog?'\\n':'')+'──▶ [Step '+curStep+' · Raw Log & Provenance] '+title+'\\n');
+  appendRaw('──▶ [Step '+curStep+' · Raw Log & Provenance] '+title+'\\n');
  }else if(data.kind==='step-done'){
   stepRunning=false;
   var demo=data.demo,step=Number(data.step),total=SCENARIOS[demo].steps.length;
@@ -1801,6 +1802,7 @@ function classifyCustomPrompt(prompt){
 function runCustomProbe(cmd){
  if(!cmd||stepRunning)return;
  stopAutoPlay();
+ rawLog='';
  if(hintShown){displayLog='';hintShown=false;}
  var r=classifyCustomPrompt(cmd);
  applyLocalProbeCard(r);
@@ -1817,7 +1819,7 @@ function runCustomProbe(cmd){
  }
  var isHold=/Blocked|HELD|Injury|Escalated/i.test(r.outcome+' '+r.title);
  appendTerminal((isHold?'✕ ESCALATED / HELD — '+r.title+'\\n':'')+r.outcome.replace(/^✓ /,'✓ PASS — ')+'\\nWhy: '+r.what+'\\n[SOURCE] Heuristic Custom Probe Simulator (run `npm --prefix demo run demo:web` for live CLI / Foundry probe)\\n');
- appendRaw((rawLog?'\\n':'')+'──▶ [Custom Prompt Probe · Simulated Raw Payload]\\n# PROVENANCE: Client-side rule preview in static Replay mode; start `npm --prefix demo run demo:web` for live Copilot CLI / Decision-1.1 JSON.\\n'+JSON.stringify({prompt:cmd,pattern:r.pattern,rule:r.code,verdict:r.title},null,2)+'\\n');
+ appendRaw('──▶ [Custom Prompt Probe · Simulated Raw Payload]\\n# PROVENANCE: Client-side rule preview in static Replay mode; start `npm --prefix demo run demo:web` for live Copilot CLI / Decision-1.1 JSON.\\n'+JSON.stringify({prompt:cmd,pattern:r.pattern,rule:r.code,verdict:r.title},null,2)+'\\n');
  setStatus('Probe Routed ✓','ok');
 }
 
@@ -1902,6 +1904,7 @@ setupCustomSelect('cs-step',function(val){
  if(stepRunning)return;
  stopAutoPlay();
  activeProbeVisual=null;
+ rawLog='';
  renderVisualStep(curKind,Number(val)||1,true);
  flushTerminal();
 });

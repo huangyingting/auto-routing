@@ -236,6 +236,13 @@ class BuilderTests(unittest.TestCase):
                 js_path.write_text(src, encoding='utf-8')
                 subprocess.run(['node', '--check', str(js_path)], check=True)
 
+    def test_raw_log_is_scoped_to_current_step_or_probe(self):
+        self.assertIn("}else if(data.kind==='step-start'){\n  stepRunning=true;", H.STUDIO_JS)
+        self.assertIn("curKind=data.demo;curStep=Number(data.step);\n  rawLog='';", H.STUDIO_JS)
+        self.assertIn("function runCustomProbe(cmd){\n if(!cmd||stepRunning)return;\n stopAutoPlay();\n rawLog='';", H.STUDIO_JS)
+        self.assertIn("setupCustomSelect('cs-step',function(val){", H.STUDIO_JS)
+        self.assertIn("activeProbeVisual=null;\n rawLog='';\n renderVisualStep", H.STUDIO_JS)
+
 
 if __name__ == '__main__':
     unittest.main()
