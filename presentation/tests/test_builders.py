@@ -75,6 +75,24 @@ class BuilderTests(unittest.TestCase):
                 op['text'],
             )
 
+    def test_demo_launchers_only_appear_on_matching_slides(self):
+        expected = {
+            10: 'fusion',
+            12: 'foundry',
+            20: 'decision',
+            21: 'fusion',
+            22: 'foundry',
+            23: 'decision',
+        }
+        self.assertEqual({k: v[0] for k, v in H.DEMO_LAUNCHERS.items()}, expected)
+        self.assertEqual({k: v[0] for k, v in H.ZH_DEMO_LAUNCHERS.items()}, expected)
+        for slide_index in range(26):
+            en_markup = H.slide_html(slide_index, [], '.', 1600, lang='en')
+            zh_markup = H.slide_html(slide_index, [], '.', 1600, lang='zh')
+            should_have_launcher = slide_index in expected
+            self.assertEqual('class="live-demo-trigger"' in en_markup, should_have_launcher)
+            self.assertEqual('class="live-demo-trigger"' in zh_markup, should_have_launcher)
+
     def test_chinese_demo_studio_localizes_controls_and_explanations(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -877,23 +877,14 @@ ZH_TEXT_MAP.update({
     'Right-size the model,\nkeep the control': '任务交给合适的模型，\n关键控制仍放在代码里',
 })
 
-ZH_DEMO_LAUNCHERS.update({
-    6: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    7: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    8: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    9: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
+ZH_DEMO_LAUNCHERS = {
     10: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
-    11: ('foundry', '1', '打开演示 2：Foundry Model Router'),
     12: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    16: ('decision', '1', '打开演示 3：Decision-1.1'),
-    17: ('decision', '1', '打开演示 3：Decision-1.1'),
-    18: ('decision', '1', '打开演示 3：Decision-1.1'),
-    19: ('decision', '1', '打开演示 3：Decision-1.1'),
     20: ('decision', '1', '打开演示 3：Decision-1.1'),
     21: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
     22: ('foundry', '1', '打开演示 2：Foundry Model Router'),
     23: ('decision', '1', '打开演示 3：Decision-1.1'),
-})
+}
 
 ZH_DEMO_TEXT_MAP.update({
     'Demo 1 · Coding Agent': '演示 1 · 编程 Agent',
