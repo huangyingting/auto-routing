@@ -15,7 +15,9 @@ import {
   runDecisionStepLive,
   runFoundryStepLive,
   runFusionStepLive,
+  setLiveDebugLogger,
 } from "./live-runners.mjs";
+import { formatDebugLog } from "./debug-log.mjs";
 
 const demoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = path.resolve(demoRoot, "..");
@@ -27,6 +29,14 @@ const port = Number.parseInt(process.env.AUTO_DEMO_PORT ?? "8787", 10);
 const clients = new Set();
 let busy = false;
 const sessionStore = {};
+
+function logDemo(kind, fields = {}) {
+  console.log(formatDebugLog("DEMO", { kind, ...fields }));
+}
+
+setLiveDebugLogger((event) => {
+  console.log(formatDebugLog("LIVE-CALL", event));
+});
 
 function send(event) {
   const payload = `data: ${JSON.stringify(event)}\n\n`;
@@ -50,6 +60,7 @@ async function cleanupSessionStore() {
 }
 
 async function playRecorded(demo, step, note = null) {
+  logDemo("step-replay", { demo, step });
   const recordings = JSON.parse(await readFile(recordingsPath, "utf8"));
   const seq = recordings.steps?.[demo]?.[String(step)];
   if (!seq) throw new Error(`Unknown demo=${demo} step=${step}`);
@@ -66,6 +77,7 @@ async function playRecorded(demo, step, note = null) {
 
 async function runStep(demo, step, mode = "auto") {
   busy = true;
+  logDemo("step-start", { demo, step, mode });
   try {
     if (mode === "replay") {
       await playRecorded(demo, step);
@@ -76,24 +88,28 @@ async function runStep(demo, step, mode = "auto") {
 
     if (demo === "fusion") {
       if (caps.copilotAvailable) {
+        logDemo("step-live", { demo, step, backend: "copilot-cli" });
         await runFusionStepLive(step, send, sessionStore);
         return;
       }
       if (mode === "live") {
         throw new Error("GitHub Copilot CLI (`copilot`) is not available on PATH.");
       }
+      logDemo("step-fallback", { demo, step, reason: "copilot-cli-unavailable" });
       await playRecorded(demo, step, "Copilot CLI not found on PATH -> showing verified replay.");
       return;
     }
 
     if (demo === "foundry") {
       if (caps.foundryReady) {
+        logDemo("step-live", { demo, step, backend: "foundry-router" });
         await runFoundryStepLive(step, send);
         return;
       }
       if (mode === "live") {
         throw new Error("Set AZURE_FOUNDRY_ENDPOINT (+ key or `az login`) to execute live Foundry cloud steps 1–4.");
       }
+      logDemo("step-fallback", { demo, step, reason: "foundry-not-configured" });
       await playRecorded(
         demo,
         step,
@@ -104,12 +120,14 @@ async function runStep(demo, step, mode = "auto") {
 
     if (demo === "decision") {
       if (caps.decisionReady) {
+        logDemo("step-live", { demo, step, backend: "decision-1.1" });
         await runDecisionStepLive(step, send);
         return;
       }
       if (mode === "live") {
         throw new Error("Set AZURE_FOUNDRY_ENDPOINT (+ optional DECISION_DEPLOYMENT) to execute live /v1/systemone calls.");
       }
+      logDemo("step-fallback", { demo, step, reason: "decision-not-configured" });
       await playRecorded(
         demo,
         step,
@@ -119,8 +137,16 @@ async function runStep(demo, step, mode = "auto") {
     }
 
     throw new Error(`Unknown demo: ${demo}`);
+  } catch (err) {
+    logDemo("step-error", {
+      demo,
+      step,
+      error: String(err?.message || err).slice(0, 300),
+    });
+    throw err;
   } finally {
     busy = false;
+    logDemo("step-finish", { demo, step });
   }
 }
 
@@ -178,6 +204,7 @@ const server = http.createServer(async (req, res) => {
     const demo = url.searchParams.get("demo") || "fusion";
     const step = Number.parseInt(url.searchParams.get("step") || "1", 10);
     const mode = url.searchParams.get("mode") || "auto";
+    logDemo("step-request", { demo, step, mode, source: "browser" });
     res.writeHead(202, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: true }));
     runStep(demo, step, mode).catch((err) => {
@@ -195,6 +222,7 @@ const server = http.createServer(async (req, res) => {
     let body = "";
     for await (const chunk of req) body += chunk;
     const prompt = body.trim();
+    logDemo("probe-request", { source: "browser", promptChars: prompt.length });
     res.writeHead(202, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: true }));
     if (!prompt) return;
@@ -253,4 +281,5 @@ server.listen(port, "127.0.0.1", () => {
   console.log(
     `Live backends -> Copilot CLI: ${caps.copilotAvailable ? "READY" : "missing"} | Foundry Router: ${caps.foundryReady ? "READY" : "replay-until-AZURE_FOUNDRY_ENDPOINT"} | Decision-1.1: ${caps.decisionReady ? "READY" : "replay-until-AZURE_FOUNDRY_ENDPOINT"}`,
   );
+  console.log("Debug logging enabled: [DEMO] shows live/replay selection; [LIVE-CALL] proves each CLI/HTTP backend call.");
 });

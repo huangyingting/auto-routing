@@ -65,3 +65,18 @@ npm --prefix demo run demo:replay
 - **三视图切换与累计账本**：默认打开 **`✦ Visual`（可视化视图）**，直观展示真实文件代码修改对比、Judge/Critic 评审意见、两阶段请求卡片、智能客服收件箱分流与发送前拦截高亮，并在顶部实时累计“固定大模型 vs 自动路由”的成本与耗时；同时保留 **`Summary`** 与 **`{ } Raw Log`**。原始日志只显示当前步骤或刚刚执行的自定义输入，切换步骤时自动换成对应步骤的日志预览，不会把前面的记录一直累加。
 - **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`（中文版 `/zh/#22`），页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI 以及已配置的云端 Foundry / Decision-1.1 端点，并将实时补丁与返回结果同步渲染到可视化工作台。
 - **静态离线回放（GitHub Pages）**：直接打开 `dist/html/index.html` 或 `dist/html/index.zh.html` 时无需后端，使用 `presentation/assets/demo-recordings.json` 离线回放（可通过 `node demo/src/record-web-demo.mjs --record-fusion` 重新录制真实轨迹）。
+
+### 如何从服务器日志确认是真实调用
+
+启动 `npm --prefix demo run demo:web` 后，终端会输出两类结构化日志：
+
+```text
+2026-11-26T05:00:00.000Z [DEMO] LIVE demo=foundry step=2 backend=foundry-router
+2026-11-26T05:00:00.010Z [LIVE-CALL a1b2c3d4] START backend=foundry-router method=POST target=/openai/v1/chat/completions attempt=1 model=auto mode=balanced authSource=az-cli
+2026-11-26T05:00:01.107Z [LIVE-CALL a1b2c3d4] COMPLETE backend=foundry-router status=200 wallMs=1097 attempt=1 responseModel=DeepSeek-V4.1-Flash
+```
+
+- `[DEMO] LIVE` 表示服务器选择了实时执行；`REPLAY` 或 `FALLBACK` 表示使用录制回放。
+- `[LIVE-CALL] START/COMPLETE` 由实际 CLI 进程或 HTTP 请求函数输出，二者使用相同的 `callId`。
+- 日志只打印请求路径、模型、状态码、耗时和认证来源，不打印 API Key、Bearer Token、完整端点或请求正文。
+- 修改服务器代码后需要重新启动 `npm --prefix demo run demo:web` 才能看到新日志。

@@ -37,6 +37,29 @@ if (existsSync(localEnvPath)) {
 let cachedCopilotCmd = undefined;
 let cachedAzToken = null;
 let cachedAzTokenExpiresAt = 0;
+let liveDebugLogger = null;
+
+export function setLiveDebugLogger(logger) {
+  liveDebugLogger = typeof logger === "function" ? logger : null;
+}
+
+function emitLiveDebug(event) {
+  if (!liveDebugLogger) return;
+  try {
+    liveDebugLogger({
+      timestamp: new Date().toISOString(),
+      ...event,
+    });
+  } catch {
+    // Debug logging must never affect the live demo call.
+  }
+}
+
+function summarizeDebugError(err) {
+  const message = String(err?.message || err);
+  const httpStatus = message.match(/HTTP \d{3}/)?.[0];
+  return httpStatus || err?.cause?.code || err?.code || err?.name || "Error";
+}
 
 export function resolveCopilotCommand() {
   if (cachedCopilotCmd !== undefined) return cachedCopilotCmd;
@@ -307,6 +330,18 @@ export async function runCopilotPrompt({
   if (sessionId) args.push("--session-id", sessionId);
   if (resumeId) args.push("--resume", resumeId);
 
+  const callId = crypto.randomUUID().slice(0, 8);
+  emitLiveDebug({
+    kind: "call-start",
+    callId,
+    backend: "copilot-cli",
+    method: "EXEC",
+    target: "copilot",
+    model,
+    fusionTier,
+    sessionMode: resumeId ? "resume" : sessionId ? "new-session" : "one-shot",
+    promptChars: String(prompt).length,
+  });
   const start = performance.now();
   try {
     const { stdout, stderr } = await execFileAsync(copilotBin, args, {
@@ -320,6 +355,17 @@ export async function runCopilotPrompt({
     const rawUsage = JSON.parse(await readFile(usageFile, "utf8"));
     const usage = summarizeUsage(rawUsage, prevStats);
     const parsed = parseCopilotJsonl(stdout);
+    emitLiveDebug({
+      kind: "call-complete",
+      callId,
+      backend: "copilot-cli",
+      status: "ok",
+      wallMs,
+      selectedModel: usage.modelId,
+      credits: Number(usage.credits.toFixed(3)),
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+    });
     const cliFlags = `--model ${model}${fusionTier ? ` --fusion-tier ${fusionTier}` : ""}${sessionId ? ` --session-id ${sessionId}` : ""}${resumeId ? ` --resume ${resumeId}` : ""}`;
     const rawParts = [
       `# Single CLI invocation: copilot ${cliFlags} -p "${safePrompt}" --output-format json --usage-output-file usage.json`,
@@ -345,15 +391,36 @@ export async function runCopilotPrompt({
       fusionCompleted: parsed.fusionCompleted?.data || null,
       rawTrace: rawParts.join("\n\n"),
     };
+  } catch (err) {
+    emitLiveDebug({
+      kind: "call-error",
+      callId,
+      backend: "copilot-cli",
+      status: "error",
+      wallMs: Math.round(performance.now() - start),
+      error: summarizeDebugError(err),
+    });
+    throw err;
   } finally {
     await rm(usageDir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
-async function postJsonWithRetry(url, headers, bodyObj, label) {
+export async function postJsonWithRetry(url, headers, bodyObj, label, debugMeta = {}) {
   let lastErr = null;
+  const callId = crypto.randomUUID().slice(0, 8);
+  const target = new URL(url).pathname;
   for (let attempt = 0; attempt < 4; attempt += 1) {
     try {
+      emitLiveDebug({
+        kind: "call-start",
+        callId,
+        backend: debugMeta.backend || label,
+        method: "POST",
+        target,
+        attempt: attempt + 1,
+        ...debugMeta,
+      });
       const start = performance.now();
       const res = await fetch(url, {
         method: "POST",
@@ -363,6 +430,15 @@ async function postJsonWithRetry(url, headers, bodyObj, label) {
       const wallMs = Math.round(performance.now() - start);
       if (res.status === 429 && attempt < 3) {
         const retrySec = Number.parseInt(res.headers.get("retry-after") || "4", 10);
+        emitLiveDebug({
+          kind: "call-retry",
+          callId,
+          backend: debugMeta.backend || label,
+          status: 429,
+          wallMs,
+          attempt: attempt + 1,
+          retryInMs: Math.min(8000, Math.max(1500, retrySec * 1000)),
+        });
         await new Promise((r) => setTimeout(r, Math.min(8000, Math.max(1500, retrySec * 1000))));
         continue;
       }
@@ -371,13 +447,39 @@ async function postJsonWithRetry(url, headers, bodyObj, label) {
         throw new Error(`${label} HTTP ${res.status}: ${body}`);
       }
       const json = await res.json();
+      emitLiveDebug({
+        kind: "call-complete",
+        callId,
+        backend: debugMeta.backend || label,
+        status: res.status,
+        wallMs,
+        attempt: attempt + 1,
+        responseModel: json.model || bodyObj.model || null,
+      });
       return { json, wallMs };
     } catch (err) {
       lastErr = err;
       if (attempt < 3 && /fetch failed|ECONNRESET|ETIMEDOUT/i.test(String(err?.cause?.code || err?.message || err))) {
+        emitLiveDebug({
+          kind: "call-retry",
+          callId,
+          backend: debugMeta.backend || label,
+          status: "network-error",
+          attempt: attempt + 1,
+          error: summarizeDebugError(err),
+          retryInMs: 600 * (attempt + 1),
+        });
         await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
         continue;
       }
+      emitLiveDebug({
+        kind: "call-error",
+        callId,
+        backend: debugMeta.backend || label,
+        status: "error",
+        attempt: attempt + 1,
+        error: summarizeDebugError(err),
+      });
       throw err;
     }
   }
@@ -416,6 +518,13 @@ export async function callFoundryRouter({
     },
     requestBody,
     "Foundry Model Router",
+    {
+      backend: "foundry-router",
+      model,
+      mode,
+      authSource: auth.source,
+      messageCount: messages.length,
+    },
   );
   const rawTrace =
     `# HTTP Request: POST ${endpoint}/openai/v1/chat/completions (Header: Foundry-Features: ModelRouterControls=V1Preview)\n` +
@@ -445,6 +554,13 @@ export async function callDecisionSystemOne({ state, questions, assets = undefin
     },
     payload,
     "Microsoft-Decision-1.1 (/v1/systemone)",
+    {
+      backend: "decision-1.1",
+      model: deployment,
+      authSource: auth.source,
+      questions: Object.keys(questions),
+      hasAssets: Boolean(assets),
+    },
   );
   const rawTrace =
     `# HTTP Request: POST ${endpoint}/providers/microsoft/v1/systemone\n` +
