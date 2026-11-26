@@ -1637,6 +1637,17 @@ ZH_DEMO_TEXT_MAP.update({
     'Router Latency': '判断耗时',
 })
 
+# These short words also occur inside JavaScript identifiers such as
+# EventSource, liveSource, and the Error constructor. Translate only the
+# visible string/HTML forms so localization cannot break live execution.
+ZH_DEMO_TEXT_MAP.pop('Source', None)
+ZH_DEMO_TEXT_MAP.pop('Error', None)
+ZH_DEMO_TEXT_MAP.update({
+    '>Source<': '>来源<',
+    "'Error'": "'错误'",
+    '[Error]': '[错误]',
+})
+
 ZH_TEXT_MAP.update({
     'Workplace Auto': '办公场景',
     'Coding Orchestrator': '编程协作',

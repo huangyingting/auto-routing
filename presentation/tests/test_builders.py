@@ -94,6 +94,8 @@ class BuilderTests(unittest.TestCase):
             self.assertEqual('class="live-demo-trigger"' in zh_markup, should_have_launcher)
 
     def test_chinese_demo_studio_localizes_controls_and_explanations(self):
+        self.assertNotIn('Source', H.ZH_DEMO_TEXT_MAP)
+        self.assertNotIn('Error', H.ZH_DEMO_TEXT_MAP)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             with patch.object(D, 'slides', {21: []}), patch.object(D, 'notes', {21: '中文备注'}):
@@ -134,8 +136,13 @@ class BuilderTests(unittest.TestCase):
                 '缺少上下文检查',
                 'Bounded task complexity',
                 'Within 1–2% of #1',
+                'Event来源',
+                'live来源',
+                'new 错误',
             ):
                 self.assertNotIn(forbidden, doc)
+            for required_runtime_identifier in ('EventSource', 'liveSource', 'new Error'):
+                self.assertIn(required_runtime_identifier, doc)
             if shutil.which('node'):
                 scripts = re.findall(r'<script>(.*?)</script>', doc, flags=re.S)
                 self.assertGreaterEqual(len(scripts), 2)
