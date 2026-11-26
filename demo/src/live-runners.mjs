@@ -512,77 +512,7 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
   emit({ kind: "step-start", demo: "fusion", step });
 
   if (step === 1) {
-    if (sessionStore.autoDir) {
-      await rm(sessionStore.autoDir, { recursive: true, force: true }).catch(() => {});
-    }
     const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step1-"));
-    const sid = crypto.randomUUID();
-    sessionStore.autoDir = ws;
-    sessionStore.autoSessionId = sid;
-
-    await copyFile(path.join(fixturesDir, "config.ts"), path.join(ws, "config.ts"));
-    const res = await runCopilotPrompt({
-      prompt: "Read config.ts and reply on a single line in exact format: DEFAULT_PORT=<number> (<env_var_name>)",
-      cwd: ws,
-      model: "auto",
-      sessionId: sid,
-      readOnly: true,
-    });
-    sessionStore.prevAutoStats = res.usage.raw;
-    if (!res.stdout.includes("8787") || !res.stdout.includes("AUTO_DEMO_PORT")) {
-      throw new Error(`Unexpected Step 1 extraction output: ${res.stdout}`);
-    }
-    const cr = res.usage.credits.toFixed(3);
-    const sec = (res.wallMs / 1000).toFixed(1);
-    const scores = res.autoResolved?.categoryScores;
-    const scoreLine = scores
-      ? `reasoning=${Number(scores.reasoning || 0).toFixed(3)}, code_gen=${Number(scores.code_gen || 0).toFixed(3)}, debugging=${Number(scores.debugging || 0).toFixed(3)}, tool_use=${Number(scores.tool_use || 0).toFixed(3)} (routerRTT=${Math.round(res.autoResolved.endToEndLatencyMs || 0)} ms)`
-      : `selected=${res.usage.displayName} (${res.usage.modelId})`;
-    emit({
-      kind: "output",
-      text:
-        `[CONFIG] copilot --model auto --session-id ${sid.slice(0, 8)}… -p "..."  (1 CLI call)\n` +
-        `[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n` +
-        `  categoryScores : ${scoreLine}\n` +
-        `  usage.json     : model=${res.usage.modelId}, input=${res.usage.inputTokens.toLocaleString()} (cacheRead=${res.usage.cacheReadTokens.toLocaleString()}), output=${res.usage.outputTokens}\n` +
-        `  output         : ${res.stdout}\n` +
-        `✓ PASS — Routed to ${res.usage.displayName} (${cr} AIU · ${sec}s)\n` +
-        `Why: Low categoryScores trigger auto_v2 Single fast path without Judge overhead.\n` +
-        `[SOURCE] Raw Log: 1x CLI JSONL "session.auto_mode_resolved" + usage.json  |  Arch Spec: HyDRA 86 ms CPU / τ=0.05 (Slide 15)\n`,
-    });
-    emit({
-      kind: "raw",
-      text:
-        `# PROVENANCE: Single native CLI call (copilot --model auto --output-format json --usage-output-file usage.json).\n` +
-        `# categoryScores, chosenModel, routingMethod & endToEndLatencyMs come directly from "session.auto_mode_resolved":\n\n` +
-        res.rawTrace,
-    });
-    emit({
-      kind: "artifact",
-      demo: "fusion",
-      step: 1,
-      answer: res.stdout.trim(),
-      scores: scores || null,
-      credits: res.usage.credits,
-      wallSec: Number(sec),
-    });
-    emit({
-      kind: "route",
-      model: res.usage.displayName,
-      meta: `Live · ${cr} cr · ${sec}s`,
-      chip1: `Model: ${res.usage.modelId} ✓`,
-      chip1Tone: "on",
-      chip2: `Latency: ${sec}s ✓`,
-      chip2Tone: "on",
-      chip3: `Credits: ${cr} cr ✓`,
-      chip3Tone: "on",
-    });
-    emit({ kind: "step-done", demo: "fusion", step, code: 0 });
-    return;
-  }
-
-  if (step === 2) {
-    const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step2-"));
     try {
       await copyFile(path.join(fixturesDir, "format.mjs"), path.join(ws, "format.mjs"));
       await copyFile(path.join(fixturesDir, "format.test.mjs"), path.join(ws, "format.test.mjs"));
@@ -634,7 +564,7 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       emit({
         kind: "artifact",
         demo: "fusion",
-        step: 2,
+        step: 1,
         file: "demo/fixtures/format.mjs",
         before: beforeMjs,
         after: afterMjs,
@@ -661,8 +591,8 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     return;
   }
 
-  if (step === 3) {
-    const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step3-"));
+  if (step === 2) {
+    const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step2-"));
     try {
       const buggyTs = await readFile(path.join(fixturesDir, "token-bucket.ts"), "utf8");
       await writeFile(path.join(ws, "token-bucket.ts"), buggyTs, "utf8");
@@ -733,7 +663,7 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       emit({
         kind: "artifact",
         demo: "fusion",
-        step: 3,
+        step: 2,
         file: "demo/fixtures/token-bucket.ts",
         before: buggyTs,
         after: fixedTs,
@@ -766,8 +696,8 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     return;
   }
 
-  if (step === 4) {
-    const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step4-"));
+  if (step === 3) {
+    const ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step3-"));
     try {
       await copyFile(path.join(fixturesDir, "token-bucket.ts"), path.join(ws, "token-bucket.ts"));
       emit({
@@ -826,7 +756,7 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
       emit({
         kind: "artifact",
         demo: "fusion",
-        step: 4,
+        step: 3,
         draftModel: draftPhase?.model || fr.primaryModel || "claude-opus-5.5",
         criticModel: criticPhase?.model || fr.secondaryModel || "gpt-6-luna",
         criticAssessment,
@@ -855,18 +785,18 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     return;
   }
 
-  if (step === 5) {
+  if (step === 4) {
     let ws = sessionStore.autoDir;
     let sid = sessionStore.autoSessionId;
     let prevRaw = sessionStore.prevAutoStats;
 
     if (!sid || !ws || !prevRaw) {
-      ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step5-"));
+      ws = await mkdtemp(path.join(os.tmpdir(), "fusion-step4-"));
       await copyFile(path.join(fixturesDir, "config.ts"), path.join(ws, "config.ts"));
       sid = crypto.randomUUID();
       sessionStore.autoDir = ws;
       sessionStore.autoSessionId = sid;
-      emit({ kind: "output", text: "[Warming Turn 1 session prefix cache first...]\n" });
+      emit({ kind: "output", text: "[SETUP] Creating the warm Auto session used by this cache scenario...\n" });
       const seed = await runCopilotPrompt({
         prompt: "Read config.ts and reply on a single line in exact format: DEFAULT_PORT=<number> (<env_var_name>)",
         cwd: ws,
@@ -875,6 +805,20 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
         readOnly: true,
       });
       prevRaw = seed.usage.raw;
+      emit({
+        kind: "output",
+        text:
+          `  warm-up model  : ${seed.usage.displayName} (${seed.usage.modelId})\n` +
+          `  warm-up input  : ${seed.usage.inputTokens.toLocaleString()} tokens\n` +
+          `✓ SETUP — Warm session created; the measured follow-up below uses --resume.\n`,
+      });
+      emit({
+        kind: "raw",
+        text:
+          `# --- Cache Scenario Setup: Real Warm-up CLI Call ---\n` +
+          `# This call establishes the session prefix consumed by the resumed follow-up.\n\n` +
+          seed.rawTrace,
+      });
     }
 
     emit({
@@ -917,7 +861,7 @@ export async function runFusionStepLive(step, emit, sessionStore = {}) {
     emit({
       kind: "artifact",
       demo: "fusion",
-      step: 5,
+      step: 4,
       retainedModel: follow.usage.displayName,
       cacheReadTokens: follow.usage.cacheReadTokens,
       inputTokens: follow.usage.inputTokens,

@@ -2,7 +2,7 @@
 
 这组 Demo 对应幻灯片第 22、23、24 页的三个核心生产场景，支持**静态网页回放**（GitHub Pages 零依赖运行）与**本机 Live Bridge 实时调用**。
 
-## 1. Demo 1 · GitHub Copilot `Auto` & 多模型协同（本机真实执行 `copilot` CLI）
+## 1. Demo 1 · GitHub Copilot Fusion 与缓存复用（本机真实执行 `copilot` CLI）
 
 运行：
 
@@ -12,13 +12,12 @@ npm --prefix demo run demo:fusion:live
 node demo/src/demo-cli.mjs --demo fusion --step 1 --live
 ```
 
-当本机已安装并登录 GitHub Copilot CLI（`copilot`）时，全部 5 个步骤都会在隔离临时工作区中对 `demo/fixtures/` 发起**真实 `copilot` CLI 调用**，并从 `--usage-output-file` 读取真实选中的模型、Token、缓存命中和 AI Credits（加 `--live` 则强制要求本机具备 `copilot`，绝不静默降级为回放）：
+当本机已安装并登录 GitHub Copilot CLI（`copilot`）时，4 个互不重复的场景会在隔离临时工作区中发起 **5 次真实 `copilot` CLI 调用**，并从 `--usage-output-file` 读取真实选中的模型、Token、缓存命中和 AI Credits（加 `--live` 则强制要求本机具备 `copilot`，绝不静默降级为回放）：
 
-1. **Auto Fast Path（简单配置查询）**：对 `fixtures/config.ts` 单次执行 `copilot --model auto`，通过 `session.auto_mode_resolved` 验证轻量快速路由并初始化会话前缀缓存。
-2. **Fusion `Single`（常规代码修改 + 真实 `node --test`）**：单次执行 `copilot --model fusion --fusion-tier high` 修复 `fixtures/format.mjs`，验证即使在 `high` 档位下，`session.fusion_resolved` 也会对常规任务自动选择 `pattern="single"`（零额外评审开销）并通过 3/3 宿主单测。
-3. **Fusion 原生 `Cascade`（并发死锁修复）**：单次执行 `copilot --model fusion --fusion-tier high` 修复 `fixtures/token-bucket.ts`，服务端原生触发 `pattern="cascade"`（`gpt-6.1-sol` 修复 → `gpt-6-luna` Judge 打出 `5/5 accept` → 自动跳过条件 `claude-opus-5.5` Repair），并经宿主 500 次并发压测验证零死锁。
-4. **Fusion 原生 `Critique`（50k RPS 支付网关多活架构 RFC）**：单次执行 `copilot --model fusion --fusion-tier high`，服务端原生触发 `pattern="critique"`（`claude-opus-5.5` 起草 → 跨厂商 `gpt-6-luna` Critic 返回 `"assessment": "revise"` 指出跨区零 RPO 漏洞 → `session.fusion_handoff` 交回 `claude-opus-5.5` 完成高强度修订）。
-5. **Cache-Boundary 护栏（`--resume` 99% 缓存命中）**：单次执行 `copilot --model auto --resume <sid>` 发起同会话追问，通过 `usage.json` 验证模型锁定与高达 **99%** 的 `cacheReadTokens` 热缓存命中率。
+1. **Fusion `Single`（常规代码修改 + 真实 `node --test`）**：单次执行 `copilot --model fusion --fusion-tier high` 修复 `fixtures/format.mjs`，验证即使在 `high` 档位下，`session.fusion_resolved` 也会对常规任务自动选择 `pattern="single"`，不增加额外评审，并通过 3/3 宿主单测。
+2. **Fusion `Cascade`（并发死锁修复）**：单次执行 `copilot --model fusion --fusion-tier high` 修复 `fixtures/token-bucket.ts`，由 `gpt-6.1-sol` 修复、`gpt-6-luna` 独立检查并给出 `5/5 accept`，因此跳过 `claude-opus-5.5` 重做；随后通过 500 次并发压测。
+3. **Fusion `Critique`（50k RPS 支付网关架构 RFC）**：单次执行 `copilot --model fusion --fusion-tier high`，由 `claude-opus-5.5` 起草、`gpt-6-luna` 指出跨区域 RPO=0 前提不足，再交回 `claude-opus-5.5` 修订。
+4. **缓存复用（`--resume` 99% 命中）**：首次运行时先执行一次真实 `copilot --model auto` 预热会话，再执行一次真实 `copilot --model auto --resume <sid>` 追问。原始日志同时保留两次调用，`usage.json` 显示追问有 **99%** 的 `cacheReadTokens` 命中率。
 
 ## 2. Demo 2 · Microsoft Foundry `Model Router` & 多子任务协同
 

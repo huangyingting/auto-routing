@@ -2,7 +2,7 @@
 /**
  * Re-records live traces into presentation/assets/demo-recordings.json for available live backends
  * (Copilot CLI for `fusion` when --record-fusion is passed; Foundry & Decision-1.1 when AZURE_FOUNDRY_ENDPOINT is set),
- * and validates all 14 step recordings.
+ * and validates all 13 scenario recordings.
  * Use --decision-only --steps 1 to refresh only Decision-1.1 Step 1.
  */
 import { readFile, rm, writeFile } from "node:fs/promises";
@@ -63,12 +63,14 @@ async function main() {
   data.platform = "win32/x64 · Live-captured Copilot CLI 1.0.115-7 (--model auto & --model fusion --fusion-tier high) + Microsoft Foundry Model Router V1Preview + Microsoft-Decision-1.1";
 
   const stepsIdx = process.argv.indexOf("--steps");
-  const fusionSteps = stepsIdx >= 0 && process.argv[stepsIdx + 1]
+  const requestedSteps = stepsIdx >= 0 && process.argv[stepsIdx + 1]
     ? process.argv[stepsIdx + 1].split(",").map((x) => Number.parseInt(x, 10)).filter(Boolean)
-    : [1, 2, 3, 4, 5];
+    : null;
+  const fusionSteps = requestedSteps || [1, 2, 3, 4];
 
   try {
     if (recordFusion && caps.copilotAvailable) {
+      delete data.steps.fusion["5"];
       for (const s of fusionSteps) {
         console.log(`Recording live fusion step ${s}...`);
         data.steps.fusion[String(s)] = await captureStep((emit) => runFusionStepLive(s, emit, sessionStore));
@@ -84,7 +86,7 @@ async function main() {
       }
     }
     if (!fusionOnly && caps.decisionReady) {
-      const decisionSteps = decisionOnly ? fusionSteps : [1, 2, 3, 4, 5];
+      const decisionSteps = decisionOnly && requestedSteps ? requestedSteps : [1, 2, 3, 4, 5];
       for (const s of decisionSteps) {
         console.log(`Recording live decision step ${s}...`);
         data.steps.decision[String(s)] = await captureStep((emit) => runDecisionStepLive(s, emit));

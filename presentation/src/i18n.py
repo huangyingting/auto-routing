@@ -141,28 +141,26 @@ EN_NOTES = {
         "Source: Microsoft Command Line blog ($10k/mo sales inbox case study)."
     ),
     21: (
-        "Now let's open the interactive Demo Studio in the top-right corner and watch all three layers run for real. Demo 1 drives the native GitHub Copilot CLI across five steps—every single step is one native `copilot` command.\n"
-        "Step 1 runs `--model auto` to read the default port from `config.ts`: all four demand scores land below 0.10, so it takes the fast single-model path to GPT-6 Luna for 0.055 credits and warms the session cache.\n"
-        "Steps 2, 3, and 4 keep the exact same flag—`copilot --model fusion --fusion-tier high`—to show how the server switches patterns by task difficulty: "
-        "on Step 2's whitespace fix, even on High tier, Fusion picks `single` on `gpt-6.1-terra` with zero review calls and passes 3/3 unit tests. "
-        "On Step 3's ABBA lock-order deadlock, that single command expands into native `cascade`: `gpt-6.1-sol` fixes the lock order, `gpt-6-luna` Judge scores it 5/5 (`accept`), conditional Opus 5.5 repair is automatically skipped, and 500 concurrent stress runs pass. "
-        "On Step 4's 50k-RPS payment failover RFC, one command runs 3-phase `critique`: Opus drafts, cross-lab Luna flags an Active-Active zero-RPO durability gap (`revise`), and Opus revises with nearly 8,000 cached tokens.\n"
-        "Finally, Step 5 runs `--resume` for follow-up metrics, retaining warm Luna with a 99% `cacheReadTokens` hit for just 0.024 credits. Click `{ } Raw Log` anytime to inspect the verbatim CLI JSONL and `usage.json`."
+        "Demo 1 now contains four distinct scenarios backed by five real Copilot CLI calls.\n"
+        "Step 1 is Fusion Single: a routine whitespace fix stays on `gpt-6.1-terra`, adds no review call, and passes 3/3 unit tests. "
+        "Step 2 is Cascade: `gpt-6.1-sol` fixes an ABBA lock-order deadlock, `gpt-6-luna` independently scores it 5/5, Opus repair is skipped, and 500 stress runs pass. "
+        "Step 3 is Critique: Opus drafts a 50k-RPS payment failover RFC, Luna catches the missing cross-region durability behind the RPO=0 claim, and Opus revises it.\n"
+        "Step 4 is the cache scenario, and it is deliberately two real calls: one Auto call warms the session, then `--resume` issues the measured follow-up. The second call reads 5,655 of 5,733 tokens from cache—a 99% hit—at 0.024 incremental AIU. Raw Log shows both the warm-up and resumed calls."
     ),
     22: (
-        "Demo 2 moves to the cloud API layer with Microsoft Foundry Model Router. All four steps hit the exact same `/openai/v1/chat/completions` endpoint with `model: \"auto\"` and `ModelRouterControls=V1Preview`.\n"
+        "Demo 2 moves to Microsoft Foundry Model Router: four scenarios and six real cloud requests, all through the same `/openai/v1/chat/completions` endpoint with `model: \"auto\"` and `ModelRouterControls=V1Preview`.\n"
         "Step 1 tests pre-rank eligibility and cross-provider parameter cleanup—sending `developer` role, `temperature: 0.2`, and `json_object` together. Instead of tripping HTTP 400 mismatches across labs, Foundry normalizes the payload and routes to `gpt-5.6-luna` in 30 ms.\n"
         "Steps 2 and 3 send two starkly different tasks to the untouched `balanced` endpoint: Step 2 extracts invoice fields in 27 ms on cheap `DeepSeek-V4.1-Flash` with zero wasted reasoning tokens; "
         "Step 3 submits a formal Rust lock-free ring-buffer proof, automatically escalating in 30 ms to `gpt-6-luna`, and on Turn 2's short follow-up, message-fingerprint affinity returns `retain` so the warm model cache isn't broken.\n"
-        "Step 4 splits account renewal into two sub-jobs on that same endpoint: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to flagship `gpt-5.6-terra` (29 ms) for game-theoretic NRR strategy. Switch to `{ } Raw Log` to inspect `routing_trace` directly."
+        "Step 4 contributes the final two calls: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to `gpt-5.6-terra` (29 ms) for strategy. The count is 1 + 1 + 2 + 2 = 6. Switch to `{ } Raw Log` to inspect the current scenario's `routing_trace`."
     ),
     23: (
-        "Demo 3 shows Microsoft-Decision-1.1 at `/providers/microsoft/v1/systemone` across five live cloud checks.\n"
+        "Demo 3 shows Microsoft-Decision-1.1 across five scenarios and twelve real `/providers/microsoft/v1/systemone` requests.\n"
         "Step 1 fires five consecutive `noul` calls on the same buyer message—returning `0.9835` all five times with `0.00` point spread in ~354 ms median latency and $0 output-token fee.\n"
         "Step 2 runs a pre-LLM `choice` inbox router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison)—hitting ~1.00 confidence on all four so three out of four skip the frontier LLM.\n"
         "Step 3 packs `choice`, `score`, and `noul` into one 366 ms request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
         "Step 4 runs an outbound `noul` guardrail on an AI draft recommending rival 'Fabrikam for $749', scoring `0.970` in 347 ms and holding the draft before send.\n"
-        "And Step 5 tests missing-evidence abstention: asked to compare Contract A against Exhibit B when Exhibit B isn't attached, it selects `request_missing_exhibit` at `0.9999` probability instead of hallucinating. Try typing any custom prompt into the bottom bar, or open `{ } Raw Log` to view the raw JSON."
+        "Steps 3, 4, and 5 each add one request: injury escalation, outbound competitor screening, and missing-evidence detection. That makes 5 + 4 + 1 + 1 + 1 = 12. Try a custom prompt in the bottom bar, or open `{ } Raw Log` to view the current operation's raw JSON."
     ),
     24: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
@@ -538,7 +536,8 @@ ZH_DEMO_TEXT_MAP = {
     'Demo 1 · Coding Agent': '演示 1 · 编码 Agent',
     'Demo 2 · Cloud API': '演示 2 · 云端 API',
     'Demo 3 · App Controller': '演示 3 · 应用控制',
-    'Copilot Auto &amp; Fusion · 5 steps': 'Copilot Auto 与 Fusion · 5 个步骤',
+    'Copilot Fusion &amp; Cache · 4 scenarios / 5 calls':
+        'Copilot Fusion 与缓存 · 4 个场景 / 5 次调用',
     'Foundry Model Router · 4 steps': 'Foundry Model Router · 4 个步骤',
     'Microsoft-Decision-1.1 · 5 steps': 'Microsoft-Decision-1.1 · 5 个步骤',
     'Run Step 1': '运行步骤 1',
@@ -796,8 +795,13 @@ ZH_DEMO_TEXT_MAP = {
 # 中文版按演讲语境重新表达，不照搬英文句式。产品名、模型名、API、
 # 参数名和代码字段保留英文，便于现场与日志逐项对应。
 ZH_TEXT_MAP.update({
-    '5 steps · 5 real Copilot CLI calls':
-        '5 个步骤 · 5 次真实 Copilot CLI 调用（每步一条命令）',
+    '4 scenarios · 5 real Copilot CLI calls':
+        '4 个场景 · 5 次真实 Copilot CLI 调用（缓存场景包含预热和 resume）',
+    'warm-up + copilot --model auto --resume <sid> (2 real CLI calls on first run)':
+        '预热 + copilot --model auto --resume <sid>（首次运行共 2 次真实 CLI 调用）',
+    'warm-up + resumed follow-up': '预热调用 + resume 追问',
+    '# Click Run Step 4 to create a warm session and verify the resumed cache hit...':
+        '# 点击“运行步骤 4”，先建立缓存，再通过 --resume 验证命中率...',
     'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.':
         '根据每项任务的难度和特点自动选择模型，在效果、成本和响应速度之间取得平衡——从 Microsoft Copilot、Foundry 到 Microsoft-Decision-1.1。',
     'AGENDA': '内容安排',
@@ -1327,6 +1331,14 @@ ZH_TEXT_MAP.update({
 })
 
 ZH_DEMO_TEXT_MAP.update({
+    'warm-up + copilot --model auto --resume <sid> (2 real CLI calls on first run)':
+        '预热 + copilot --model auto --resume <sid>（首次运行共 2 次真实 CLI 调用）',
+    'warm-up + resumed follow-up': '预热调用 + resume 追问',
+    '# Click Run Step 4 to create a warm session and verify the resumed cache hit...':
+        '# 点击“运行步骤 4”，先建立缓存，再通过 --resume 验证命中率...',
+    '99% cacheReadTokens hit!': '99% 的输入直接来自缓存',
+    'Preserves 30m cache TTL ✓': '继续使用 30 分钟有效的缓存 ✓',
+    'Delta: 0.024 cr ✓': '本轮增量：0.024 AIU ✓',
     'Fast Single pass on easy code, Judge/Critic teams on hard bugs, and warm-cache retention.':
         '简单任务只用一个模型；遇到难题再增加独立检查；连续追问继续使用原模型和缓存。',
 
@@ -1699,4 +1711,31 @@ ZH_TEXT_MAP.update({
         '提及竞品 0.970 · 请求补充附件 0.99994',
     'Two more calls block the rival draft and prevent a made-up contract comparison.':
         '最后两次请求分别拦下推荐竞品的草稿，并在附件 B 缺失时停止对比，避免模型猜测。',
+})
+
+ZH_TEXT_MAP.update({
+    'Step 1 · Routine patch stays single-model':
+        '步骤 1 · 常规修改只用一个模型',
+    'Fusion Single · gpt-6.1-terra · 3/3 tests':
+        'Fusion Single · gpt-6.1-terra · 3/3 测试通过',
+    'Fusion High still uses one model when the task is simple.':
+        '即使开启 Fusion High，任务简单时仍不会增加额外检查。',
+    'Step 2 · Fix, then verify independently':
+        '步骤 2 · 先修复并发死锁，再换一个模型检查',
+    'gpt-6.1-sol fix → gpt-6-luna check':
+        'gpt-6.1-sol 修复 → gpt-6-luna 检查',
+    'Judge accepts 5/5; Opus repair is skipped; 500 stress runs pass.':
+        '检查结果为 5/5 通过，无需调用 Opus 重做；500 次并发测试全部通过。',
+    'Step 3 · Draft, critique, revise':
+        '步骤 3 · 一个模型起草，另一个模型找问题，再交回修订',
+    'Opus draft → Luna finds RPO gap → Opus revises':
+        'Opus 写初稿 → Luna 找出 RPO 漏洞 → Opus 修订',
+    'The independent review catches missing cross-region durability.':
+        '独立检查发现初稿没有真正解决跨区域数据持久化问题。',
+    'Step 4 · Warm up, then resume':
+        '步骤 4 · 先建立缓存，再用 --resume 追问',
+    'Auto warm-up → --resume · 5,655 / 5,733 cached':
+        'Auto 预热 → --resume · 5,655 / 5,733 个 Token 来自缓存',
+    'Two real calls prove a 99% cache hit on the follow-up.':
+        '两次真实调用证明：第二次追问的缓存命中率为 99%。',
 })

@@ -274,7 +274,7 @@ LIVE_DEMO = """
           <ul class="cs-menu" id="cs-kind-menu" role="listbox" tabindex="-1" hidden>
             <li role="option" data-val="fusion" aria-selected="true" class="cs-option selected">
               <span class="cs-opt-main">Demo 1 · Coding Agent</span>
-              <span class="cs-opt-sub">Copilot Auto &amp; Fusion · 5 steps</span>
+              <span class="cs-opt-sub">Copilot Fusion &amp; Cache · 4 scenarios / 5 calls</span>
             </li>
             <li role="option" data-val="foundry" aria-selected="false" class="cs-option">
               <span class="cs-opt-main">Demo 2 · Cloud API</span>
@@ -783,24 +783,7 @@ var SCENARIOS={
  fusion:{
   ledgerSave:'-64% Credits',
   steps:[
-   {short:'① Auto',boundary:'auto_v2 Fast Path',title:'Auto Fast Path: 1-Line Config Lookup',
-    ctx:'copilot --model auto --session-id <sid> --output-format json',
-    prompt:'"Read config.ts and reply with DEFAULT_PORT=<number> (<env_var_name>)"',
-    scorer:'Copilot CLI session.auto_mode_resolved · routerRTT 548 ms',
-    bars:[],
-    pattern:'SINGLE · AUTO_V2 FAST PATH',
-    nodes:[
-     {role:'auto_mode_resolved',name:'categoryScores ≤ 0.10',sub:'reason=0.100 · debug=0.002',state:'active'},
-     {role:'Chosen Model',name:'GPT-6 Luna',sub:'0.055 AIU · 11,185 in tok',state:'win'},
-     {role:'Judge / Critic',name:'Bypassed',sub:'$0 review overhead',state:'skip'}
-    ],
-    outcome:'✓ Single CLI call selected GPT-6 Luna (0.055 AIU) and returned DEFAULT_PORT=8787 (AUTO_DEMO_PORT)',
-    what:'One copilot --model auto call emits session.auto_mode_resolved with 4D categoryScores (all ≤ 0.10) and routes straight to GPT-6 Luna.',
-    code:'copilot --model auto -p "Read config.ts..." → session.auto_mode_resolved: gpt-6-luna (0.055 AIU)',
-    baseName:'Pinned Opus 5.5',baseNums:'~0.45 AIU · Heavy',baseMeta:'Pays frontier tokens on a 1-line config lookup',
-    agentName:'GPT-6 Luna',agentNums:'0.055 AIU · Single',agentMeta:'1 CLI call · auto_v2 fast path',
-    chips:[['Model: gpt-6-luna ✓','on'],['Scores: ≤ 0.10 ✓','on'],['Credits: 0.055 cr ✓','on']],risk:0},
-   {short:'② Single',boundary:'Fusion Single Pattern',title:'Fusion High: Picks pattern="single" on Routine Patch',
+    {short:'① Single',boundary:'Fusion Single Pattern',title:'Fusion High: Picks pattern="single" on Routine Patch',
     ctx:'copilot --model fusion --fusion-tier high (1 CLI call)',
     prompt:'"Fix greetingFormatter() in format.mjs to trim tabs & Unicode NBSP (\\u00A0)"',
     scorer:'session.fusion_resolved · pattern="single" · router 456 ms',
@@ -817,7 +800,7 @@ var SCENARIOS={
     baseName:'Blind Multi-Agent',baseNums:'2–3× Calls Always',baseMeta:'Wastes Judge/Critic tokens on routine fixes',
     agentName:'gpt-6.1-terra (Single)',agentNums:'pattern: single · 3/3 PASS',agentMeta:'1 CLI call · 0 review calls',
     chips:[['Pattern: single ✓','on'],['3/3 Tests PASS ✓','on'],['Credits: 1.195 cr ✓','on']],risk:0},
-   {short:'③ Cascade',boundary:'Native 1-Call Cascade',title:'Fusion High: Native pattern="cascade" (Solver + Judge)',
+   {short:'② Cascade',boundary:'Native 1-Call Cascade',title:'Fusion High: Native pattern="cascade" (Solver + Judge)',
     ctx:'copilot --model fusion --fusion-tier high (1 CLI call on token-bucket.ts)',
     prompt:'"Fix the ABBA lock-order inversion deadlock in TokenBucket when refill() races with close()"',
     scorer:'session.fusion_resolved · pattern="cascade" · [primary → judge → repair?]',
@@ -834,7 +817,7 @@ var SCENARIOS={
     baseName:'Unreviewed Single Pass',baseNums:'Race Risk / Full Opus',baseMeta:'Either skips concurrency review or pays full Opus up front',
     agentName:'gpt-6.1-sol + gpt-6-luna',agentNums:'Native Cascade · 2.651 cr',agentMeta:'1 CLI call · Opus repair skipped',
     chips:[['Pattern: cascade ✓','on'],['Judge: ACCEPT (5/5) ✓','on'],['500× Stress PASS ✓','on']],risk:0},
-   {short:'④ Critique',boundary:'Native 1-Call Critique',title:'Fusion High: Native pattern="critique" (Draft → Critic → Revise)',
+   {short:'③ Critique',boundary:'Native 1-Call Critique',title:'Fusion High: Native pattern="critique" (Draft → Critic → Revise)',
     ctx:'copilot --model fusion --fusion-tier high (1 CLI call · 50k RPS payment RFC)',
     prompt:'"Write architectural RFC comparing active-active vs active-passive failover for a 50k RPS payment gateway"',
     scorer:'session.fusion_resolved · pattern="critique" · [draft → critic → revision]',
@@ -851,8 +834,8 @@ var SCENARIOS={
     baseName:'Single-Model Draft',baseNums:'Zero-RPO Blind Spot ✕',baseMeta:'Conflates writer fencing with cross-region commit durability',
     agentName:'claude-opus-5.5 + gpt-6-luna',agentNums:'Native Critique · 3 phases',agentMeta:'1 CLI call · Cross-lab review',
     chips:[['Pattern: critique ✓','on'],['Critic: revise ✕','denied'],['Phases: 3 run ✓','on']],risk:1},
-   {short:'⑤ Cache',boundary:'Warm Prefix Retention',title:'Prefix-Cache Guard: 99% Cache Hit via --resume',
-    ctx:'copilot --model auto --resume <sid> (1 resumed CLI call)',
+   {short:'④ Cache',boundary:'Warm Prefix Retention',title:'Prefix-Cache Guard: 99% Cache Hit via --resume',
+    ctx:'warm-up + copilot --model auto --resume <sid> (2 real CLI calls on first run)',
     prompt:'"Output two Prometheus metric lines (# TYPE ...) for demo_http_requests_total and demo_port_info"',
     scorer:'Copilot CLI --resume <session_id> · cacheReadTokens vs inputTokens',
     bars:[],
@@ -866,7 +849,7 @@ var SCENARIOS={
     what:'usage.json exposes exact cacheReadTokens and cacheExpiresAt. Keeping the session model on follow-up turns reuses 99% of prompt tokens instead of paying full prefill on a cold model.',
     code:'copilot --model auto --resume <sid> → cacheReadTokens=5,655 / 5,733 (99% hit · 0.024 AIU)',
     baseName:'Cold Mid-Turn Switch',baseNums:'0% Cache · Full Price',baseMeta:'Invalidates warm prefix & re-prefills full context',
-    agentName:'GPT-6 Luna (Warm)',agentNums:'99% Hit · 0.024 AIU',agentMeta:'5,655 cached tok · 1 CLI call',
+    agentName:'GPT-6 Luna (Warm)',agentNums:'99% Hit · 0.024 AIU',agentMeta:'warm-up + resumed follow-up',
     chips:[['Cache Hit: 99% ✓','on'],['Delta: 0.024 cr ✓','on'],['Model Retained ✓','on']],risk:0}
   ]
  },
@@ -1063,7 +1046,6 @@ var LEDGER_SPECS={
  fusion:{
   unit:'AIU',
   steps:[
-   {base:0.450,auto:0.055,baseSec:14.0,autoSec:8.5},
    {base:3.600,auto:1.195,baseSec:46.0,autoSec:21.8},
    {base:6.800,auto:2.651,baseSec:72.0,autoSec:32.4},
    {base:18.500,auto:13.354,baseSec:118.0,autoSec:75.7},
@@ -1122,10 +1104,14 @@ function renderTerminalHtml(text){
 function getPreviewRawForCurrentStep(){
  if(!window.RECORDED_DEMO||!window.RECORDED_DEMO.steps||!window.RECORDED_DEMO.steps[curKind])return '# Run a step to capture its raw JSONL / HTTP payload.';
  var seq=window.RECORDED_DEMO.steps[curKind][String(curStep)]||[];
+ var rawParts=[];
  for(var i=0;i<seq.length;i++){
   if(seq[i].event&&seq[i].event.kind==='raw'){
-   return '──▶ [Step '+curStep+' Preview · Raw Log & Provenance] '+SCENARIOS[curKind].steps[curStep-1].title+'\\n'+seq[i].event.text;
+   rawParts.push(seq[i].event.text);
   }
+ }
+ if(rawParts.length){
+  return '──▶ [Step '+curStep+' Preview · Raw Log & Provenance] '+SCENARIOS[curKind].steps[curStep-1].title+'\\n'+rawParts.join('\\n\\n');
  }
  return '# Run a step to capture its raw JSONL / HTTP payload.';
 }
@@ -1222,21 +1208,6 @@ function renderVisualStage(){
  var h='';
  if(curKind==='fusion'){
   if(curStep===1){
-   var sc=art.scores||{reasoning:0.100,code_gen:0.047,debugging:0.002,tool_use:0.024};
-   h=stateBannerHtml(done,stepRunning,false,'Inspecting demo/fixtures/config.ts — Click Run Step 1 to route via Copilot Auto','✓ GPT-6 Luna answered in 1 CLI call (0.055 AIU) & warmed 5,655 prefix tokens')
-    +'<div class="vs-editor"><div class="vs-editor-head"><span>demo/fixtures/config.ts</span><span class="vs-editor-meta">Read-Only Lookup</span></div>'
-    +renderDiffLines([[' ','export const DEFAULT_PORT = 8787;'],[' ','export const PORT_ENV_VAR = "AUTO_DEMO_PORT";'],[' ','export const SERVICE_NAME = "auto-routing-demo";']],true)+'</div>'
-    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">4D CAPABILITY DEMAND (≤ 0.10 FAST PATH)</span>'
-    +renderMeterRows([
-      {lbl:'reasoning',val:Number(sc.reasoning||0.10).toFixed(3),pct:Math.round((sc.reasoning||0.10)*100),tone:'ok'},
-      {lbl:'code_gen',val:Number(sc.code_gen||0.047).toFixed(3),pct:Math.round((sc.code_gen||0.047)*100),tone:'ok'},
-      {lbl:'debugging',val:Number(sc.debugging||0.002).toFixed(3),pct:4,tone:'ok'},
-      {lbl:'tool_use',val:Number(sc.tool_use||0.024).toFixed(3),pct:5,tone:'ok'}
-    ])+'</div>'
-    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">'+(done?'VERIFIED CLI OUTPUT':'EXPECTED CLI OUTPUT')+'</span>'
-    +'<div class="vs-mono-box">'+escHtml(done?(art.answer||'DEFAULT_PORT=8787 (AUTO_DEMO_PORT)'):'Waiting for copilot --model auto...')+'</div>'
-    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">GPT-6 Luna · 0.055 AIU</span><span class="vs-mini-tag">0 Judge Overhead</span><span class="vs-mini-tag ok">5,655 Cache Write</span></div></div></div>';
-  }else if(curStep===2){
    var rows2=(art.before&&art.after)?buildLiveDiffRows(art.before,art.after):[
     [' ','export function greetingFormatter(name) {'],
     [' ','  const raw = String(name ?? "");'],
@@ -1251,7 +1222,7 @@ function renderVisualStage(){
     +'<div class="vs-annot '+(done?'accept':'')+'"><div class="vs-annot-head"><span>FUSION ORCHESTRATOR · PATTERN = "SINGLE"</span><span>phasePlan: []</span></div>'
     +'<div class="vs-annot-body">'+(done?'Even with --fusion-tier high enabled, capability demand stayed bounded (0.231), so Fusion skipped Judge/Critic calls and verified 3/3 unit tests in one pass.':'Fusion High will inspect 4D capability scores first before deciding whether multi-model review is worth paying for.')+'</div>'
     +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">Solver: '+(art.primaryModel||'gpt-6.1-terra')+'</span><span class="vs-mini-tag ok">node --test: '+(done?'3/3 PASS ✓':'Pending')+'</span><span class="vs-mini-tag">Judge Calls: 0</span></div></div>';
-  }else if(curStep===3){
+  }else if(curStep===2){
    var rows3=(art.before&&art.after)?buildLiveDiffRows(art.before,art.after):[
     [' ','  async refill(amount: number): Promise<void> {'],
     ['-','    await this.drainLock.acquire(); // BUG: inverted vs close()!'],
@@ -1266,7 +1237,7 @@ function renderVisualStage(){
     +'<div class="vs-annot '+(done?'accept':'')+'"><div class="vs-annot-head"><span>NATIVE JUDGE ANNOTATION · '+escHtml(art.judgeModel||'gpt-6-luna')+'</span><span>'+(done?'VERDICT: ACCEPT ('+(art.judgeScore||5)+'/5)':'AWAITING SOLVER PATCH')+'</span></div>'
     +'<div class="vs-annot-body">'+escHtml(done?(art.judgeRationale||'Reordering refill() to acquire stateLock before drainLock matches close() (stateLock -> drainLock), eliminating the ABBA cycle while preserving mutual exclusion.'):'Native Cascade runs Primary Solver (gpt-6.1-sol) then cross-checks with Judge (gpt-6-luna), triggering claude-opus-5.5 repair ONLY if Judge rejects.')+'</div>'
     +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">1 · Solver: '+escHtml(art.solverModel||'gpt-6.1-sol')+'</span><span class="vs-mini-tag ok">2 · Judge: ACCEPT ✓</span><span class="vs-mini-tag">3 · Repair ('+escHtml(art.repairModel||'claude-opus-5.5')+'): SKIPPED ($ Saved)</span></div></div>';
-  }else if(curStep===4){
+  }else if(curStep===3){
    h=stateBannerHtml(done,stepRunning,false,'Architecture RFC Task: 50k RPS multi-region payment gateway with strict RPO = 0','✓ Cross-Lab Critic (gpt-6-luna) caught an Active-Active RPO=0 data-loss gap & Opus 5.5 revised!')
     +'<div class="vs-cols-3">'
     +'<div class="vs-panel"><span class="vs-pkicker">1 · DRAFT · '+escHtml(art.draftModel||'claude-opus-5.5')+'</span><div class="vs-ptitle">Active-Active Shard Leases</div><div class="vs-pbody">Proposes per-merchant shard leases with monotonic <code>fencing_token</code> checks and claims Active-Active achieves <strong>RPO = 0</strong>.</div></div>'
@@ -1282,7 +1253,7 @@ function renderVisualStage(){
     +'<div class="vs-cache-bar"><div class="vs-cache-hit" style="width:'+(done?98.6:15)+'%"></div><div class="vs-cache-new" style="width:'+(done?1.4:85)+'%"></div></div>'
     +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">cacheReadTokens: '+(done?cRead.toLocaleString():'5,655 warm')+' (98.6%)</span><span class="vs-mini-tag">New Turn Tokens: '+newTok+' (1.4%)</span><span class="vs-mini-tag ok">Cost: 0.024 AIU (vs ~0.45 cold)</span></div></div>'
     +'<div class="vs-editor"><div class="vs-editor-head"><span>metrics.prom (Generated Output)</span><span class="vs-editor-meta">7.5 s · Warm Session</span></div>'
-    +'<div class="vs-mono-box" style="border:0;border-radius:0">'+escHtml(done?(art.metricsOutput||'# TYPE demo_http_requests_total counter\\ndemo_http_requests_total{method="GET",status="200"} 1\\n# TYPE demo_port_info gauge\\ndemo_port_info{env_var="AUTO_DEMO_PORT",port="8787"} 1'):'# Click Run Step 5 to generate Prometheus metrics using cached context...')+'</div></div>';
+    +'<div class="vs-mono-box" style="border:0;border-radius:0">'+escHtml(done?(art.metricsOutput||'# TYPE demo_http_requests_total counter\\ndemo_http_requests_total{method="GET",status="200"} 1\\n# TYPE demo_port_info gauge\\ndemo_port_info{env_var="AUTO_DEMO_PORT",port="8787"} 1'):'# Click Run Step 4 to create a warm session and verify the resumed cache hit...')+'</div></div>';
   }
  }else if(curKind==='foundry'){
   if(curStep===1){

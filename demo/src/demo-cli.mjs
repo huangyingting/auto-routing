@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * CLI runner for the three Auto-Routing LLMs demos:
- *   1. fusion   - GitHub Copilot CLI Auto (HyDRA) & Multi-Model Cascade / Critique / Prefix Cache (5 steps)
+ *   1. fusion   - GitHub Copilot CLI Fusion Single / Cascade / Critique / Prefix Cache (4 scenarios, 5 CLI calls)
  *   2. foundry  - Microsoft Foundry Model Router (/openai/v1/chat/completions, 4 live cloud steps)
  *   3. decision - Microsoft-Decision-1.1 (/providers/microsoft/v1/systemone: choice, score, noul, 5 steps)
  *
@@ -207,7 +207,11 @@ async function main() {
 
   try {
     for (const k of targets) {
-      const stepsToRun = step ? [step] : k === "foundry" ? [1, 2, 3, 4] : [1, 2, 3, 4, 5];
+      const stepsToRun = step
+        ? [step]
+        : k === "decision"
+          ? [1, 2, 3, 4, 5]
+          : [1, 2, 3, 4];
       await runTargetDemo(k, stepsToRun, mode, caps, recordings, sessionStore, showRaw);
     }
   } finally {

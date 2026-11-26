@@ -260,9 +260,13 @@ class BuilderTests(unittest.TestCase):
     def test_recorded_demos_have_only_real_cloud_and_cli_steps(self):
         rec_path = Path(__file__).resolve().parents[1] / 'assets' / 'demo-recordings.json'
         rec = json.loads(rec_path.read_text(encoding='utf-8'))
-        self.assertEqual(sorted(rec['steps']['fusion'].keys()), ['1', '2', '3', '4', '5'])
+        self.assertEqual(sorted(rec['steps']['fusion'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(sorted(rec['steps']['foundry'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4', '5'])
+        self.assertEqual(
+            {demo: len(steps) for demo, steps in rec['steps'].items()},
+            D.DEMO_STEP_COUNTS,
+        )
         self.assertNotIn('Local HTTP Failover Harness', json.dumps(rec))
         decision_step_1_raw = next(
             item['event']['text']
@@ -283,6 +287,17 @@ class BuilderTests(unittest.TestCase):
         self.assertEqual(len(raw_by_demo['fusion']), D.DEMO_CALL_COUNTS['fusion'])
         self.assertTrue(all('Single native' in text for text in raw_by_demo['fusion']))
         self.assertEqual(
+            sum(item['event']['kind'] == 'raw' for item in rec['steps']['fusion']['4']),
+            2,
+        )
+        self.assertTrue(
+            any(
+                item['event']['kind'] == 'output'
+                and item['event']['text'].startswith('[SETUP] Real warm-up call')
+                for item in rec['steps']['fusion']['4']
+            )
+        )
+        self.assertEqual(
             '\n'.join(raw_by_demo['foundry']).count('# HTTP 200 Response JSON'),
             D.DEMO_CALL_COUNTS['foundry'],
         )
@@ -299,7 +314,7 @@ class BuilderTests(unittest.TestCase):
             )
 
         zh_slides = D.get_localized_slides('zh')
-        self.assertIn('5 个步骤 · 5 次真实 Copilot CLI 调用', visible_text(zh_slides[21]))
+        self.assertIn('4 个场景 · 5 次真实 Copilot CLI 调用', visible_text(zh_slides[21]))
         self.assertIn('4 个步骤 · 6 次真实 Foundry 云端请求', visible_text(zh_slides[22]))
         self.assertIn('5 个步骤 · 12 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
 
@@ -317,6 +332,19 @@ class BuilderTests(unittest.TestCase):
         self.assertIn("function runCustomProbe(cmd){\n if(!cmd||stepRunning)return;\n stopAutoPlay();\n rawLog='';", H.STUDIO_JS)
         self.assertIn("setupCustomSelect('cs-step',function(val){", H.STUDIO_JS)
         self.assertIn("activeProbeVisual=null;\n rawLog='';\n renderVisualStep", H.STUDIO_JS)
+        self.assertIn("var rawParts=[];", H.STUDIO_JS)
+        self.assertIn("rawParts.join('\\n\\n')", H.STUDIO_JS)
+
+    def test_fusion_studio_has_four_distinct_scenarios(self):
+        self.assertNotIn('Auto Fast Path: 1-Line Config Lookup', H.STUDIO_JS)
+        self.assertIn('Copilot Fusion &amp; Cache · 4 scenarios / 5 calls', H.LIVE_DEMO)
+        for title in (
+            'Fusion High: Picks pattern="single" on Routine Patch',
+            'Fusion High: Native pattern="cascade" (Solver + Judge)',
+            'Fusion High: Native pattern="critique" (Draft → Critic → Revise)',
+            'Prefix-Cache Guard: 99% Cache Hit via --resume',
+        ):
+            self.assertIn(title, H.STUDIO_JS)
 
 
 if __name__ == '__main__':

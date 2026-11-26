@@ -26,6 +26,7 @@ W,H=12192000,6858000; M=457200; CW=W-2*M
 BG='F3EEE4'; CARD='E9E2D4'; CARD2='FAF7F1'; EDGE='C9C0AE'; INK='2B2B2B'; MUTED='57534C'; FOOT='6E685F'
 CY='3F607E'; AMB='A84A35'; CODEBG='FAF7F1'; CODE='2F4B66'
 HF='Segoe UI Variable Display'; BF='Calibri'; MF='Consolas'
+DEMO_STEP_COUNTS = {'fusion': 4, 'foundry': 4, 'decision': 5}
 DEMO_CALL_COUNTS = {'fusion': 5, 'foundry': 6, 'decision': 12}
 
 REFS_LEFT = [
@@ -662,23 +663,24 @@ d1_code=(
 tb(s,M+220000,cy0+480000,cx_-440000,d1_code,size=11.1,color=CODE,font=MF,cy=2600000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:fusion:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':f'5 steps · {DEMO_CALL_COUNTS["fusion"]} real Copilot CLI calls','sizePt':10.6,'color':CY},
+    {'text':f'{DEMO_STEP_COUNTS["fusion"]} scenarios · {DEMO_CALL_COUNTS["fusion"]} real Copilot CLI calls','sizePt':10.6,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d1_cards=[
-    ('Steps 1–2 · Easy work stays single-model','Auto: Luna 0.055 AIU · Fusion Single: Terra, 3/3 tests','Two separate one-command runs prove both Auto and Fusion High avoid extra review when one model is enough.',CY),
-    ('Step 3 · Fix, then verify independently','gpt-6.1-sol fix → gpt-6-luna check → Opus skipped','One command fixes ABBA lock order, Judge accepts 5/5, and all 500 stress runs pass.',CY),
-    ('Steps 4–5 · Review architecture, then reuse cache','Opus draft → Luna finds RPO gap → Opus revises · 99% cache','Critique catches missing cross-region durability; the resumed follow-up reads 5,655 / 5,733 tokens from cache.',AMB),
+    ('Step 1 · Routine patch stays single-model','Fusion Single · gpt-6.1-terra · 3/3 tests','Fusion High still uses one model when the task is simple.',CY),
+    ('Step 2 · Fix, then verify independently','gpt-6.1-sol fix → gpt-6-luna check','Judge accepts 5/5; Opus repair is skipped; 500 stress runs pass.',CY),
+    ('Step 3 · Draft, critique, revise','Opus draft → Luna finds RPO gap → Opus revises','The independent review catches missing cross-region durability.',AMB),
+    ('Step 4 · Warm up, then resume','Auto warm-up → --resume · 5,655 / 5,733 cached','Two real calls prove a 99% cache hit on the follow-up.',CY),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d1_cards):
-    yy=1540000+idx*1520000
-    card_box(s,rx,yy,rw,1380000,[
-        {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
-        {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
-        {'text':desc,'sizePt':12.6,'color':MUTED},
-    ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
+    yy=1540000+idx*1110000
+    card_box(s,rx,yy,rw,1020000,[
+        {'text':t,'sizePt':13.8,'bold':True,'color':INK,'spaceAfterPt':4.5},
+        {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
+        {'text':desc,'sizePt':11.4,'color':MUTED},
+    ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
 footer(s,'',22)
-note(s,'下面进入第一组演示。它调用本机 GitHub Copilot CLI，一共五个步骤、五次真实 CLI 调用；每一步只发起一条 copilot 命令，模型选择和多模型协作都由服务端完成。\n第一步让 Auto 读取配置文件里的默认端口。这个任务很简单，四项能力需求分都低于 0.1，因此系统直接选择 GPT-6 Luna，一次返回 8787，同时建立当前会话的缓存，消耗 0.055 AIU。第二步仍然是一条命令，只是改用 Fusion High 修复字符串首尾空白；系统判断一个模型就够了，所以选择 Single，由 Terra 一次改完并通过 3 项单元测试，没有额外评审。\n第三步处理两把锁顺序相反造成的死锁。Sol 先修正加锁顺序，Luna 再检查代码并给出 5 分通过；既然评审通过，就不再调用 Opus 重做，最后 500 次并发测试全部通过。第四步要求设计五万并发的多区域支付网关。Opus 先写初稿，Luna 指出“防止重复写入”并不能保证跨区域数据零丢失，Opus 再补上三区域同步多数派提交方案。\n第五步通过 --resume 在第一步的会话里继续生成监控指标。模型仍是 Luna，5,655 个输入 Token 直接从缓存读取，缓存命中率 99%，本轮只消耗 0.024 AIU。演示时可以随时切到“原始日志”，核对当前步骤的完整 JSONL 和 usage.json。')
+note(s,'第一组演示现在保留四个互不重复的场景，共五次真实 CLI 调用。\n第一步是 Fusion Single。它修复字符串首尾空白；虽然开启了 Fusion High，系统仍判断一个模型就够了，由 Terra 一次改完并通过 3 项单元测试，没有额外评审。第二步是 Cascade。Sol 先修正两把锁的顺序，Luna 再检查代码并给出 5 分通过；既然检查通过，就不再调用 Opus 重做，最后 500 次并发测试全部通过。第三步是 Critique。Opus 先写多区域支付网关方案，Luna 指出“防止重复写入”并不能保证跨区域数据零丢失，Opus 再补上三区域同步多数派提交方案。\n第四步单独演示缓存。为了真实验证 --resume，它先用一次 Auto 调用建立会话缓存，再发起一次 resume 追问；因此这个场景包含两次 CLI 调用。第二次调用继续使用 Luna，5,655 / 5,733 个输入 Token 直接从缓存读取，命中率 99%，增量费用为 0.024 AIU。四个场景的调用数是 1 + 1 + 1 + 2，总计五次。演示时可以切到“原始日志”，查看缓存场景的预热和 resume 两次真实记录。')
 
 # ---------- 22 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
 s=22

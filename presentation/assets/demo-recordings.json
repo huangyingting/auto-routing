@@ -18,53 +18,6 @@
           }
         },
         {
-          "delayMs": 160,
-          "event": {
-            "kind": "output",
-            "text": "[CONFIG] copilot --model auto --session-id a2891b13… -p \"...\"  (1 CLI call)\n[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n  categoryScores : reasoning=0.100, code_gen=0.047, debugging=0.002, tool_use=0.024 (routerRTT=548 ms)\n  usage.json     : model=gpt-6-luna, input=11,185 (cacheRead=5,524), output=56\n  output         : DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\n✓ PASS — Routed to GPT-6 Luna (0.055 AIU · 27.9s)\nWhy: Low categoryScores trigger auto_v2 Single fast path without Judge overhead.\n[SOURCE] Raw Log: 1x CLI JSONL \"session.auto_mode_resolved\" + usage.json  |  Arch Spec: HyDRA 86 ms CPU / τ=0.05 (Slide 15)\n"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "raw",
-            "text": "# PROVENANCE: Single native CLI call (copilot --model auto --output-format json --usage-output-file usage.json).\n# categoryScores, chosenModel, routingMethod & endToEndLatencyMs come directly from \"session.auto_mode_resolved\":\n\n# Single CLI invocation: copilot --model auto --session-id a2891b13-eb80-4fe4-893d-ae4200c4c825 -p \"Read config.ts and reply on a single line in exact format: DEFAULT_PORT=<number> (<env_var_name>)\" --output-format json --usage-output-file usage.json\n\n{\n  \"type\": \"session.start\",\n  \"data\": {\n    \"sessionId\": \"a2891b13-eb80-4fe4-893d-ae4200c4c825\",\n    \"version\": 1,\n    \"producer\": \"copilot-agent\",\n    \"copilotVersion\": \"1.0.115-7\",\n    \"startTime\": \"2026-11-23T12:43:38.483Z\",\n    \"selectedModel\": \"auto\",\n    \"contextTier\": null,\n    \"context\": {\n      \"cwd\": \"<temp-workspace>\\\\fusion-step1-44jpN2\"\n    },\n    \"remoteSteerable\": false,\n    \"alreadyInUse\": false,\n    \"providerRouting\": {\n      \"capiEnabled\": true,\n      \"defaultProvider\": null,\n      \"registeredModel\": null,\n      \"withdrawnModelIds\": []\n    }\n  },\n  \"id\": \"7459e5c7-7d7a-4ca0-9d9d-3635ac7172b2\",\n  \"timestamp\": \"2026-11-23T12:43:38.859Z\",\n  \"parentId\": null\n}\n\n{\n  \"type\": \"session.auto_mode_resolved\",\n  \"data\": {\n    \"chosenModel\": \"gpt-6-luna\",\n    \"selectionReason\": \"Copilot Fusion selected GPT-6 Luna since the task has low complexity.\",\n    \"categoryScores\": {\n      \"tool_use\": 0.0242,\n      \"code_gen\": 0.0472,\n      \"reasoning\": 0.1002,\n      \"debugging\": 0.0017\n    },\n    \"candidateModels\": [\n      \"gpt-6-luna\"\n    ],\n    \"routingMethod\": \"auto_v2\",\n    \"fallback\": false,\n    \"availableModels\": [\n      \"gpt-6-luna\"\n    ],\n    \"endToEndLatencyMs\": 547.9188,\n    \"hasImage\": false\n  },\n  \"id\": \"dbf08923-ff46-43fe-8f9a-7a583edd48a5\",\n  \"timestamp\": \"2026-11-23T12:43:48.117Z\",\n  \"parentId\": \"b0bb65e9-0089-4df6-881f-43401644419b\"\n}\n\n{\n  \"type\": \"assistant.message\",\n  \"data\": {\n    \"messageId\": \"caae76cd-5954-4f16-ac4f-f84d87aa89f0\",\n    \"originatingMessageId\": \"4040b1f8-9189-4ac6-bcdc-94c72e1f1a83\",\n    \"model\": \"gpt-6-luna\",\n    \"providerId\": \"copilot\",\n    \"content\": \"DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\",\n    \"toolRequests\": [],\n    \"interactionId\": \"de1f46f4-bc6b-4a72-81b3-9225a39660aa\",\n    \"turnId\": \"1\",\n    \"phase\": \"final_answer\",\n    \"rte\": true\n  },\n  \"id\": \"e5abbb1f-331f-4281-b1eb-098617c88ab2\",\n  \"timestamp\": \"2026-11-23T12:43:53.865Z\",\n  \"parentId\": \"f3274bd8-b2da-4037-84c6-c527327acba6\"\n}\n\n{\n  \"type\": \"result\",\n  \"timestamp\": \"2026-11-23T12:43:53.886Z\",\n  \"sessionId\": \"a2891b13-eb80-4fe4-893d-ae4200c4c825\",\n  \"exitCode\": 0,\n  \"usage\": {\n    \"premiumRequests\": 1,\n    \"totalApiDurationMs\": 4415,\n    \"sessionDurationMs\": 15403,\n    \"codeChanges\": {\n      \"linesAdded\": 0,\n      \"linesRemoved\": 0,\n      \"filesModified\": []\n    }\n  }\n}\n\n# --usage-output-file usage.json\n{\n  \"currentModel\": \"gpt-6-luna\",\n  \"totalUserRequests\": 1,\n  \"totalNanoAiu\": 55350050,\n  \"totalApiDurationMs\": 4415,\n  \"modelMetrics\": {\n    \"gpt-6-luna\": {\n      \"requests\": {\n        \"count\": 2,\n        \"cost\": 1\n      },\n      \"usage\": {\n        \"inputTokens\": 11185,\n        \"outputTokens\": 56,\n        \"cacheReadTokens\": 5524,\n        \"cacheWriteTokens\": 5655,\n        \"reasoningTokens\": 0\n      },\n      \"cacheExpiresAt\": \"2026-11-23T13:13:51.850Z\",\n      \"totalNanoAiu\": 55350050,\n      \"aiCreditsStatus\": \"complete\",\n      \"tokenDetails\": {\n        \"input\": {\n          \"tokenCount\": 6\n        },\n        \"cache_read\": {\n          \"tokenCount\": 5524\n        },\n        \"cache_write\": {\n          \"tokenCount\": 5655\n        },\n        \"output\": {\n          \"tokenCount\": 56\n        }\n      }\n    }\n  }\n}"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "route",
-            "model": "GPT-6 Luna",
-            "meta": "Live · 0.055 cr · 27.9s",
-            "chip1": "Model: gpt-6-luna ✓",
-            "chip1Tone": "on",
-            "chip2": "Latency: 27.9s ✓",
-            "chip2Tone": "on",
-            "chip3": "Credits: 0.055 cr ✓",
-            "chip3Tone": "on"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-done",
-            "demo": "fusion",
-            "step": 1,
-            "code": 0
-          }
-        }
-      ],
-      "2": [
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-start",
-            "demo": "fusion",
-            "step": 2
-          }
-        },
-        {
           "delayMs": 15,
           "event": {
             "kind": "output",
@@ -104,18 +57,18 @@
           "event": {
             "kind": "step-done",
             "demo": "fusion",
-            "step": 2,
+            "step": 1,
             "code": 0
           }
         }
       ],
-      "3": [
+      "2": [
         {
           "delayMs": 15,
           "event": {
             "kind": "step-start",
             "demo": "fusion",
-            "step": 3
+            "step": 2
           }
         },
         {
@@ -158,18 +111,18 @@
           "event": {
             "kind": "step-done",
             "demo": "fusion",
-            "step": 3,
+            "step": 2,
             "code": 0
           }
         }
       ],
-      "4": [
+      "3": [
         {
           "delayMs": 15,
           "event": {
             "kind": "step-start",
             "demo": "fusion",
-            "step": 4
+            "step": 3
           }
         },
         {
@@ -212,18 +165,25 @@
           "event": {
             "kind": "step-done",
             "demo": "fusion",
-            "step": 4,
+            "step": 3,
             "code": 0
           }
         }
       ],
-      "5": [
+      "4": [
         {
           "delayMs": 15,
           "event": {
             "kind": "step-start",
             "demo": "fusion",
-            "step": 5
+            "step": 4
+          }
+        },
+        {
+          "delayMs": 160,
+          "event": {
+            "kind": "output",
+            "text": "[SETUP] Real warm-up call for the cache scenario\n[CONFIG] copilot --model auto --session-id a2891b13… -p \"...\"  (1 CLI call)\n[REQUEST] Read config.ts and reply with DEFAULT_PORT=<n> (<env_var>)\n  categoryScores : reasoning=0.100, code_gen=0.047, debugging=0.002, tool_use=0.024 (routerRTT=548 ms)\n  usage.json     : model=gpt-6-luna, input=11,185 (cacheRead=5,524), output=56\n  output         : DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\n✓ PASS — Routed to GPT-6 Luna (0.055 AIU · 27.9s)\nWhy: Low categoryScores trigger auto_v2 Single fast path without Judge overhead.\n[SOURCE] Raw Log: 1x CLI JSONL \"session.auto_mode_resolved\" + usage.json  |  Arch Spec: HyDRA 86 ms CPU / τ=0.05 (Slide 15)\n"
           }
         },
         {
@@ -238,6 +198,13 @@
           "event": {
             "kind": "output",
             "text": "  retained model  : GPT-6 Luna (gpt-6-luna)\n  warm cache read : 5,655 / 5,733 tokens (99% prefix cache hit)\n  output          : # TYPE demo_http_requests_total counter | demo_http_requests_total 0 | # TYPE demo_port_info gauge | demo_port_info{port=\"8787\"} 1\n✓ PASS — Retained warm GPT-6 Luna (99% cache hit · 0.024 AIU · 7.5s)\nWhy: Keeping the session model on follow-up turns reuses the warm prompt prefix (~90% cheaper cacheReadTokens).\n[SOURCE] Raw Log: 1x CLI JSONL + usage.json cacheReadTokens & cacheExpiresAt (--resume a2891b13…)\n"
+          }
+        },
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Single native CLI call (copilot --model auto --output-format json --usage-output-file usage.json).\n# categoryScores, chosenModel, routingMethod & endToEndLatencyMs come directly from \"session.auto_mode_resolved\":\n\n# Single CLI invocation: copilot --model auto --session-id a2891b13-eb80-4fe4-893d-ae4200c4c825 -p \"Read config.ts and reply on a single line in exact format: DEFAULT_PORT=<number> (<env_var_name>)\" --output-format json --usage-output-file usage.json\n\n{\n  \"type\": \"session.start\",\n  \"data\": {\n    \"sessionId\": \"a2891b13-eb80-4fe4-893d-ae4200c4c825\",\n    \"version\": 1,\n    \"producer\": \"copilot-agent\",\n    \"copilotVersion\": \"1.0.115-7\",\n    \"startTime\": \"2026-11-23T12:43:38.483Z\",\n    \"selectedModel\": \"auto\",\n    \"contextTier\": null,\n    \"context\": {\n      \"cwd\": \"<temp-workspace>\\\\fusion-step1-44jpN2\"\n    },\n    \"remoteSteerable\": false,\n    \"alreadyInUse\": false,\n    \"providerRouting\": {\n      \"capiEnabled\": true,\n      \"defaultProvider\": null,\n      \"registeredModel\": null,\n      \"withdrawnModelIds\": []\n    }\n  },\n  \"id\": \"7459e5c7-7d7a-4ca0-9d9d-3635ac7172b2\",\n  \"timestamp\": \"2026-11-23T12:43:38.859Z\",\n  \"parentId\": null\n}\n\n{\n  \"type\": \"session.auto_mode_resolved\",\n  \"data\": {\n    \"chosenModel\": \"gpt-6-luna\",\n    \"selectionReason\": \"Copilot Fusion selected GPT-6 Luna since the task has low complexity.\",\n    \"categoryScores\": {\n      \"tool_use\": 0.0242,\n      \"code_gen\": 0.0472,\n      \"reasoning\": 0.1002,\n      \"debugging\": 0.0017\n    },\n    \"candidateModels\": [\n      \"gpt-6-luna\"\n    ],\n    \"routingMethod\": \"auto_v2\",\n    \"fallback\": false,\n    \"availableModels\": [\n      \"gpt-6-luna\"\n    ],\n    \"endToEndLatencyMs\": 547.9188,\n    \"hasImage\": false\n  },\n  \"id\": \"dbf08923-ff46-43fe-8f9a-7a583edd48a5\",\n  \"timestamp\": \"2026-11-23T12:43:48.117Z\",\n  \"parentId\": \"b0bb65e9-0089-4df6-881f-43401644419b\"\n}\n\n{\n  \"type\": \"assistant.message\",\n  \"data\": {\n    \"messageId\": \"caae76cd-5954-4f16-ac4f-f84d87aa89f0\",\n    \"originatingMessageId\": \"4040b1f8-9189-4ac6-bcdc-94c72e1f1a83\",\n    \"model\": \"gpt-6-luna\",\n    \"providerId\": \"copilot\",\n    \"content\": \"DEFAULT_PORT=8787 (AUTO_DEMO_PORT)\",\n    \"toolRequests\": [],\n    \"interactionId\": \"de1f46f4-bc6b-4a72-81b3-9225a39660aa\",\n    \"turnId\": \"1\",\n    \"phase\": \"final_answer\",\n    \"rte\": true\n  },\n  \"id\": \"e5abbb1f-331f-4281-b1eb-098617c88ab2\",\n  \"timestamp\": \"2026-11-23T12:43:53.865Z\",\n  \"parentId\": \"f3274bd8-b2da-4037-84c6-c527327acba6\"\n}\n\n{\n  \"type\": \"result\",\n  \"timestamp\": \"2026-11-23T12:43:53.886Z\",\n  \"sessionId\": \"a2891b13-eb80-4fe4-893d-ae4200c4c825\",\n  \"exitCode\": 0,\n  \"usage\": {\n    \"premiumRequests\": 1,\n    \"totalApiDurationMs\": 4415,\n    \"sessionDurationMs\": 15403,\n    \"codeChanges\": {\n      \"linesAdded\": 0,\n      \"linesRemoved\": 0,\n      \"filesModified\": []\n    }\n  }\n}\n\n# --usage-output-file usage.json\n{\n  \"currentModel\": \"gpt-6-luna\",\n  \"totalUserRequests\": 1,\n  \"totalNanoAiu\": 55350050,\n  \"totalApiDurationMs\": 4415,\n  \"modelMetrics\": {\n    \"gpt-6-luna\": {\n      \"requests\": {\n        \"count\": 2,\n        \"cost\": 1\n      },\n      \"usage\": {\n        \"inputTokens\": 11185,\n        \"outputTokens\": 56,\n        \"cacheReadTokens\": 5524,\n        \"cacheWriteTokens\": 5655,\n        \"reasoningTokens\": 0\n      },\n      \"cacheExpiresAt\": \"2026-11-23T13:13:51.850Z\",\n      \"totalNanoAiu\": 55350050,\n      \"aiCreditsStatus\": \"complete\",\n      \"tokenDetails\": {\n        \"input\": {\n          \"tokenCount\": 6\n        },\n        \"cache_read\": {\n          \"tokenCount\": 5524\n        },\n        \"cache_write\": {\n          \"tokenCount\": 5655\n        },\n        \"output\": {\n          \"tokenCount\": 56\n        }\n      }\n    }\n  }\n}"
           }
         },
         {
@@ -266,7 +233,7 @@
           "event": {
             "kind": "step-done",
             "demo": "fusion",
-            "step": 5,
+            "step": 4,
             "code": 0
           }
         }
