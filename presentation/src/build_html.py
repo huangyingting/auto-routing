@@ -1187,7 +1187,10 @@ function renderMeterRows(items){
 
 function stateBannerHtml(done,running,isHold,pendingText,doneText){
  if(running){
-  return '<div class="vs-state-banner running"><span>Running Step '+curStep+'… Routing &amp; verifying telemetry</span><span class="vs-state-pill">IN PROGRESS</span></div>';
+  var runningText=currentExecutionMode==='live'
+   ?'Live Backend · Running Step '+curStep+'… Calling backend &amp; verifying response'
+   :'Recorded Replay · Running Step '+curStep+'… Playing captured response';
+  return '<div class="vs-state-banner running"><span>'+runningText+'</span><span class="vs-state-pill">IN PROGRESS</span></div>';
  }
  if(!done){
   return '<div class="vs-state-banner"><span>'+escHtml(pendingText)+'</span><span class="vs-state-pill">READY · CLICK RUN ▶</span></div>';

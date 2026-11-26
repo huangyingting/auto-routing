@@ -382,6 +382,9 @@ class BuilderTests(unittest.TestCase):
         self.assertIn("'Replay · Running Step '", H.STUDIO_JS)
         self.assertIn("'Live · Step '", H.STUDIO_JS)
         self.assertIn("'Replay · Step '", H.STUDIO_JS)
+        self.assertIn("currentExecutionMode==='live'", H.STUDIO_JS)
+        self.assertIn("'Live Backend · Running Step '", H.STUDIO_JS)
+        self.assertIn("'Recorded Replay · Running Step '", H.STUDIO_JS)
 
     def test_fusion_studio_has_four_distinct_scenarios(self):
         self.assertNotIn('Auto Fast Path: 1-Line Config Lookup', H.STUDIO_JS)
