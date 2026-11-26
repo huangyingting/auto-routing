@@ -44,13 +44,12 @@ npm --prefix demo run demo:decision
 npm --prefix demo run demo:decision:live
 ```
 
-配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`，默认 `microsoft-decision-1.1`）后，全部 5 步均对 `/providers/microsoft/v1/systemone` 发起**真实 HTTP 调用**（加 `--live` 强制要求云端连接）：
+配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`，默认 `microsoft-decision-1.1`）后，4 个生产场景共对 `/providers/microsoft/v1/systemone` 发起 **7 次真实 HTTP 调用**（加 `--live` 强制要求云端连接）。原来的“同一消息连续调用 5 次”属于稳定性测试，已从现场 Demo 中移除：
 
-1. **5 次连续调用一致性与延迟实测（`noul`）**：真实连发 5 次请求，现场统计概率极差（spread）与中位延迟（p50）。
-2. **收件箱前置路由器（`choice`）**：对致谢、退订、促销查询与跨系列质保对比连续发起 4 次真实 `choice` 分流。
-3. **单次请求合并三问（`choice` + `score` + `noul`）**：对床架坍塌受伤工单一次返回团队分派、`P0–P3` 期望分与重复投诉判断。
-4. **出站内容合规拦截（`noul`）**：实时检测推荐竞品 Fabrikam 的回复草稿并在发送前拦截。
-5. **缺失附件校准弃权（`choice`）**：当上下文仅附带 `Contract A` 而缺少 `Exhibit B` 时，验证模型识别缺失材料并停下追问。
+1. **收件箱前置分流（`choice`，4 次调用）**：分别处理致谢、退订、促销查询与跨系列质保对比；前三条无需高成本大模型。
+2. **受伤投诉转人工（`choice` + `score` + `noul`，1 次调用）**：一次返回负责团队、紧急程度与重复投诉判断。
+3. **发送前拦截竞品草稿（`noul`，1 次调用）**：检测推荐竞品 Fabrikam 的回复并在发送前转人工。
+4. **缺失附件时先询问（`choice`，1 次调用）**：只有 `Contract A`、缺少 `Exhibit B` 时，停止比较并提示用户补充材料。
 
 ## 命令行单步与自定义句子实时探测
 

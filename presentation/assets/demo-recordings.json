@@ -471,60 +471,6 @@
           "delayMs": 15,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] POST /providers/microsoft/v1/systemone · model=\"microsoft-decision-1.1\" ($0.042/1M in, $0 out)\n[REQUEST] 5x consistency probe (noul: ready_to_buy) on \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\"\n"
-          }
-        },
-        {
-          "delayMs": 160,
-          "event": {
-            "kind": "output",
-            "text": "  runs: #1=0.9835 (1935ms) | #2=0.9835 (343ms) | #3=0.9835 (362ms) | #4=0.9835 (325ms) | #5=0.9835 (340ms)\n✓ PASS — 5/5 calibrated probability (0.9835, spread=0.00 pts, p50=343 ms)\nWhy: Single-pass decision engine returns deterministic probabilities with $0 output-token cost.\n[SOURCE] Raw Log: 5x POST /providers/microsoft/v1/systemone (answers.ready_to_buy.noul)  |  Pricing: $0.042/1M in (Slide 17)\n"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "raw",
-            "text": "# PROVENANCE: Five live /providers/microsoft/v1/systemone HTTP requests and responses.\n\n# --- Run #1 of 5 ---\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\",\n  \"questions\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Is this customer expressing near-term purchase intent within the next two weeks?\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (1935 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"noul\": 0.983461131227445\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 63,\n    \"output_tokens\": 1\n  }\n}\n\n# --- Run #2 of 5 ---\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\",\n  \"questions\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Is this customer expressing near-term purchase intent within the next two weeks?\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (343 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"noul\": 0.983461131227445\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 63,\n    \"output_tokens\": 1\n  }\n}\n\n# --- Run #3 of 5 ---\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\",\n  \"questions\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Is this customer expressing near-term purchase intent within the next two weeks?\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (362 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"noul\": 0.983461131227445\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 63,\n    \"output_tokens\": 1\n  }\n}\n\n# --- Run #4 of 5 ---\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\",\n  \"questions\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Is this customer expressing near-term purchase intent within the next two weeks?\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (325 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"noul\": 0.983461131227445\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 63,\n    \"output_tokens\": 1\n  }\n}\n\n# --- Run #5 of 5 ---\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.\",\n  \"questions\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Is this customer expressing near-term purchase intent within the next two weeks?\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (340 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"ready_to_buy\": {\n      \"type\": \"noul\",\n      \"noul\": 0.983461131227445\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 63,\n    \"output_tokens\": 1\n  }\n}"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "route",
-            "model": "noul = 0.9835",
-            "meta": "p50: 343 ms · spread 0.0 pt",
-            "chip1": "Spread: 0.0 pt ✓",
-            "chip1Tone": "on",
-            "chip2": "p50: 343 ms ✓",
-            "chip2Tone": "on",
-            "chip3": "5/5 Live HTTP ✓",
-            "chip3Tone": "on"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-done",
-            "demo": "decision",
-            "step": 1,
-            "code": 0
-          }
-        }
-      ],
-      "2": [
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-start",
-            "demo": "decision",
-            "step": 2
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "output",
             "text": "[CONFIG] Decision-1.1 pre-LLM router · type=\"choice\" · criteria={no_reply, code_template, fast_slm, frontier_sol}\n[REQUEST] Triage 4 incoming customer inbox messages before calling generative LLMs\n"
           }
         },
@@ -589,18 +535,18 @@
           "event": {
             "kind": "step-done",
             "demo": "decision",
-            "step": 2,
+            "step": 1,
             "code": 0
           }
         }
       ],
-      "3": [
+      "2": [
         {
           "delayMs": 15,
           "event": {
             "kind": "step-start",
             "demo": "decision",
-            "step": 3
+            "step": 2
           }
         },
         {
@@ -636,18 +582,18 @@
           "event": {
             "kind": "step-done",
             "demo": "decision",
-            "step": 3,
+            "step": 2,
             "code": 0
           }
         }
       ],
-      "4": [
+      "3": [
         {
           "delayMs": 15,
           "event": {
             "kind": "step-start",
             "demo": "decision",
-            "step": 4
+            "step": 3
           }
         },
         {
@@ -683,18 +629,18 @@
           "event": {
             "kind": "step-done",
             "demo": "decision",
-            "step": 4,
+            "step": 3,
             "code": 0
           }
         }
       ],
-      "5": [
+      "4": [
         {
           "delayMs": 15,
           "event": {
             "kind": "step-start",
             "demo": "decision",
-            "step": 5
+            "step": 4
           }
         },
         {
@@ -730,7 +676,7 @@
           "event": {
             "kind": "step-done",
             "demo": "decision",
-            "step": 5,
+            "step": 4,
             "code": 0
           }
         }

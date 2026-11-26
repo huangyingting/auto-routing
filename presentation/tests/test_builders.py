@@ -269,19 +269,15 @@ class BuilderTests(unittest.TestCase):
         rec = json.loads(rec_path.read_text(encoding='utf-8'))
         self.assertEqual(sorted(rec['steps']['fusion'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(sorted(rec['steps']['foundry'].keys()), ['1', '2', '3', '4'])
-        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4', '5'])
+        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(
             {demo: len(steps) for demo, steps in rec['steps'].items()},
             D.DEMO_STEP_COUNTS,
         )
         self.assertNotIn('Local HTTP Failover Harness', json.dumps(rec))
-        decision_step_1_raw = next(
-            item['event']['text']
-            for item in rec['steps']['decision']['1']
-            if item['event']['kind'] == 'raw'
-        )
-        self.assertEqual(decision_step_1_raw.count('# --- Run #'), 5)
-        self.assertEqual(decision_step_1_raw.count('# HTTP 200 Response JSON'), 5)
+        self.assertNotIn('5x consistency probe', json.dumps(rec))
+        self.assertNotIn('Five live /providers/microsoft/v1/systemone', json.dumps(rec))
+        self.assertNotIn('5× Live Repeat Probe', H.STUDIO_JS)
 
         raw_by_demo = {}
         for demo in ('fusion', 'foundry', 'decision'):
@@ -323,7 +319,7 @@ class BuilderTests(unittest.TestCase):
         zh_slides = D.get_localized_slides('zh')
         self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[21]))
         self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[22]))
-        self.assertIn('5 个场景 · 12 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
+        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
 
         foundry_slide = visible_text(zh_slides[22])
         for step in range(1, 5):
@@ -331,8 +327,9 @@ class BuilderTests(unittest.TestCase):
         self.assertNotIn('步骤 2–3', foundry_slide)
 
         decision_slide = visible_text(zh_slides[23])
-        for step in range(1, 6):
+        for step in range(1, 5):
             self.assertIn(f'场景 {step} ·', decision_slide)
+        self.assertNotIn('场景 5 ·', decision_slide)
         self.assertNotIn('步骤 1–2', decision_slide)
         self.assertNotIn('步骤 4–5', decision_slide)
 

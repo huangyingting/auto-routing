@@ -3,12 +3,12 @@
  * CLI runner for the three Auto-Routing LLMs demos:
  *   1. fusion   - GitHub Copilot CLI Fusion Single / Cascade / Critique / Prefix Cache (4 scenarios, 5 CLI calls)
  *   2. foundry  - Microsoft Foundry Model Router (/openai/v1/chat/completions, 4 live cloud steps)
- *   3. decision - Microsoft-Decision-1.1 (/providers/microsoft/v1/systemone: choice, score, noul, 5 steps)
+ *   3. decision - Microsoft-Decision-1.1 (/providers/microsoft/v1/systemone: choice, score, noul, 4 scenarios)
  *
  * Modes:
  *   Default  : Executes LIVE automatically whenever the required CLI / cloud endpoint is available
  *              (Copilot CLI for `fusion` works out-of-the-box;
- *               Foundry Steps 1–4 & Decision-1.1 Steps 1–5 run live when AZURE_FOUNDRY_ENDPOINT is set).
+ *               Foundry Steps 1–4 & Decision-1.1 Steps 1–4 run live when AZURE_FOUNDRY_ENDPOINT is set).
  *   --live   : Strict live mode — never falls back to recorded traces; exits non-zero if prerequisites are missing.
  *   --replay : Plays verified pre-recorded traces from presentation/assets/demo-recordings.json.
  *   --step N : Runs only step N of the selected demo.
@@ -209,9 +209,7 @@ async function main() {
     for (const k of targets) {
       const stepsToRun = step
         ? [step]
-        : k === "decision"
-          ? [1, 2, 3, 4, 5]
-          : [1, 2, 3, 4];
+        : [1, 2, 3, 4];
       await runTargetDemo(k, stepsToRun, mode, caps, recordings, sessionStore, showRaw);
     }
   } finally {

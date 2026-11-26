@@ -282,7 +282,7 @@ LIVE_DEMO = """
             </li>
             <li role="option" data-val="decision" aria-selected="false" class="cs-option">
               <span class="cs-opt-main">Demo 3 · App Controller</span>
-              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 5 steps</span>
+              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 4 scenarios / 7 calls</span>
             </li>
           </ul>
         </div>
@@ -929,24 +929,7 @@ var SCENARIOS={
  decision:{
   ledgerSave:'7.2× Lower CAC ($1.81)',
   steps:[
-   {short:'① 0.0 Spread',boundary:'Calibrated System-One',title:'5× Live Repeat Probe: 0.9835 with 0.00 pt Spread',
-    ctx:'POST /providers/microsoft/v1/systemone · $0.042/1M in · $0 out',
-    prompt:'"Is the Harbor sectional still 15% off? We’d love it before my in-laws visit on the 20th."',
-    scorer:'Live Microsoft-Decision-1.1 · 5 Consecutive Cloud Calls',
-    bars:[],
-    pattern:'NOUL PRIMITIVE · ZERO VARIANCE',
-    nodes:[
-     {role:'Customer Message',name:'Purchase Timeline',sub:'"before the 20th"',state:'active'},
-     {role:'5× Live /systemone',name:'noul = 0.9835',sub:'0.00 pt spread · p50 353 ms',state:'win'},
-     {role:'Deterministic Gate',name:'routeToSales()',sub:'54 in tok · $0 out charge',state:'win'}
-    ],
-    outcome:'✓ 5 consecutive live /v1/systemone calls returned 0.9835 every single time (0.00 pt spread, p50=353 ms)!',
-    what:'Unlike generative LLM judges that drift across runs and bill for output prose, Decision-1.1 returns deterministic calibrated probabilities in a single forward pass.',
-    code:'POST /providers/microsoft/v1/systemone → answers.ready_to_buy.noul = 0.9835 (5/5 identical)',
-    baseName:'Generative LLM Judge',baseNums:'$0.0045 · ~1,450 ms',baseMeta:'340× pricier + non-deterministic prose',
-    agentName:'noul = 0.9835',agentNums:'0.0 pt spread · 353 ms',agentMeta:'5/5 live HTTP · $0 output fee',
-    chips:[['Spread: 0.0 pt ✓','on'],['p50: 353 ms ✓','on'],['5/5 Live HTTP ✓','on']],risk:0},
-   {short:'② Router',boundary:'Pre-LLM Inbox Filter',title:'Check 1 (choice): 4/4 Live Inbox Triage (3/4 Skip Frontier)',
+   {short:'① Router',boundary:'Pre-LLM Inbox Filter',title:'Check 1 (choice): 4/4 Live Inbox Triage (3/4 Skip Frontier)',
     ctx:'4 live /v1/systemone calls · 4 handler tiers',
     prompt:'"Thanks! 👍" | "STOP" | "15% spring promo on Aspen king?" | "Compare sofa warranty..."',
     scorer:'Live Microsoft-Decision-1.1 · type: "choice" (~338 ms/call)',
@@ -963,7 +946,7 @@ var SCENARIOS={
     baseName:'All-Frontier Inbox',baseNums:'$0.15 / message',baseMeta:'Wastes frontier LLM calls on "Thanks!" & "STOP"',
     agentName:'choice · 3/4 skip Frontier',agentNums:'4/4 Routed (p=1.00)',agentMeta:'Live /v1/systemone · $0 out tok',
     chips:[['4/4 Routed Live ✓','on'],['Skipped LLM: 3/4 ✓','on'],['$0 Output Tokens ✓','on']],risk:0},
-   {short:'③ Safety',boundary:'3-in-1 Multi-Question Call',title:'Check 2 (choice + score + noul): Live Injury Triage & Escalation',
+   {short:'② Safety',boundary:'3-in-1 Multi-Question Call',title:'Check 2 (choice + score + noul): Live Injury Triage & Escalation',
     ctx:'3 typed questions in ONE /v1/systemone HTTP call',
     prompt:'"The bed frame collapsed last night and my husband hurt his back. Third time writing in!"',
     scorer:'Single 348 ms Call → Simultaneous choice + score[0..3] + noul',
@@ -980,7 +963,7 @@ var SCENARIOS={
     baseName:'Unchecked Auto-Bot',baseNums:'Liability Risk ✕',baseMeta:'Sends generic AI troubleshooting to injury report',
     agentName:'score = 1.97 (safety)',agentNums:'3 Answers in 348 ms',agentMeta:'Bot blocked · human paged',
     chips:[['Team: safety_support ✓','on'],['Human Escalated ✕','denied'],['Repeat: 1.00 ✓','on']],risk:1},
-   {short:'④ Guard',boundary:'Pre-Send Guardrail',title:'Check 3 (noul): Live Outbound Guardrail Blocks Rival Promo',
+   {short:'③ Guard',boundary:'Pre-Send Guardrail',title:'Check 3 (noul): Live Outbound Guardrail Blocks Rival Promo',
     ctx:'Outbound draft screening · threshold ≥ 0.50',
     prompt:'Draft reply: "Honestly, Fabrikam has a similar sofa for $749. Here’s the link."',
     scorer:'Live /v1/systemone · 2 Parallel noul Policy Gates (341 ms)',
@@ -997,7 +980,7 @@ var SCENARIOS={
     baseName:'100% Human Review',baseNums:'$0.24 / msg labor',baseMeta:'Reviewing every AI draft manually kills ROI',
     agentName:'noul = 0.970 HELD',agentNums:'341 ms Pre-Send Gate',agentMeta:'Blocked rival leak · 8% review rate',
     chips:[['Rival: 0.970 ✕','denied'],['Draft HELD ✓','on'],['Latency: 341 ms ✓','on']],risk:1},
-   {short:'⑤ Abstain',boundary:'Missing-Context Guard',title:'Missing Document Caught: Abstains Instead of Hallucinating',
+   {short:'④ Abstain',boundary:'Missing-Context Guard',title:'Missing Document Caught: Abstains Instead of Hallucinating',
     ctx:'Contract A attached · Exhibit B missing from state',
     prompt:'"Compare the renewal termination notice window in Contract A vs Exhibit B."',
     scorer:'Live /v1/systemone · Evidence-Completeness Gate (334 ms)',
@@ -1064,7 +1047,6 @@ var LEDGER_SPECS={
  decision:{
   unit:'$',
   steps:[
-   {base:0.0225,auto:0.00007,baseSec:7.25,autoSec:1.74},
    {base:0.6000,auto:0.15005,baseSec:15.20,autoSec:4.15},
    {base:0.1500,auto:0.00002,baseSec:3.80,autoSec:0.37},
    {base:0.2400,auto:0.00006,baseSec:12.00,autoSec:0.35},
@@ -1291,15 +1273,6 @@ function renderVisualStage(){
   }
  }else{
   if(curStep===1){
-   var ps=art.probs||[0.9835,0.9835,0.9835,0.9835,0.9835];
-   var ts=art.times||[340,343,352,334,368];
-   h=stateBannerHtml(done,stepRunning,false,'Customer Sales Message: Testing 5 consecutive /v1/systemone calls for probability drift','✓ 5/5 live HTTP calls returned noul = 0.9835 with 0.0000 pt spread ($0 output tokens)!')
-    +'<div class="vs-panel"><span class="vs-pkicker">INBOUND CUSTOMER MESSAGE</span><div class="vs-ptitle">"Is the Harbor sectional still 15% off? We’d love it before my in-laws visit on the 20th."</div><div class="vs-pbody">Question: <code>ready_to_buy (type: "noul")</code> — Does customer show concrete purchase timeline &amp; buying intent?</div></div>'
-    +'<div class="vs-runs-grid">'+ps.map(function(p,idx){
-      return '<div class="vs-run-cell"><span class="vs-run-lbl">RUN #'+(idx+1)+'</span><span class="vs-run-val">'+(done?Number(p).toFixed(4):'—')+'</span><span class="vs-run-ms">'+(done?(ts[idx]||345)+' ms':'ready')+'</span></div>';
-    }).join('')+'</div>'
-    +'<div class="vs-annot accept"><div class="vs-annot-head"><span>CALIBRATED SYSTEM-ONE PRIMITIVE</span><span>SPREAD: 0.00 PT · 54 IN TOK · 0 OUT TOK</span></div><div class="vs-annot-body">Deterministic single forward-pass log-prob scoring: no sampling temperature drift, no JSON formatting retries, and $0 output token charges.</div></div>';
-  }else if(curStep===2){
    var items=art.inboxItems||[
     {msg:'Thanks! 👍',choice:'no_reply',conf:1.00,wallMs:344},
     {msg:'Please unsubscribe me / STOP',choice:'code_template',conf:1.00,wallMs:352},
@@ -1313,7 +1286,7 @@ function renderVisualStage(){
       var subTxt=it.choice==='no_reply'?'$0 LLM · Auto-acknowledge & close':(it.choice==='code_template'?'$0 LLM · Deterministic opt-out handler':(it.choice==='fast_slm'?'Cheap SLM · Promo FAQ lookup':'Escalated · Multi-clause cross-border warranty analysis'));
       return '<div class="vs-msg-row '+(isFront?'escalate':'skip')+'"><div><div class="vs-msg-txt">"'+escHtml(it.msg)+'"</div><div class="vs-msg-sub">'+escHtml(subTxt)+' · '+(done?it.wallMs+' ms':'ready')+'</div></div><span class="vs-route-pill '+pillCls+'">'+(done?(escHtml(it.choice)+' ('+it.conf.toFixed(2)+')'):'PENDING')+'</span></div>';
     }).join('')+'</div>';
-  }else if(curStep===3){
+  }else if(curStep===2){
    var scVal=art.score!==undefined?art.score:1.97;
    h=stateBannerHtml(done,stepRunning,done,'Urgent Inbound Ticket: Evaluating team + priority[0..3] + repeat_complaint in 1 HTTP call','✕ AUTO-BOT BLOCKED in '+(art.wallMs||366)+' ms — Routed to safety_support & paged human specialist!')
     +'<div class="vs-msg-row danger"><div><div class="vs-msg-txt">"The bed frame collapsed last night and my husband hurt his back. This is the third time I’m writing in!"</div><div class="vs-msg-sub">Single /v1/systemone call evaluates 3 typed questions simultaneously</div></div><span class="vs-route-pill warn">'+(done?'HUMAN PAGED ✕':'HIGH RISK')+'</span></div>'
@@ -1324,7 +1297,7 @@ function renderVisualStage(){
       {lbl:'repeat_complaint',val:done?'noul = 0.998':'pending',pct:done?100:10,tone:'warn'},
       {lbl:'Auto-Bot Permitted',val:'0% — Blocked',pct:3,tone:'ok'}
     ])+'</div>';
-  }else if(curStep===4){
+  }else if(curStep===3){
    var compVal=art.comp!==undefined?art.comp:0.970;
    var discVal=art.disc!==undefined?art.disc:0.000;
    h=stateBannerHtml(done,stepRunning,done,'Screening AI-generated outbound reply before customer delivery (threshold ≥ 0.50)','✕ SEND INTERCEPTED in '+(art.wallMs||347)+' ms — Competitor promo (0.970 ≥ 0.50) held for human review!')

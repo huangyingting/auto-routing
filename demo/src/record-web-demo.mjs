@@ -2,7 +2,7 @@
 /**
  * Re-records live traces into presentation/assets/demo-recordings.json for available live backends
  * (Copilot CLI for `fusion` when --record-fusion is passed; Foundry & Decision-1.1 when AZURE_FOUNDRY_ENDPOINT is set),
- * and validates all 13 scenario recordings.
+ * and validates all 12 scenario recordings.
  * Use --decision-only --steps 1 to refresh only Decision-1.1 Step 1.
  */
 import { readFile, rm, writeFile } from "node:fs/promises";
@@ -86,7 +86,8 @@ async function main() {
       }
     }
     if (!fusionOnly && caps.decisionReady) {
-      const decisionSteps = decisionOnly && requestedSteps ? requestedSteps : [1, 2, 3, 4, 5];
+      const decisionSteps = decisionOnly && requestedSteps ? requestedSteps : [1, 2, 3, 4];
+      delete data.steps.decision["5"];
       for (const s of decisionSteps) {
         console.log(`Recording live decision step ${s}...`);
         data.steps.decision[String(s)] = await captureStep((emit) => runDecisionStepLive(s, emit));

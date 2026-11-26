@@ -1266,71 +1266,6 @@ export async function runDecisionStepLive(step, emit) {
   emit({ kind: "step-start", demo: "decision", step });
 
   if (step === 1) {
-    const state = "Is the Harbor sectional still 15% off? We'd love it before my in-laws visit on the 20th.";
-    const questions = {
-      ready_to_buy: {
-        type: "noul",
-        instructions: "Is this customer expressing near-term purchase intent within the next two weeks?",
-      },
-    };
-    emit({
-      kind: "output",
-      text:
-        `[CONFIG] POST /providers/microsoft/v1/systemone · model="microsoft-decision-1.1" ($0.042/1M in, $0 out)\n` +
-        `[REQUEST] 5x consistency probe (noul: ready_to_buy) on "${state}"\n`,
-    });
-    const probs = [];
-    const times = [];
-    const rawTraces = [];
-    for (let i = 0; i < 5; i += 1) {
-      const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
-      rawTraces.push(`# --- Run #${i + 1} of 5 ---\n${rawTrace}`);
-      const p = Number(json.answers?.ready_to_buy?.noul ?? json.ready_to_buy?.noul ?? 0);
-      probs.push(p);
-      times.push(wallMs);
-    }
-    const spread = (Math.max(...probs) - Math.min(...probs)) * 100;
-    const sorted = [...times].sort((a, b) => a - b);
-    const p50 = sorted[2];
-    emit({
-      kind: "output",
-      text:
-        `  runs: ${probs.map((p, idx) => `#${idx + 1}=${p.toFixed(4)} (${times[idx]}ms)`).join(" | ")}\n` +
-        `✓ PASS — 5/5 calibrated probability (${probs[0].toFixed(4)}, spread=${spread.toFixed(2)} pts, p50=${p50} ms)\n` +
-        `Why: Single-pass decision engine returns deterministic probabilities with $0 output-token cost.\n` +
-        `[SOURCE] Raw Log: 5x POST /providers/microsoft/v1/systemone (answers.ready_to_buy.noul)  |  Pricing: $0.042/1M in (Slide 17)\n`,
-    });
-    emit({
-      kind: "raw",
-      text:
-        `# PROVENANCE: Five live /providers/microsoft/v1/systemone HTTP requests and responses.\n\n` +
-        rawTraces.join("\n\n"),
-    });
-    emit({
-      kind: "artifact",
-      demo: "decision",
-      step: 1,
-      probs,
-      times,
-      spread,
-      p50,
-    });
-    emit({
-      kind: "route",
-      model: `noul = ${probs[0].toFixed(4)}`,
-      meta: `p50: ${p50} ms · spread ${spread.toFixed(1)} pt`,
-      chip1: `Spread: ${spread.toFixed(1)} pt ✓`,
-      chip1Tone: "on",
-      chip2: `p50: ${p50} ms ✓`,
-      chip2Tone: "on",
-      chip3: "5/5 Live HTTP ✓",
-      chip3Tone: "on",
-    });
-    emit({ kind: "step-done", demo: "decision", step, code: 0 });
-    return;
-  }
-
-  if (step === 2) {
     const inbox = [
       "Thanks! 👍",
       "Please unsubscribe me / STOP",
@@ -1382,7 +1317,7 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "artifact",
       demo: "decision",
-      step: 2,
+      step: 1,
       inboxItems,
       skipped,
     });
@@ -1401,7 +1336,7 @@ export async function runDecisionStepLive(step, emit) {
     return;
   }
 
-  if (step === 3) {
+  if (step === 2) {
     const state = "The bed frame collapsed last night and my husband hurt his back. Third time writing in!";
     const questions = {
       team: {
@@ -1446,7 +1381,7 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "artifact",
       demo: "decision",
-      step: 3,
+      step: 2,
       team: team.choice || "safety_support",
       teamConf,
       score,
@@ -1469,7 +1404,7 @@ export async function runDecisionStepLive(step, emit) {
     return;
   }
 
-  if (step === 4) {
+  if (step === 3) {
     const state = {
       customer_msg: "Is there anything cheaper out there? Be honest.",
       agent_draft_reply: "Honestly, Fabrikam has a similar sofa for $749. Here's the link.",
@@ -1503,7 +1438,7 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "artifact",
       demo: "decision",
-      step: 4,
+      step: 3,
       comp,
       disc,
       held,
@@ -1524,7 +1459,7 @@ export async function runDecisionStepLive(step, emit) {
     return;
   }
 
-  if (step === 5) {
+  if (step === 4) {
     const state = {
       user_query: "Compare the renewal termination notice window in Contract A vs Exhibit B.",
       attached_documents: {
@@ -1562,7 +1497,7 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "artifact",
       demo: "decision",
-      step: 5,
+      step: 4,
       choice: ans.choice || "request_missing_exhibit",
       probs,
       abstained,

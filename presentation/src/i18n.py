@@ -155,12 +155,11 @@ EN_NOTES = {
         "Step 4 contributes the final two calls: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to `gpt-5.6-terra` (29 ms) for strategy. The count is 1 + 1 + 2 + 2 = 6. Switch to `{ } Raw Log` to inspect the current scenario's `routing_trace`."
     ),
     23: (
-        "Demo 3 shows Microsoft-Decision-1.1 across five scenarios and twelve real `/providers/microsoft/v1/systemone` requests.\n"
-        "Step 1 fires five consecutive `noul` calls on the same buyer message—returning `0.9835` all five times with `0.00` point spread in ~354 ms median latency and $0 output-token fee.\n"
-        "Step 2 runs a pre-LLM `choice` inbox router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison)—hitting ~1.00 confidence on all four so three out of four skip the frontier LLM.\n"
-        "Step 3 packs `choice`, `score`, and `noul` into one 366 ms request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
-        "Step 4 runs an outbound `noul` guardrail on an AI draft recommending rival 'Fabrikam for $749', scoring `0.970` in 347 ms and holding the draft before send.\n"
-        "Steps 3, 4, and 5 each add one request: injury escalation, outbound competitor screening, and missing-evidence detection. That makes 5 + 4 + 1 + 1 + 1 = 12. Try a custom prompt in the bottom bar, or open `{ } Raw Log` to view the current operation's raw JSON."
+        "Demo 3 is now focused on four production scenarios and seven real `/providers/microsoft/v1/systemone` requests. The previous five-repeat stability probe was removed because the benchmark section already covers consistency.\n"
+        "Step 1 runs a pre-LLM `choice` router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison). Three out of four skip the frontier LLM.\n"
+        "Step 2 packs `choice`, `score`, and `noul` into one request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
+        "Step 3 screens an outbound AI draft recommending rival 'Fabrikam for $749', scoring competitor mention at `0.970` and holding the draft before send.\n"
+        "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing. The count is 4 + 1 + 1 + 1 = 7 real requests."
     ),
     24: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
@@ -907,6 +906,8 @@ ZH_DEMO_LAUNCHERS = {
 }
 
 ZH_DEMO_TEXT_MAP.update({
+    'Microsoft-Decision-1.1 · 4 scenarios / 7 calls':
+        'Microsoft-Decision-1.1 · 4 个场景 / 7 次调用',
     'Demo 1 · Coding Agent': '演示 1 · 编程 Agent',
     'Demo 3 · App Controller': '演示 3 · 业务流程判断',
     'Coding Agent Orchestration': '编程任务的多模型协作',
@@ -1185,6 +1186,16 @@ ZH_DEMO_TEXT_MAP.update({
 
 # Demo 2 采用更适合现场讲解的中文：先说发生了什么，再保留技术字段供核对。
 ZH_TEXT_MAP.update({
+    '4 scenarios · 7 live /v1/systemone requests + custom probe':
+        '4 个场景 · 7 次真实 /v1/systemone 请求 · 支持现场输入',
+    'Step 1 · Route four messages before the LLM':
+        '场景 1 · 先给 4 条客服消息分流，只把难题交给大模型',
+    'Step 2 · One call returns team, urgency, and repeat':
+        '场景 2 · 受伤投诉一次完成分组、定级和转人工',
+    'Step 3 · Hold competitor draft before send':
+        '场景 3 · 回复发送前，拦下推荐竞品的草稿',
+    'Step 4 · Ask for the missing Exhibit B':
+        '场景 4 · 缺少附件 B，就停下来请用户补充',
     'Foundry Model Router live': 'Foundry Model Router：自动选模型',
     '✓  Pre-rank gate & param normalization': '✓  一套请求参数，Foundry 自动处理模型差异',
     'One V1Preview endpoint normalizes cross-provider params and serves valid JSON in 30 ms router overhead.':

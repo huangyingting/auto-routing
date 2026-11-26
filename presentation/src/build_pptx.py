@@ -26,8 +26,8 @@ W,H=12192000,6858000; M=457200; CW=W-2*M
 BG='F3EEE4'; CARD='E9E2D4'; CARD2='FAF7F1'; EDGE='C9C0AE'; INK='2B2B2B'; MUTED='57534C'; FOOT='6E685F'
 CY='3F607E'; AMB='A84A35'; CODEBG='FAF7F1'; CODE='2F4B66'
 HF='Segoe UI Variable Display'; BF='Calibri'; MF='Consolas'
-DEMO_STEP_COUNTS = {'fusion': 4, 'foundry': 4, 'decision': 5}
-DEMO_CALL_COUNTS = {'fusion': 5, 'foundry': 6, 'decision': 12}
+DEMO_STEP_COUNTS = {'fusion': 4, 'foundry': 4, 'decision': 4}
+DEMO_CALL_COUNTS = {'fusion': 5, 'foundry': 6, 'decision': 7}
 
 REFS_LEFT = [
     ('Charles Lamanna — Auto in Copilot (>90% queries)', 'https://www.linkedin.com/posts/charleslamanna_there-isnt-one-model-thats-the-best-at-ugcPost-7521988229508628480-GPoC/'),
@@ -748,25 +748,24 @@ d3_code=(
 tb(s,M+220000,cy0+490000,cx_-440000,d3_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:decision:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':f'5 steps · {DEMO_CALL_COUNTS["decision"]} live /v1/systemone requests + custom probe','sizePt':11,'color':CY},
+    {'text':f'4 scenarios · {DEMO_CALL_COUNTS["decision"]} live /v1/systemone requests + custom probe','sizePt':11,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d3_cards=[
-    ('Step 1 · Five repeats, zero probability drift','5× 0.9835 · 0.00-pt spread · p50 343 ms','Five real calls prove the same input returns the same score.',CY),
-    ('Step 2 · Route four messages before the LLM','4 routed · 3 skip frontier · p≈1.00','Four calls keep thanks, opt-outs, and FAQ traffic away from the expensive model.',CY),
-    ('Step 3 · One call returns team, urgency, and repeat','safety_support 0.998 · score 1.97 · repeat 0.998','The bot stops immediately and a human safety specialist is notified.',AMB),
-    ('Step 4 · Hold competitor draft before send','mentions_competitor 0.970 · 347 ms','One call blocks the rival recommendation and sends it to human review.',AMB),
-    ('Step 5 · Ask for the missing Exhibit B','request_missing_exhibit 0.99994 · 347 ms','One call stops the comparison instead of inventing missing contract terms.',AMB),
+    ('Step 1 · Route four messages before the LLM','4 routed · 3 skip frontier · p≈1.00','Four calls keep thanks, opt-outs, and FAQ traffic away from the expensive model.',CY),
+    ('Step 2 · One call returns team, urgency, and repeat','safety_support 0.998 · score 1.97 · repeat 0.998','The bot stops immediately and a human safety specialist is notified.',AMB),
+    ('Step 3 · Hold competitor draft before send','mentions_competitor 0.970 · 347 ms','One call blocks the rival recommendation and sends it to human review.',AMB),
+    ('Step 4 · Ask for the missing Exhibit B','request_missing_exhibit 0.99994 · 347 ms','One call stops the comparison instead of inventing missing contract terms.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d3_cards):
-    yy=1540000+idx*880000
-    card_box(s,rx,yy,rw,800000,[
-        {'text':t,'sizePt':12.2,'bold':True,'color':INK,'spaceAfterPt':3.5},
-        {'text':sub,'sizePt':9.8,'bold':True,'color':col_,'spaceAfterPt':3.5},
-        {'text':desc,'sizePt':10.6,'color':MUTED},
-    ],fill=CARD,line=EDGE,lw=12700,pad_x=160000,pad_y=55000)
+    yy=1540000+idx*1110000
+    card_box(s,rx,yy,rw,1020000,[
+        {'text':t,'sizePt':13.8,'bold':True,'color':INK,'spaceAfterPt':4.5},
+        {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
+        {'text':desc,'sizePt':11.4,'color':MUTED},
+    ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
 footer(s,'',24)
-note(s,'第三个 Demo 有五个场景，展示 Decision-1.1 怎么替业务代码先做判断。\n第一个场景把同一条购买咨询连续提交 5 次，五次结果都是 0.9835，没有任何波动。第二个场景处理 4 条客服消息：“谢谢”、退订、促销咨询和复杂质保对比。前三条不需要高成本大模型，只有最后一条才升级。\n第三个场景是一条受伤投诉。一次请求同时返回负责团队、紧急程度和是否重复投诉，程序立即停用自动回复，并通知人工安全专员。\n第四个场景检查待发送草稿。草稿里推荐了竞品 Fabrikam，提及竞品的概率为 0.970，因此不会自动发给客户，而是转人工确认。\n第五个场景检查合同附件。用户要求对比合同 A 和附件 B，但附件 B 没有上传。系统选择先请用户补充材料，不继续比较，也不让模型猜测缺失条款。五个场景合计 12 次真实请求：5 + 4 + 1 + 1 + 1。')
+note(s,'第三个 Demo 精简为四个生产场景，展示 Decision-1.1 怎么替业务代码先做判断。原来的“同一消息连续调用 5 次”属于稳定性测试，前面的评测页已经介绍过，因此从现场 Demo 中移除。\n第一个场景处理 4 条客服消息：“谢谢”、退订、促销咨询和复杂质保对比。前三条不需要高成本大模型，只有最后一条才升级。\n第二个场景是一条受伤投诉。一次请求同时返回负责团队、紧急程度和是否重复投诉，程序立即停用自动回复，并通知人工安全专员。\n第三个场景检查待发送草稿。草稿里推荐了竞品 Fabrikam，提及竞品的概率为 0.970，因此不会自动发给客户，而是转人工确认。\n第四个场景检查合同附件。用户要求对比合同 A 和附件 B，但附件 B 没有上传。系统选择先请用户补充材料，不继续比较，也不让模型猜测缺失条款。四个场景合计 7 次真实请求：4 + 1 + 1 + 1。')
 
 # ---------- 24 CLOSER: KEY TAKEAWAYS
 s=24
