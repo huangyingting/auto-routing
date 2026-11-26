@@ -67,7 +67,7 @@ async function playRecorded(demo, step, note = null) {
   for (const item of seq) {
     if (item.delayMs > 0) await sleep(Math.min(180, item.delayMs));
     if (item.event.kind === "step-start") {
-      send(item.event);
+      send({ ...item.event, executionMode: "replay" });
       if (note) send({ kind: "output", text: `[Note] ${note}\n` });
     } else {
       send(item.event);
@@ -89,7 +89,11 @@ async function runStep(demo, step, mode = "auto") {
     if (demo === "fusion") {
       if (caps.copilotAvailable) {
         logDemo("step-live", { demo, step, backend: "copilot-cli" });
-        await runFusionStepLive(step, send, sessionStore);
+        await runFusionStepLive(
+          step,
+          (event) => send(event.kind === "step-start" ? { ...event, executionMode: "live" } : event),
+          sessionStore,
+        );
         return;
       }
       if (mode === "live") {
@@ -103,7 +107,10 @@ async function runStep(demo, step, mode = "auto") {
     if (demo === "foundry") {
       if (caps.foundryReady) {
         logDemo("step-live", { demo, step, backend: "foundry-router" });
-        await runFoundryStepLive(step, send);
+        await runFoundryStepLive(
+          step,
+          (event) => send(event.kind === "step-start" ? { ...event, executionMode: "live" } : event),
+        );
         return;
       }
       if (mode === "live") {
@@ -121,7 +128,10 @@ async function runStep(demo, step, mode = "auto") {
     if (demo === "decision") {
       if (caps.decisionReady) {
         logDemo("step-live", { demo, step, backend: "decision-1.1" });
-        await runDecisionStepLive(step, send);
+        await runDecisionStepLive(
+          step,
+          (event) => send(event.kind === "step-start" ? { ...event, executionMode: "live" } : event),
+        );
         return;
       }
       if (mode === "live") {

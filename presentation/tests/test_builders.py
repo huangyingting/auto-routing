@@ -362,12 +362,26 @@ class BuilderTests(unittest.TestCase):
 
     def test_raw_log_is_scoped_to_current_step_or_probe(self):
         self.assertIn("}else if(data.kind==='step-start'){\n  stepRunning=true;", H.STUDIO_JS)
-        self.assertIn("curKind=data.demo;curStep=Number(data.step);\n  rawLog='';", H.STUDIO_JS)
+        self.assertIn("curKind=data.demo;curStep=Number(data.step);", H.STUDIO_JS)
+        self.assertIn("currentExecutionMode=data.executionMode", H.STUDIO_JS)
+        self.assertIn("currentExecutionMode=data.executionMode||(replayMode?'replay':'live');\n  rawLog='';", H.STUDIO_JS)
         self.assertIn("function runCustomProbe(cmd){\n if(!cmd||stepRunning)return;\n stopAutoPlay();\n rawLog='';", H.STUDIO_JS)
         self.assertIn("setupCustomSelect('cs-step',function(val){", H.STUDIO_JS)
         self.assertIn("activeProbeVisual=null;\n rawLog='';\n renderVisualStep", H.STUDIO_JS)
         self.assertIn("var rawParts=[];", H.STUDIO_JS)
         self.assertIn("rawParts.join('\\n\\n')", H.STUDIO_JS)
+
+    def test_execution_status_preserves_live_or_replay_mode(self):
+        server_source = (
+            Path(__file__).resolve().parents[2] / 'demo' / 'src' / 'web-demo-server.mjs'
+        ).read_text(encoding='utf-8')
+        self.assertIn('executionMode: "live"', server_source)
+        self.assertIn('executionMode: "replay"', server_source)
+        self.assertIn("currentExecutionMode=data.executionMode", H.STUDIO_JS)
+        self.assertIn("'Live · Running Step '", H.STUDIO_JS)
+        self.assertIn("'Replay · Running Step '", H.STUDIO_JS)
+        self.assertIn("'Live · Step '", H.STUDIO_JS)
+        self.assertIn("'Replay · Step '", H.STUDIO_JS)
 
     def test_fusion_studio_has_four_distinct_scenarios(self):
         self.assertNotIn('Auto Fast Path: 1-Line Config Lookup', H.STUDIO_JS)

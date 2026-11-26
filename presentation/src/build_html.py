@@ -306,7 +306,7 @@ LIVE_DEMO = """
       </div>
 
       <div class="studio-status-group">
-        <span class="status-badge" id="live-demo-status">Replay · Verified</span>
+        <span class="status-badge" id="live-demo-status">Connecting to Demo Server…</span>
         <button id="live-demo-reset" class="ghost-btn" type="button" title="Reset scenario">Reset</button>
         <button id="live-demo-close" class="close-btn" type="button" aria-label="Close studio">✕</button>
       </div>
@@ -1075,7 +1075,7 @@ var LEDGER_SPECS={
 
 var curKind='fusion',curStep=1,doneSet={fusion:{},foundry:{},decision:{}},lastLiveRoute={},lastArtifact={},activeProbeVisual=null,liveMeta=null,liveSource=null;
 function isLocalDemoHost(){return ['127.0.0.1','localhost'].includes(location.hostname)&&location.protocol.indexOf('http')===0;}
-var replayMode=!isLocalDemoHost(),replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],displayLog='',rawLog='',viewMode='visual',hintShown=false;
+var replayMode=!isLocalDemoHost(),currentExecutionMode=replayMode?'replay':'live',replayTimers=[],autoPlaying=false,stepRunning=false,stepDoneWaiters=[],displayLog='',rawLog='',viewMode='visual',hintShown=false;
 
 function escHtml(s){
  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1385,6 +1385,15 @@ function idleModeLabel(){
  }
  return 'Live · '+location.host;
 }
+function runningModeLabel(step){
+ return (currentExecutionMode==='live'?'Live · Running Step ':'Replay · Running Step ')+step+'…';
+}
+function completedModeLabel(step,total){
+ if(currentExecutionMode==='live'){
+  return step===total?'Live · All '+total+' Verified ✓':'Live · Step '+step+' Verified ✓';
+ }
+ return step===total?'Replay · All '+total+' Verified ✓':'Replay · Step '+step+' Verified ✓';
+}
 function setChip(id,text,tone){var el=byId(id);if(!el)return;el.textContent=text;el.classList.remove('on','denied');if(tone)el.classList.add(tone);}
 
 function renderNodes(nodes){
@@ -1634,10 +1643,11 @@ function applyDemoEvent(data){
   stepRunning=true;
   activeProbeVisual=null;
   curKind=data.demo;curStep=Number(data.step);
+  currentExecutionMode=data.executionMode||(replayMode?'replay':'live');
   rawLog='';
   delete lastLiveRoute[curKind+':'+curStep];
   delete lastArtifact[curKind+':'+curStep];
-  setStatus((replayMode?'Running Step ':'Running Live Step ')+curStep+'…','running');
+  setStatus(runningModeLabel(curStep),'running');
   renderVisualStep(curKind,curStep);
   var title=SCENARIOS[curKind].steps[curStep-1].title;
   appendTerminal((displayLog?'\\n':'')+'──▶ [Step '+curStep+'] '+title+'\\n');
@@ -1647,7 +1657,7 @@ function applyDemoEvent(data){
   var demo=data.demo,step=Number(data.step),total=SCENARIOS[demo].steps.length;
   doneSet[demo][step]=true;
   renderVisualStep(demo,step);
-  setStatus(step===total?'All '+total+' Verified ✓':'Step '+step+' Verified ✓','ok');
+  setStatus(completedModeLabel(step,total),'ok');
   resolveStepWaiters(true);
  }else if(data.kind==='step-error'){
   stepRunning=false;
