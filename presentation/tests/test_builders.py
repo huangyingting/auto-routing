@@ -314,20 +314,36 @@ class BuilderTests(unittest.TestCase):
             )
 
         zh_slides = D.get_localized_slides('zh')
-        self.assertIn('4 个场景 · 5 次真实 Copilot CLI 调用', visible_text(zh_slides[21]))
-        self.assertIn('4 个步骤 · 6 次真实 Foundry 云端请求', visible_text(zh_slides[22]))
-        self.assertIn('5 个步骤 · 12 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
+        self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[21]))
+        self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[22]))
+        self.assertIn('5 个场景 · 12 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
 
         foundry_slide = visible_text(zh_slides[22])
         for step in range(1, 5):
-            self.assertIn(f'步骤 {step} ·', foundry_slide)
+            self.assertIn(f'场景 {step} ·', foundry_slide)
         self.assertNotIn('步骤 2–3', foundry_slide)
 
         decision_slide = visible_text(zh_slides[23])
         for step in range(1, 6):
-            self.assertIn(f'步骤 {step} ·', decision_slide)
+            self.assertIn(f'场景 {step} ·', decision_slide)
         self.assertNotIn('步骤 1–2', decision_slide)
         self.assertNotIn('步骤 4–5', decision_slide)
+
+        natural_copy = '\n'.join(visible_text(zh_slides[index]) for index in (21, 22, 23))
+        for expected in (
+            '常规修改，一个模型就够了',
+            '只提取两个字段，用 Flash 就够了',
+            '只把难题交给大模型',
+            '缺少附件 B，就停下来请用户补充',
+        ):
+            self.assertIn(expected, natural_copy)
+        for forbidden in (
+            '简单提取直接使用 Flash',
+            'Rust 任务变难后自动升级，追问继续沿用',
+            '一次请求同时返回负责团队、紧急程度和重复投诉',
+            '请求补充附件 0.99994',
+        ):
+            self.assertNotIn(forbidden, natural_copy)
 
     @unittest.skipUnless(shutil.which('node'), 'node is required to syntax-check embedded JS')
     def test_embedded_javascript_has_valid_syntax(self):

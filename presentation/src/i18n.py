@@ -1779,3 +1779,99 @@ ZH_TEXT_MAP.update({
     'One call stops the comparison instead of inventing missing contract terms.':
         '一次调用停止合同对比，避免模型编造缺失条款。',
 })
+
+# 第 22–24 页用于现场讲解，中文先说清结论，再保留模型名和指标。
+ZH_TEXT_MAP.update({
+    'Copilot CLI Auto & Fusion live':
+        'Copilot CLI：四种执行场景',
+    '4 scenarios · 5 real Copilot CLI calls':
+        '4 个场景 · 5 次真实 CLI 调用（缓存场景含两次调用）',
+    'Step 1 · Routine patch stays single-model':
+        '场景 1 · 常规修改，一个模型就够了',
+    'Fusion Single · gpt-6.1-terra · 3/3 tests':
+        'Fusion Single · gpt-6.1-terra · 3 项测试全部通过',
+    'Fusion High still uses one model when the task is simple.':
+        '虽然选择了 Fusion High，但任务并不复杂，因此没有额外调用评审模型。',
+    'Step 2 · Fix, then verify independently':
+        '场景 2 · 并发问题改完后，再换一个模型检查',
+    'gpt-6.1-sol fix → gpt-6-luna check':
+        'gpt-6.1-sol 修复 → gpt-6-luna 独立检查',
+    'Judge accepts 5/5; Opus repair is skipped; 500 stress runs pass.':
+        '检查结果为 5/5 通过，因此不用 Opus 重做；500 次并发测试也全部通过。',
+    'Step 3 · Draft, critique, revise':
+        '场景 3 · 架构方案先写初稿，再找问题、再修订',
+    'Opus draft → Luna finds RPO gap → Opus revises':
+        'Opus 起草 → Luna 指出 RPO 漏洞 → Opus 修订',
+    'The independent review catches missing cross-region durability.':
+        'Luna 发现初稿只解决了写入冲突，却没有说明跨区域提交后如何保证数据不丢。',
+    'Step 4 · Warm up, then resume':
+        '场景 4 · 连续追问沿用原会话，直接复用缓存',
+    'Auto warm-up → --resume · 5,655 / 5,733 cached':
+        '先建立会话 → --resume 追问 · 5,655 / 5,733 个 Token 来自缓存',
+    'Two real calls prove a 99% cache hit on the follow-up.':
+        '这个场景有两次真实调用：第一次建立缓存，第二次追问的缓存命中率为 99%。',
+
+    'Foundry Model Router live':
+        'Foundry Router：自动选择模型',
+    '4 steps · 6 live Foundry requests (0 local mocks)':
+        '4 个场景 · 6 次真实 Foundry 请求（没有本地模拟）',
+    'Step 1 · One request format across providers':
+        '场景 1 · 业务代码只发一套参数，Foundry 负责适配',
+    'developer + json_object → gpt-5.6-luna · 30 ms':
+        'developer + json_object → gpt-5.6-luna · 选模耗时 30 ms',
+    'Foundry removes incompatible candidates and adapts parameters before returning valid JSON.':
+        'Foundry 先排除不支持 JSON 输出的模型，再处理各家模型的参数差异，最后返回正确 JSON。',
+    'Step 2 · Simple extraction stays on Flash':
+        '场景 2 · 只提取两个字段，用 Flash 就够了',
+    'Invoice → DeepSeek Flash · 27 ms · 0 reasoning tokens':
+        '发票字段提取 → DeepSeek Flash · 27 ms · 0 推理 Token',
+    'Balanced mode avoids paying for a larger model when Flash is already good enough.':
+        'Flash 已经能把发票编号和币种提取正确，没必要再调用成本更高的模型。',
+    'Step 3 · Hard Rust task escalates and retains':
+        '场景 3 · 任务变难就升级；继续追问不再换模型',
+    'Rust → gpt-6-luna · 30 ms · Turn 2 retain':
+        'Rust 并发推导 → gpt-6-luna · 30 ms · 第 2 轮继续沿用',
+    'The same endpoint upgrades for harder reasoning and keeps Luna for the follow-up.':
+        '接口和业务代码都没有改变；系统先升级到 Luna，第二轮追问继续使用它，避免重新建立上下文。',
+    'Step 4 · Split extraction from strategy':
+        '场景 4 · 先整理数据，再制定方案，两步分别选模型',
+    'grok fast (cost) → 2 bullets → terra (quality)':
+        'grok fast 整理数据 → 两条摘要 → terra 制定方案',
+    'First organize the raw data cheaply, then use the stronger model only for renewal strategy.':
+        '整理原始材料时用低成本模型；真正需要分析和制定续约策略时，才调用更强的模型。',
+
+    'Decision-1.1 agent controller':
+        'Decision-1.1：先判断，再处理',
+    '5 steps · 12 live /v1/systemone requests + custom probe':
+        '5 个场景 · 12 次真实 /v1/systemone 请求 · 支持现场输入',
+    'Step 1 · Five repeats, zero probability drift':
+        '场景 1 · 同一条消息连续判断 5 次，结果完全一致',
+    '5× 0.9835 · 0.00-pt spread · p50 343 ms':
+        '5 次都是 0.9835 · 没有波动 · 中位耗时 343 ms',
+    'Five real calls prove the same input returns the same score.':
+        '相同输入连续调用 5 次，返回的概率完全相同，程序可以放心按阈值处理。',
+    'Step 2 · Route four messages before the LLM':
+        '场景 2 · 先给 4 条客服消息分流，只把难题交给大模型',
+    '4 routed · 3 skip frontier · p≈1.00':
+        '4 条全部分流 · 3 条不用大模型 · 结果概率接近 1.00',
+    'Four calls keep thanks, opt-outs, and FAQ traffic away from the expensive model.':
+        '“谢谢”、退订和简单促销咨询都由更便宜的方式处理，只有复杂质保对比才调用大模型。',
+    'Step 3 · One call returns team, urgency, and repeat':
+        '场景 3 · 受伤投诉一次完成分组、定级和转人工',
+    'safety_support 0.998 · score 1.97 · repeat 0.998':
+        '负责团队 safety_support 0.998 · 紧急程度 1.97 · 重复投诉 0.998',
+    'The bot stops immediately and a human safety specialist is notified.':
+        '程序立即停用自动回复，并通知人工安全专员处理。',
+    'Step 4 · Hold competitor draft before send':
+        '场景 4 · 回复发送前，拦下推荐竞品的草稿',
+    'mentions_competitor 0.970 · 347 ms':
+        '提及竞品的概率 0.970 · 耗时 347 ms',
+    'One call blocks the rival recommendation and sends it to human review.':
+        '草稿命中竞品检查，因此不会自动发给客户，而是转交人工确认。',
+    'Step 5 · Ask for the missing Exhibit B':
+        '场景 5 · 缺少附件 B，就停下来请用户补充',
+    'request_missing_exhibit 0.99994 · 347 ms':
+        '请求补充附件的概率 0.99994 · 耗时 347 ms',
+    'One call stops the comparison instead of inventing missing contract terms.':
+        '材料不完整时不继续比较，也不让模型猜测缺失的合同条款。',
+})
