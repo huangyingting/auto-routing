@@ -710,16 +710,17 @@ card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
 rx=M+cx_+320000; rw=W-M-rx
 d2_cards=[
     ('Step 1 · One request format across providers','developer + json_object → gpt-5.6-luna · 30 ms','Foundry removes incompatible candidates and adapts parameters before returning valid JSON.',CY),
-    ('Steps 2–3 · Easy stays cheap; hard escalates','Invoice → DeepSeek Flash (27 ms, 0 reason) · Rust → Luna (30 ms, retain)','The endpoint and code stay unchanged; Turn 2 keeps Luna so the context does not need rebuilding.',CY),
+    ('Step 2 · Simple extraction stays on Flash','Invoice → DeepSeek Flash · 27 ms · 0 reasoning tokens','Balanced mode avoids paying for a larger model when Flash is already good enough.',CY),
+    ('Step 3 · Hard Rust task escalates and retains','Rust → gpt-6-luna · 30 ms · Turn 2 retain','The same endpoint upgrades for harder reasoning and keeps Luna for the follow-up.',CY),
     ('Step 4 · Split extraction from strategy','grok fast (cost) → 2 bullets → terra (quality)','First organize the raw data cheaply, then use the stronger model only for renewal strategy.',CY),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d2_cards):
-    yy=1540000+idx*1520000
-    card_box(s,rx,yy,rw,1380000,[
-        {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
-        {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
-        {'text':desc,'sizePt':12.6,'color':MUTED},
-    ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
+    yy=1540000+idx*1110000
+    card_box(s,rx,yy,rw,1020000,[
+        {'text':t,'sizePt':13.8,'bold':True,'color':INK,'spaceAfterPt':4.5},
+        {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
+        {'text':desc,'sizePt':11.4,'color':MUTED},
+    ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
 footer(s,'',23)
 note(s,'第二组演示使用 Foundry Model Router。它有四个步骤、共六次真实云端请求，全部调用同一个 /chat/completions 接口，model 始终设为 auto；业务代码不改，只看请求内容变化后，云端会选择什么模型。\n第一步只有一次请求：把 developer 角色、temperature 和 JSON 输出格式放在一起。Foundry 先排除不兼容的模型，再做参数转换，30 毫秒完成选择，最终由 gpt-5.6-luna 返回正确 JSON。第二步也是一次请求：从发票文本中提取编号和币种，Balanced 模式在 27 毫秒内选择 DeepSeek-V4.1-Flash，推理 Token 为 0。\n第三步包含两次请求：第一轮把任务换成 Rust 无锁队列和内存序推导，系统在 30 毫秒内升级到 gpt-6-luna；第二轮追问下标回绕问题时，系统识别出这是同一段对话，返回 retain，继续使用原模型和原有缓存。第四步再包含两次请求：先用 cost 模式让 grok-4-1-fast 整理关键数字，再把精简结果交给 quality 模式，由 gpt-5.6-terra 制定续约报价和谈判方案。这样合计正好六次云端请求。切到“原始日志”可以核对当前步骤的 routing_trace。')
 
@@ -751,17 +752,19 @@ card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d3_cards=[
-    ('Steps 1–2 · Stable scores and inbox routing','5× 0.9835 · 4 messages routed · 3 skip frontier','Nine calls prove repeatability and filter routine messages before the generative LLM.',CY),
+    ('Step 1 · Five repeats, zero probability drift','5× 0.9835 · 0.00-pt spread · p50 343 ms','Five real calls prove the same input returns the same score.',CY),
+    ('Step 2 · Route four messages before the LLM','4 routed · 3 skip frontier · p≈1.00','Four calls keep thanks, opt-outs, and FAQ traffic away from the expensive model.',CY),
     ('Step 3 · One call returns team, urgency, and repeat','safety_support 0.998 · score 1.97 · repeat 0.998','The bot stops immediately and a human safety specialist is notified.',AMB),
-    ('Steps 4–5 · Hold unsafe draft; ask for missing file','competitor 0.970 · request_missing_exhibit 0.99994','Two more calls block the rival draft and prevent a made-up contract comparison.',AMB),
+    ('Step 4 · Hold competitor draft before send','mentions_competitor 0.970 · 347 ms','One call blocks the rival recommendation and sends it to human review.',AMB),
+    ('Step 5 · Ask for the missing Exhibit B','request_missing_exhibit 0.99994 · 347 ms','One call stops the comparison instead of inventing missing contract terms.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d3_cards):
-    yy=1540000+idx*1520000
-    card_box(s,rx,yy,rw,1380000,[
-        {'text':t,'sizePt':15.5,'bold':True,'color':INK,'spaceAfterPt':6.5},
-        {'text':sub,'sizePt':11.8,'bold':True,'color':col_,'spaceAfterPt':6.5},
-        {'text':desc,'sizePt':12.4,'color':MUTED},
-    ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
+    yy=1540000+idx*880000
+    card_box(s,rx,yy,rw,800000,[
+        {'text':t,'sizePt':12.2,'bold':True,'color':INK,'spaceAfterPt':3.5},
+        {'text':sub,'sizePt':9.8,'bold':True,'color':col_,'spaceAfterPt':3.5},
+        {'text':desc,'sizePt':10.6,'color':MUTED},
+    ],fill=CARD,line=EDGE,lw=12700,pad_x=160000,pad_y=55000)
 footer(s,'',24)
 note(s,'第三组演示调用 /v1/systemone，共五个步骤、十二次真实 HTTP 请求，重点不是生成回答，而是让业务代码快速做出可解释的判断。\n第一步连续发出五次请求，把同一条购买咨询提交五遍。五次 noul 结果都是 0.9835，没有波动，中位耗时约 354 毫秒。第二步再发出四次请求，分别处理“谢谢”、“退订 STOP”、“促销规则咨询”和“跨产品质保对比”；四条消息都正确分流，其中前三条不用调用高成本大模型。前两步合计九次请求。\n第三步用一次请求处理受伤投诉，同时返回负责团队、紧急程度和是否重复投诉：团队为 safety_support，紧急程度 1.97，重复投诉概率接近 1。第四步再用一次请求检查待发送草稿，发现推荐竞品的概率为 0.970，因此在发送前暂停并转人工审核。第五步最后用一次请求检查资料是否齐全；由于附件 B 没上传，系统以 0.9999 的概率选择“请用户补充附件”。九加一加一加一，合计十二次真实调用。底部输入框还可以现场测试任意句子；“原始日志”里可以核对当前操作的完整请求和返回 JSON。')
 

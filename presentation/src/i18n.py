@@ -1739,3 +1739,43 @@ ZH_TEXT_MAP.update({
     'Two real calls prove a 99% cache hit on the follow-up.':
         '两次真实调用证明：第二次追问的缓存命中率为 99%。',
 })
+
+ZH_TEXT_MAP.update({
+    'Step 2 · Simple extraction stays on Flash':
+        '步骤 2 · 简单提取直接使用 Flash',
+    'Invoice → DeepSeek Flash · 27 ms · 0 reasoning tokens':
+        '发票提取 → DeepSeek Flash · 27 ms · 0 推理 Token',
+    'Balanced mode avoids paying for a larger model when Flash is already good enough.':
+        'Flash 已经足够完成字段提取，Balanced 不会再为更大的模型付费。',
+    'Step 3 · Hard Rust task escalates and retains':
+        '步骤 3 · Rust 任务变难后自动升级，追问继续沿用',
+    'Rust → gpt-6-luna · 30 ms · Turn 2 retain':
+        'Rust 推导 → gpt-6-luna · 30 ms · 第 2 轮 retain',
+    'The same endpoint upgrades for harder reasoning and keeps Luna for the follow-up.':
+        '同一个接口在任务变难时升级到 Luna，第二轮追问继续使用原模型。',
+
+    'Step 1 · Five repeats, zero probability drift':
+        '步骤 1 · 同一输入连续调用 5 次，结果没有波动',
+    '5× 0.9835 · 0.00-pt spread · p50 343 ms':
+        '连续 5 次都是 0.9835 · 极差 0.00 · 中位耗时 343 ms',
+    'Five real calls prove the same input returns the same score.':
+        '5 次真实调用证明：相同输入会得到相同分数。',
+    'Step 2 · Route four messages before the LLM':
+        '步骤 2 · 4 条客服消息先分流，再决定是否调用大模型',
+    '4 routed · 3 skip frontier · p≈1.00':
+        '4 条全部分流 · 3 条不用大模型 · 概率约 1.00',
+    'Four calls keep thanks, opt-outs, and FAQ traffic away from the expensive model.':
+        '4 次调用把感谢、退订和简单咨询挡在高成本模型之前。',
+    'Step 4 · Hold competitor draft before send':
+        '步骤 4 · 回复发出前，拦下推荐竞品的草稿',
+    'mentions_competitor 0.970 · 347 ms':
+        '提及竞品 0.970 · 347 ms',
+    'One call blocks the rival recommendation and sends it to human review.':
+        '一次调用发现竞品推荐，在发送前暂停并转人工审核。',
+    'Step 5 · Ask for the missing Exhibit B':
+        '步骤 5 · 缺少附件 B，先请用户补充',
+    'request_missing_exhibit 0.99994 · 347 ms':
+        '请求补充附件 0.99994 · 347 ms',
+    'One call stops the comparison instead of inventing missing contract terms.':
+        '一次调用停止合同对比，避免模型编造缺失条款。',
+})

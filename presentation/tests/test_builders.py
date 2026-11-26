@@ -318,6 +318,17 @@ class BuilderTests(unittest.TestCase):
         self.assertIn('4 个步骤 · 6 次真实 Foundry 云端请求', visible_text(zh_slides[22]))
         self.assertIn('5 个步骤 · 12 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
 
+        foundry_slide = visible_text(zh_slides[22])
+        for step in range(1, 5):
+            self.assertIn(f'步骤 {step} ·', foundry_slide)
+        self.assertNotIn('步骤 2–3', foundry_slide)
+
+        decision_slide = visible_text(zh_slides[23])
+        for step in range(1, 6):
+            self.assertIn(f'步骤 {step} ·', decision_slide)
+        self.assertNotIn('步骤 1–2', decision_slide)
+        self.assertNotIn('步骤 4–5', decision_slide)
+
     @unittest.skipUnless(shutil.which('node'), 'node is required to syntax-check embedded JS')
     def test_embedded_javascript_has_valid_syntax(self):
         with tempfile.TemporaryDirectory() as directory:
