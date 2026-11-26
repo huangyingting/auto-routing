@@ -11,12 +11,55 @@ from unittest.mock import patch
 
 from PIL import Image
 from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Emu, Pt
 
 from presentation.src import build_html as H, build_pptx as D
 
 
 class BuilderTests(unittest.TestCase):
+    def test_html_and_pptx_share_card_and_font_styles(self):
+        card = {
+            'op': 'add_shape',
+            'slide': 0,
+            'preset': 'rect',
+            'x': 100000,
+            'y': 100000,
+            'cx': 1800000,
+            'cy': 900000,
+            'fill': D.CARD,
+            'line': D.EDGE,
+            'lineWidth': 12700,
+        }
+        title = {
+            'op': 'add_text_box',
+            'slide': 0,
+            'x': 200000,
+            'y': 200000,
+            'cx': 1500000,
+            'cy': 400000,
+            'text': '统一风格',
+            'sizePt': 24,
+            'bold': True,
+            'color': D.INK,
+            'fontFamily': D.HF,
+            'align': 'left',
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch.object(D, 'slides', {0: [card, title]}), patch.object(D, 'notes', {0: '备注'}):
+                H.build(str(root / 'index.zh.html'), str(root), 1600, lang='zh')
+                D.build(str(root / 'deck.zh.pptx'), str(root), lang='zh')
+            doc = (root / 'index.zh.html').read_text(encoding='utf-8')
+            self.assertIn('border-radius:14px;', doc)
+            self.assertIn('&quot;Microsoft YaHei UI&quot;', doc)
+            self.assertNotIn('fonts.googleapis.com', doc)
+            prs = Presentation(root / 'deck.zh.pptx')
+            shape = prs.slides[0].shapes[0]
+            self.assertEqual(shape.auto_shape_type, MSO_SHAPE.ROUNDED_RECTANGLE)
+            run = prs.slides[0].shapes[1].text_frame.paragraphs[0].runs[0]
+            self.assertEqual(run.font.name, 'Microsoft YaHei UI')
+
     def test_notes_share_content_and_cannot_terminate_the_script(self):
         zh_note = '\u8bb2\u8005\u5907\u6ce8\n</script><script>alert("zh")</script>'
         en_note = 'Speaker note\n</script><script>alert("en")</script>'

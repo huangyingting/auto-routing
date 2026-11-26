@@ -60,9 +60,9 @@ npm --prefix demo run demo:replay
 
 ## 视觉系统
 
-- 展示标题与正文（HTML）：**Inter Tight**（紧凑窄比例现代无衬线；PPTX 采用 Windows 原生 **Segoe UI Variable Display** + **Calibri**）
-- 代码与终端：**Inconsolata**（`wdth 90` 紧凑等宽；回退至 **Consolas** / Cascadia Mono）
-- 配色：暖米色宣纸底、炭灰墨色、石板蓝强调色、圆角微阴影卡片与砖红警示色
+- 展示标题与正文（HTML / PPTX 共用）：英文标题 **Segoe UI Variable Display**、英文正文 **Calibri**；中文版统一使用 **Microsoft YaHei UI**
+- 代码与终端（HTML / PPTX 共用）：**Consolas**（回退至 Cascadia Mono / Courier New）
+- 配色：暖米色底、炭灰文字、石板蓝强调色、圆角细边框卡片与砖红警示色
 
 ## 演示框架
 

@@ -27,21 +27,21 @@ SVG_POINTS = {
     'homePlate':'0,0 82,0 100,50 82,100 0,100',
 }
 FALLBACK = {
-    'Inter Tight':'"Inter Tight","Segoe UI Variable Text","PingFang SC","Microsoft YaHei UI",-apple-system,BlinkMacSystemFont,sans-serif',
-    'Segoe UI Variable Display':'"Inter Tight","Segoe UI Variable Display","PingFang SC","Microsoft YaHei UI",sans-serif',
-    'Segoe UI Variable Text':'"Inter Tight","Segoe UI Variable Text","PingFang SC","Microsoft YaHei UI",sans-serif',
-    'Calibri':'"Inter Tight","Segoe UI Variable Text",Calibri,"PingFang SC","Microsoft YaHei UI",sans-serif',
-    'Consolas':'"Inconsolata",Consolas,"Cascadia Mono",monospace',
-    'Inconsolata':'"Inconsolata",Consolas,"Cascadia Mono",monospace',
-    'Plus Jakarta Sans':'"Inter Tight","Segoe UI Variable Text","Segoe UI",sans-serif',
-    'Newsreader':'"Inter Tight","Segoe UI Variable Display",sans-serif',
-    'JetBrains Mono':'"Inconsolata",Consolas,"Cascadia Mono",monospace',
-    'Aptos Display':'"Inter Tight","Segoe UI Variable Display",sans-serif',
-    'Aptos':'"Inter Tight","Segoe UI Variable Text",sans-serif',
-    'Cascadia Code':'"Inconsolata",Consolas,"Cascadia Mono",monospace',
-    'Georgia':'"Inter Tight","Segoe UI Variable Display",sans-serif',
-    'Courier New':'"Inconsolata",Consolas,monospace',
-    'Arial':'"Inter Tight",Arial,Helvetica,sans-serif',
+    'Inter Tight':'"Segoe UI Variable Text","Segoe UI",Arial,sans-serif',
+    'Segoe UI Variable Display':'"Segoe UI Variable Display","Segoe UI Variable Text","Segoe UI",sans-serif',
+    'Segoe UI Variable Text':'"Segoe UI Variable Text","Segoe UI",Arial,sans-serif',
+    'Calibri':'Calibri,Aptos,"Segoe UI Variable Text","Segoe UI",sans-serif',
+    'Consolas':'Consolas,"Cascadia Mono","Courier New",monospace',
+    'Inconsolata':'Consolas,"Cascadia Mono","Courier New",monospace',
+    'Plus Jakarta Sans':'"Segoe UI Variable Text","Segoe UI",Arial,sans-serif',
+    'Newsreader':'"Segoe UI Variable Display","Segoe UI Variable Text",serif',
+    'JetBrains Mono':'Consolas,"Cascadia Mono","Courier New",monospace',
+    'Aptos Display':'"Segoe UI Variable Display",Aptos,sans-serif',
+    'Aptos':'Calibri,Aptos,"Segoe UI Variable Text",sans-serif',
+    'Cascadia Code':'Consolas,"Cascadia Mono",monospace',
+    'Georgia':'"Segoe UI Variable Display",Georgia,serif',
+    'Courier New':'Consolas,"Courier New",monospace',
+    'Arial':'Calibri,Arial,"Segoe UI Variable Text",sans-serif',
 }
 e = lambda s: html.escape(s, quote=True)
 
@@ -63,35 +63,36 @@ def data_uri(path, maxw, cache={}):
 def box(o):
     return f"left:{o['x']/PX:.1f}px;top:{o['y']/PX:.1f}px;width:{o['cx']/PX:.1f}px;height:{o['cy']/PX:.1f}px;"
 
-def text_html(o):
+def text_html(o, lang='en'):
     paras = o.get('paragraphs') or [{'text': o['text']}]
     raw_font = o.get('fontFamily', D.BF)
-    font = FALLBACK.get(raw_font, FALLBACK['Inter Tight'])
+    if lang == 'zh' and raw_font != D.MF:
+        font = '"Microsoft YaHei UI","Microsoft YaHei","PingFang SC","Segoe UI",sans-serif'
+    else:
+        font = FALLBACK.get(raw_font, FALLBACK['Inter Tight'])
     is_display = any(p.get('sizePt', o.get('sizePt', 16)) >= 29 for p in paras)
     if is_display and raw_font != D.MF:
-        font = FALLBACK['Segoe UI Variable Display']
+        font = (
+            '"Microsoft YaHei UI","Microsoft YaHei","PingFang SC","Segoe UI",sans-serif'
+            if lang == 'zh'
+            else FALLBACK['Segoe UI Variable Display']
+        )
     if o.get('letterSpacingPt'):
         ls = f"letter-spacing:{o['letterSpacingPt']*4/3:.1f}px;"
-    elif raw_font == D.MF:
-        ls = "font-variation-settings:'wdth' 90;"
-    elif is_display:
-        ls = 'letter-spacing:-0.028em;'
     else:
-        ls = 'letter-spacing:-0.008em;'
+        ls = 'letter-spacing:normal;'
     ws = 'white-space:pre-wrap;' if raw_font == D.MF else ''
     default_gap_pt = o.get('spaceAfterPt', 2 if raw_font == D.MF else 6.5)
     out = []
     for idx, p in enumerate(paras):
         sz = p.get('sizePt', o.get('sizePt', 16)) * 4/3
-        wt = 700 if p.get('bold', o.get('bold')) else (500 if sz >= 22 else 450)
+        wt = 700 if p.get('bold', o.get('bold')) else 400
         if raw_font == D.MF:
-            lh = 1.48
+            lh = 1.35
         elif sz >= 34:
-            lh = 1.14
-        elif sz >= 22:
-            lh = 1.26
+            lh = 1.12
         else:
-            lh = 1.42
+            lh = 1.24
         mb = ''
         if idx < len(paras) - 1:
             gap_px = p.get('spaceAfterPt', default_gap_pt) * 4/3
@@ -184,10 +185,10 @@ def slide_html(k, ops, img_dir, maxw, pages_url=None, lang='en'):
             parts.append(f'<img class="{classes}{extra_cls}"{reveal} style="{box(o)}" src="{src}" alt="{e(o.get("altText",""))}">')
         elif o['op'] == 'add_text_box':
             fn_cls = ' page-num' if o.get('name') == 'footer_num' else ''
-            parts.append(f'<div class="{classes}{fn_cls}"{reveal} style="{box(o)}">{text_html(o)}</div>')
+            parts.append(f'<div class="{classes}{fn_cls}"{reveal} style="{box(o)}">{text_html(o, lang)}</div>')
         elif o['op'] == 'add_shape':
             pr = o['preset']
-            inner = text_html(o) if 'text' in o else ''
+            inner = text_html(o, lang) if 'text' in o else ''
             if pr in SVG_POINTS:
                 stroke = f' stroke="#{o["line"]}" stroke-width="{max(1.2,o.get("lineWidth",12700)/PX):.1f}" stroke-linejoin="round"' if o.get('line') else ''
                 svg = (
@@ -197,7 +198,7 @@ def slide_html(k, ops, img_dir, maxw, pages_url=None, lang='en'):
                 parts.append(f'<div class="{classes} svg-shape"{reveal} style="{box(o)}">{svg}{inner}</div>')
             else:
                 fill = o['fill']
-                is_card = pr == 'rect' and o['cx'] > 900000 and o['cy'] > 450000
+                is_card = D.is_surface_card(o)
                 extra_cls = ' surface-card' if is_card else ''
                 if is_card and fill == D.CODEBG:
                     extra_cls += ' surface-code'
@@ -210,7 +211,7 @@ def slide_html(k, ops, img_dir, maxw, pages_url=None, lang='en'):
                     st += 'border-radius:14px;'
                 if o.get('line'):
                     lw = max(1.2, o.get('lineWidth', 12700) / PX)
-                    st += f"box-shadow:inset 0 0 0 {lw:.1f}px #{o['line']}, 0 8px 24px rgba(32,28,22,.05);"
+                    st += f"border:{lw:.1f}px solid #{o['line']};"
                 parts.append(f'<div class="{classes}{extra_cls}"{reveal} style="{st}">{inner}</div>')
     reveal_count = REVEAL_ITEMS[k][2] if k in REVEAL_ITEMS else 0
     action = ''
@@ -424,32 +425,31 @@ LIVE_DEMO = """
 """
 
 CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wdth,wght@50..200,500..700&family=Inter+Tight:ital,wght@0,400..800;1,400..600&display=swap');
 :root{
   --bg:#%s;--ink:#%s;--accent:#%s;--card:#%s;--codebg:#%s;--edge:#%s;--muted:#%s;--warn:#%s;
   --surface:#fbf8f2;--surface-strong:#efe9dc;--ink-soft:#4a463f;--ok:#1f6344;--ok-bg:#e6f4ec;
-  --font-sans:'Inter Tight','Segoe UI Variable Text','PingFang SC','Microsoft YaHei UI',system-ui,sans-serif;
-  --font-display:'Inter Tight','Segoe UI Variable Display','PingFang SC','Microsoft YaHei UI',system-ui,sans-serif;
-  --font-mono:'Inconsolata','Consolas','Cascadia Mono',monospace;
+  --font-sans:'Segoe UI Variable Text','Microsoft YaHei UI','Segoe UI',Arial,system-ui,sans-serif;
+  --font-display:'Segoe UI Variable Display','Microsoft YaHei UI','Segoe UI',Arial,system-ui,sans-serif;
+  --font-mono:'Consolas','Cascadia Mono','Courier New',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%%;height:100%%;background:var(--bg);color:var(--ink);font-family:var(--font-sans);letter-spacing:-0.006em;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-code,pre,kbd,.pages-qr-kicker,.pages-qr-url{font-variation-settings:"wdth" 90}
+code,pre,kbd,.pages-qr-kicker,.pages-qr-url{font-variation-settings:normal}
 #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 18%% 12%%,rgba(255,255,255,.55),transparent 48%%),var(--bg)}
-.slide{position:absolute;width:1280px;height:720px;background:linear-gradient(180deg,rgba(255,255,255,.28) 0%%,rgba(255,255,255,0) 38%%),var(--bg);overflow:hidden;display:none;transform-origin:center center}
+.slide{position:absolute;width:1280px;height:720px;background:var(--bg);overflow:hidden;display:none;transform-origin:center center}
 .slide.on{display:block;animation:slideFade .24s cubic-bezier(.2,.8,.2,1)}
 @keyframes slideFade{from{opacity:.88}to{opacity:1}}
 .a{position:absolute}
-.surface-card{box-shadow:0 10px 28px rgba(38,33,26,.055),inset 0 1px 0 rgba(255,255,255,.55)}
-.surface-code{border-radius:14px;box-shadow:0 12px 30px rgba(32,45,58,.06),inset 0 1px 0 rgba(255,255,255,.8)}
-.framed-img{border-radius:14px;box-shadow:0 14px 34px rgba(35,30,22,.10);object-fit:cover}
-.contain-img{border-radius:10px;object-fit:contain!important}
+.surface-card{box-shadow:none}
+.surface-code{border-radius:14px;box-shadow:none}
+.framed-img{border-radius:0;box-shadow:none;object-fit:cover}
+.contain-img{border-radius:0;object-fit:contain!important}
 .reveal{opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .28s ease,transform .28s cubic-bezier(.2,.8,.2,1),visibility .28s}
 .reveal.shown{opacity:1;visibility:visible;transform:translateY(0)}
 .svg-shape svg{position:absolute;inset:0;width:100%%;height:100%%;overflow:visible;filter:drop-shadow(0 4px 10px rgba(35,48,62,.08))}
 .svg-shape>.t{z-index:1}
 img.a{object-fit:cover}
-.t{position:absolute;inset:0;padding:10px 14px;display:flex;flex-direction:column;justify-content:center}
+.t{position:absolute;inset:0;padding:6px 8px;display:flex;flex-direction:column;justify-content:center}
 .a[style*="border-radius:50%%"]>.t{padding:0;align-items:center;text-align:center}
 .page-num{z-index:6}.page-num>.t{padding:2px 8px;align-items:flex-end}.page-num>.t>p{background:rgba(243,238,228,.82);padding:2px 7px;border-radius:999px}
 .lang-switch{position:fixed;left:12px;bottom:10px;z-index:46;display:inline-flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:rgba(251,248,242,.86);backdrop-filter:blur(8px);border:1px solid rgba(201,192,174,.78);box-shadow:0 4px 14px rgba(35,30,22,.07);opacity:.55;transition:opacity .18s ease}

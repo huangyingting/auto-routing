@@ -103,6 +103,14 @@ def rect(s,x,y,cx,cy,fill=CARD,line=None,lw=None,preset='rect',text=None,size=16
     if shadow: op['shadow']=shadow
     if rot: op['rot']=rot
     P(s,op)
+
+def is_surface_card(o):
+    return (
+        o.get('op') == 'add_shape'
+        and o.get('preset') == 'rect'
+        and o.get('cx', 0) > 900000
+        and o.get('cy', 0) > 450000
+    )
 def img(s,path,x,y,cx,cy,alt,fit='cover'):
     P(s,{'op':'add_image','slide':s,'path':path,'x':int(x),'y':int(y),'cx':int(cx),'cy':int(cy),'fit':fit,'altText':alt})
 def header(s,eyebrow,title,x=M,cx=CW,title_cy=None):
@@ -614,10 +622,10 @@ card_box(s,rx,2900000,rw,1240000,[
 ],fill=CARD,pad_x=200000,pad_y=95000)
 card_box(s,rx,4260000,rw,1740000,[
     {'text':'Powering Microsoft & 4,000+ Customers','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
-    {'text':'• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Cowork Auto effort + Foundry Evaluation judge','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':12.2,'color':INK,'spaceAfterPt':5},
-    {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':12.2,'color':INK},
+    {'text':'• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper','sizePt':11.8,'color':INK,'spaceAfterPt':4},
+    {'text':'• Cowork Auto effort + Foundry Evaluation judge','sizePt':11.8,'color':INK,'spaceAfterPt':4},
+    {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':11.8,'color':INK,'spaceAfterPt':4},
+    {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':11.8,'color':INK},
 ],fill=CARD,pad_x=200000,pad_y=90000)
 footer(s,'',20)
 note(s,'由于每次推理只激活 4B 参数、价格也很低，大家自然会关心它的准确率够不够高。为了避免在单一测试集上过拟合，评测团队选取了训练集以外的 102 项基准测试（包含 41 项公开测试和 61 项企业场景测试，共 38.5 万道题），对 8 款决策模型做了对比。\n左侧图表展示了测试结果：Decision-1.1 平均准确率为 78.8%，排在综合第一，并在 9 个细分能力维度中拿到了 7 项第一，包括路由分流、工具选择、安全检查和结果一致性；在第三方 Artificial Analysis 决策指数上得分为 68 分，速度提升了 2.2 倍。目前它除了用于微软内部的 Copilot 分流、Cowork 强度调节、Foundry 自动评测和 Xbox 数据分析流程外，也已经有四千多家企业接入使用。\n\n参考来源：Microsoft Command Line — Microsoft-Decision-1.1 GA（2026 年 11 月 17 日，附 Microsoft Decision benchmark report 2026-11-14）。')
@@ -1020,8 +1028,15 @@ def build(out,img_dir,pages_url=None,lang='en'):
                 sh=sl.shapes.add_textbox(Emu(o['x']),Emu(o['y']),Emu(o['cx']),Emu(o['cy'])); write_text(sh.text_frame,o,lang=lang)
                 rendered.append(sh)
             elif op=='add_shape':
-                sh=sl.shapes.add_shape(PRESETS[o['preset']],Emu(o['x']),Emu(o['y']),Emu(o['cx']),Emu(o['cy']))
+                surface_card=is_surface_card(o)
+                preset='roundRect' if surface_card else o['preset']
+                sh=sl.shapes.add_shape(PRESETS[preset],Emu(o['x']),Emu(o['y']),Emu(o['cx']),Emu(o['cy']))
                 sh.shadow.inherit=False
+                if surface_card:
+                    try:
+                        sh.adjustments[0]=0.08
+                    except (IndexError, ValueError):
+                        pass
                 sh.fill.solid(); sh.fill.fore_color.rgb=rgb(o['fill'])
                 if o.get('line'): sh.line.color.rgb=rgb(o['line']); sh.line.width=Emu(o.get('lineWidth',12700))
                 else: sh.line.fill.background()
