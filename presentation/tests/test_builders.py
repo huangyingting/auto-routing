@@ -397,6 +397,43 @@ class BuilderTests(unittest.TestCase):
         ):
             self.assertIn(title, H.STUDIO_JS)
 
+    def test_foundry_step_three_requests_match_visual_and_summary(self):
+        turn1 = (
+            'Design a lock-free MPMC ring buffer in Rust and state the exact '
+            'Acquire/Release memory-ordering and ABA epoch-reclamation invariants '
+            'in 5 concise lines.'
+        )
+        turn2 = 'Now add 1 sentence on how wrap-around index overflow is prevented.'
+        runner_source = (
+            Path(__file__).resolve().parents[2] / 'demo' / 'src' / 'live-runners.mjs'
+        ).read_text(encoding='utf-8')
+        recordings = json.loads(
+            (Path(__file__).resolve().parents[1] / 'assets' / 'demo-recordings.json')
+            .read_text(encoding='utf-8')
+        )
+        replay_output = '\n'.join(
+            item['event'].get('text', '')
+            for item in recordings['steps']['foundry']['3']
+            if item['event']['kind'] == 'output'
+        )
+        replay_raw = next(
+            item['event']['text']
+            for item in recordings['steps']['foundry']['3']
+            if item['event']['kind'] == 'raw'
+        )
+
+        for expected in (turn1, turn2):
+            self.assertIn(expected, runner_source)
+            self.assertIn(expected, H.STUDIO_JS)
+            self.assertIn(expected, replay_output)
+            self.assertIn(expected, replay_raw)
+        self.assertIn(
+            'Turn 1 asks for a five-line Rust MPMC design',
+            H.STUDIO_JS,
+        )
+        self.assertNotIn('Add a 3-bullet check', H.STUDIO_JS)
+        self.assertNotIn('head - tail == capacity', H.STUDIO_JS)
+
 
 if __name__ == '__main__':
     unittest.main()

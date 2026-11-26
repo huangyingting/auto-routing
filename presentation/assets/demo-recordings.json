@@ -361,7 +361,7 @@
           "delayMs": 15,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Same endpoint · model=\"auto\" · mode=\"balanced\" · session_affinity=\"adaptive\"\n[REQUEST] Design lock-free Rust MPMC ring buffer with Acquire/Release & ABA proofs (+ Turn 2 follow-up)\n"
+            "text": "[CONFIG] Same endpoint · model=\"auto\" · mode=\"balanced\" · session_affinity=\"adaptive\"\n[REQUEST 1] Design a lock-free MPMC ring buffer in Rust and state the exact Acquire/Release memory-ordering and ABA epoch-reclamation invariants in 5 concise lines.\n[REQUEST 2] Now add 1 sentence on how wrap-around index overflow is prevented.\n"
           }
         },
         {

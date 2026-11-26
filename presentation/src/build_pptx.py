@@ -722,7 +722,7 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
 footer(s,'',23)
-note(s,'第二个 Demo 有四个场景，业务代码始终调用同一个 /chat/completions 接口，只把 model 设为 auto。\n第一个场景验证参数兼容。请求里同时带了 developer 角色、temperature 和 JSON 输出要求。Foundry 会先排除不支持这些要求的模型，再把参数转换成目标模型能接受的格式，最后由 gpt-5.6-luna 返回正确 JSON。\n第二个场景只从发票里提取编号和币种。这个任务很简单，DeepSeek Flash 已经足够，选模耗时 27 毫秒，推理 Token 为 0，没必要调用成本更高的模型。\n第三个场景换成 Rust 无锁队列和内存序推导。任务变难后，系统自动升级到 gpt-6-luna；第二轮继续追问时仍沿用 Luna，不重新建立上下文。\n第四个场景把续约分析拆成两步：先用 grok fast 整理关键数字，再把两条摘要交给 terra 制定报价和谈判方案。四个场景一共六次真实请求，分别是 1、1、2、2 次。')
+note(s,'第二个 Demo 有四个场景，业务代码始终调用同一个 /chat/completions 接口，只把 model 设为 auto。\n第一个场景验证参数兼容。请求里同时带了 developer 角色、temperature 和 JSON 输出要求。Foundry 会先排除不支持这些要求的模型，再把参数转换成目标模型能接受的格式，最后由 gpt-5.6-luna 返回正确 JSON。\n第二个场景只从发票里提取编号和币种。这个任务很简单，DeepSeek Flash 已经足够，选模耗时 27 毫秒，推理 Token 为 0，没必要调用成本更高的模型。\n第三个场景有两轮请求。第一轮要求用 5 行设计 Rust 无锁 MPMC 环形队列，并准确说明 Acquire/Release 内存序和 ABA epoch 回收约束；任务变难后，系统自动升级到 gpt-6-luna。第二轮只追问一句“如何避免下标回绕溢出”，系统识别为同一段对话，继续沿用 Luna，不重新建立上下文。\n第四个场景把续约分析拆成两步：先用 grok fast 整理关键数字，再把两条摘要交给 terra 制定报价和谈判方案。四个场景一共六次真实请求，分别是 1、1、2、2 次。')
 
 # ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
 s=23

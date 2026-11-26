@@ -890,9 +890,9 @@ var SCENARIOS={
     baseName:'Pinned Frontier',baseNums:'~25× Token Cost',baseMeta:'Burns frontier reasoning tokens on simple JSON',
     agentName:'DeepSeek-V4.1-Flash',agentNums:'27 ms Router · 0 Reason',agentMeta:'Valid JSON · HTTP 200 OK',
     chips:[['Router: 27 ms ✓','on'],['JSON Valid ✓','on'],['0 Reason Tok ✓','on']],risk:0},
-   {short:'③ Escalate',boundary:'Difficulty Escalation + Affinity',title:'Same Endpoint Escalates Rust Proof & Retains Session',
+   {short:'③ Escalate',boundary:'Difficulty Escalation + Session Retention',title:'Two-Turn Rust Request: Escalate Once, Retain on Follow-Up',
     ctx:'Same endpoint · mode="balanced" · session_affinity="adaptive"',
-    prompt:'"Design lock-free MPMC ring buffer in Rust with Acquire/Release & ABA epoch invariants" (+ Turn 2)',
+    prompt:'Turn 1: 5 concise lines on MPMC + Acquire/Release + ABA invariants → Turn 2: 1 sentence on wrap-around overflow',
     scorer:'Foundry ML Ranker (30 ms) + Adaptive Fingerprint Session Affinity',
     bars:[],
     pattern:'AUTO ESCALATION + RETAIN AFFINITY',
@@ -902,8 +902,8 @@ var SCENARIOS={
      {role:'Turn 2 Affinity',name:'decision: "retain"',sub:'derived_fingerprint matched',state:'win'}
     ],
     outcome:'✓ Escalated Turn 1 to gpt-6-luna-2026-09-22 (30 ms router) and returned session_affinity="retain" on Turn 2!',
-    what:'Without changing endpoint or code, formal concurrency proofs trigger automatic escalation to gpt-6-luna, and Turn 2 retains the same model via derived_fingerprint.',
-    code:'Turn 1 → gpt-6-luna (30 ms)  |  Turn 2 → session_affinity: { decision: "retain" }',
+    what:'Turn 1 asks for a five-line Rust MPMC design with exact Acquire/Release and ABA invariants. Turn 2 asks one sentence about preventing wrap-around index overflow. The endpoint stays unchanged, and Turn 2 retains Luna.',
+    code:'Turn 1: Rust MPMC proof → gpt-6-luna (30 ms)  |  Turn 2: wrap-around follow-up → retain',
     baseName:'Pinned Cheap Flash',baseNums:'Missed ABA Invariant ✕',baseMeta:'Under-powered on formal memory-ordering proofs',
     agentName:'gpt-6-luna',agentNums:'30 ms · Affinity: retain',agentMeta:'2-turn live escalation + cache affinity',
     chips:[['Router: 30 ms ✓','on'],['Affinity: retain ✓','on'],['2-Turn Live ✓','on']],risk:1},
@@ -1276,12 +1276,12 @@ function renderVisualStage(){
     +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">'+escHtml(art.servedModel||'DeepSeek-V4.1-Flash')+'</span><span class="vs-mini-tag ok">Router: '+(art.routerMs||27)+' ms</span><span class="vs-mini-tag ok">reasoning_tokens: 0</span></div></div></div>'
     +'<div class="vs-annot accept"><div class="vs-annot-head"><span>1–2% BALANCED QUALITY BAND</span><span>~96% CHEAPER THAN FRONTIER</span></div><div class="vs-annot-body">Because Flash scores within 1–2% of the #1 frontier model on structured field extraction, Balanced mode picks Flash automatically without burning reasoning tokens.</div></div>';
   }else if(curStep===3){
-   h=stateBannerHtml(done,stepRunning,false,'Same /chat/completions endpoint now receives a 2-turn Rust lock-free concurrency proof','✓ Auto-escalated Turn 1 to '+(art.turn1Model||'gpt-6-luna-2026-09-22')+' & retained session on Turn 2!')
+   h=stateBannerHtml(done,stepRunning,false,'Two requests on the same endpoint: a five-line Rust MPMC proof, then a one-sentence wrap-around follow-up','✓ Turn 1 used '+(art.turn1Model||'gpt-6-luna-2026-09-22')+' and Turn 2 retained the same model!')
     +'<div class="vs-inbox">'
-    +'<div class="vs-msg-row escalate"><div><div class="vs-msg-txt"><strong>Turn 1:</strong> Design a lock-free MPMC ring buffer in Rust with Acquire/Release &amp; ABA epoch invariants.</div><div class="vs-msg-sub">Flash drops below 1–2% band → Router escalates in '+(art.routerMs||30)+' ms to '+escHtml(art.turn1Model||'gpt-6-luna-2026-09-22')+'</div></div><span class="vs-route-pill accent">ESCALATED · LUNA</span></div>'
-    +'<div class="vs-msg-row '+(done?'skip':'')+'"><div><div class="vs-msg-txt"><strong>Turn 2 Follow-up:</strong> Add a 3-bullet check for wrap-around index overflow when <code>head - tail == capacity</code>.</div><div class="vs-msg-sub">'+(done?'derived_fingerprint matched → session_affinity.decision = "'+(art.affinityDecision||'retain')+'" (KV cache preserved)':'Adaptive session_affinity hashes conversation prefix to avoid mid-thread model thrashing')+'</div></div><span class="vs-route-pill ok">AFFINITY: RETAIN ✓</span></div>'
+    +'<div class="vs-msg-row escalate"><div><div class="vs-msg-txt">Turn 1: Design a lock-free MPMC ring buffer in Rust and state the exact Acquire/Release memory-ordering and ABA epoch-reclamation invariants in 5 concise lines.</div><div class="vs-msg-sub">Flash drops below 1–2% band → Router escalates in '+(art.routerMs||30)+' ms to '+escHtml(art.turn1Model||'gpt-6-luna-2026-09-22')+'</div></div><span class="vs-route-pill accent">ESCALATED · LUNA</span></div>'
+    +'<div class="vs-msg-row '+(done?'skip':'')+'"><div><div class="vs-msg-txt"><strong>Turn 2 follow-up</strong><br>Now add 1 sentence on how wrap-around index overflow is prevented.</div><div class="vs-msg-sub">'+(done?'derived_fingerprint matched → session_affinity.decision = "'+(art.affinityDecision||'retain')+'" (KV cache preserved)':'Adaptive session_affinity hashes conversation prefix to avoid mid-thread model thrashing')+'</div></div><span class="vs-route-pill ok">AFFINITY: RETAIN ✓</span></div>'
     +'</div>'
-    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">TURN 2 VERIFIED INVARIANTS</span><div class="vs-mono-box">'+escHtml(done?(art.turn2Reply||'• Wrap-safe full check: wrapping_sub(head, tail) == capacity (power-of-two mask index)\\n• Sequence stamp: cell.seq == pos for enqueue, pos + 1 for dequeue (prevents ABA)\\n• Ordering: Load tail Relaxed/Acquire; publish slot via Release store on cell.seq'):'Click Run Step 3 to execute both live turns on Foundry Model Router...')+'</div></div>';
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">TURN 2 FOLLOW-UP RESPONSE</span><div class="vs-mono-box">'+escHtml(done?(art.turn2Reply||'The implementation prevents wrap-around ambiguity by using monotonically increasing sequence counters and comparing positions with wrapping arithmetic.'):'Click Run Step 3 to execute both live turns on Foundry Model Router...')+'</div></div>';
   }else{
    h=stateBannerHtml(done,stepRunning,false,'Enterprise Account Workflow on demo/fixtures/renewal-context.json (Northwind Logistics · $432K ARR)','✓ Stage 1 extracted facts via '+(art.job1Model||'grok-4-1-fast-reasoning')+' → Stage 2 synthesized 129.2% NRR strategy via '+(art.job2Model||'gpt-5.6-terra')+'!')
     +'<div class="vs-cols">'

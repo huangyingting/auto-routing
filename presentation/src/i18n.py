@@ -1651,6 +1651,31 @@ ZH_DEMO_TEXT_MAP.update({
     'Router Latency': '判断耗时',
 })
 
+ZH_DEMO_TEXT_MAP.update({
+    'Two-Turn Rust Request: Escalate Once, Retain on Follow-Up':
+        '两轮 Rust 请求：第一轮升级模型，第二轮继续沿用',
+    'Difficulty Escalation + Session Retention':
+        '任务变难时升级模型，连续追问保持会话',
+    'Turn 1: 5 concise lines on MPMC + Acquire/Release + ABA invariants → Turn 2: 1 sentence on wrap-around overflow':
+        '第 1 轮：用 5 行说明 MPMC、Acquire/Release 和 ABA 约束 → 第 2 轮：用 1 句话说明如何避免下标回绕溢出',
+    'Turn 1 asks for a five-line Rust MPMC design with exact Acquire/Release and ABA invariants. Turn 2 asks one sentence about preventing wrap-around index overflow. The endpoint stays unchanged, and Turn 2 retains Luna.':
+        '第一轮要求用 5 行说明 Rust MPMC 的 Acquire/Release 和 ABA 约束；第二轮只追问一句：如何避免下标回绕溢出。两次请求使用同一个接口，第二轮继续沿用 Luna。',
+    'Two requests on the same endpoint: a five-line Rust MPMC proof, then a one-sentence wrap-around follow-up':
+        '同一个接口连续发送两次请求：先用 5 行说明 Rust MPMC 约束，再用 1 句话回答下标回绕问题',
+    '✓ Turn 1 used ': '✓ 第 1 轮使用 ',
+    ' and Turn 2 retained the same model!': '，第 2 轮继续沿用同一模型',
+    'Turn 1: Design a lock-free MPMC ring buffer in Rust and state the exact Acquire/Release memory-ordering and ABA epoch-reclamation invariants in 5 concise lines.':
+        '第 1 轮：请用 5 行设计一个 Rust 无锁 MPMC 环形队列，并准确说明 Acquire/Release 内存序和 ABA epoch 回收约束。',
+    'Turn 2 follow-up: Add 1 sentence explaining how wrap-around index overflow is prevented.':
+        '第 2 轮追问：再用 1 句话说明如何避免下标回绕溢出。',
+    'Turn 2 follow-up': '第 2 轮追问',
+    'Now add 1 sentence on how wrap-around index overflow is prevented.':
+        '再用 1 句话说明如何避免下标回绕溢出。',
+    'TURN 2 FOLLOW-UP RESPONSE': '第 2 轮追问的返回结果',
+    'The implementation prevents wrap-around ambiguity by using monotonically increasing sequence counters and comparing positions with wrapping arithmetic.':
+        '实现使用单调递增的序列号，并通过回绕算术比较位置，从而避免下标回绕造成歧义。',
+})
+
 # These short words also occur inside JavaScript identifiers such as
 # EventSource, liveSource, and the Error constructor. Translate only the
 # visible string/HTML forms so localization cannot break live execution.
@@ -1773,11 +1798,11 @@ ZH_TEXT_MAP.update({
     'Balanced mode avoids paying for a larger model when Flash is already good enough.':
         'Flash 已经足够完成字段提取，Balanced 不会再为更大的模型付费。',
     'Step 3 · Hard Rust task escalates and retains':
-        '步骤 3 · Rust 任务变难后自动升级，追问继续沿用',
+        '场景 3 · 两轮 Rust 请求：先升级模型，再保持会话',
     'Rust → gpt-6-luna · 30 ms · Turn 2 retain':
         'Rust 推导 → gpt-6-luna · 30 ms · 第 2 轮 retain',
     'The same endpoint upgrades for harder reasoning and keeps Luna for the follow-up.':
-        '同一个接口在任务变难时升级到 Luna，第二轮追问继续使用原模型。',
+        '第一轮要求用 5 行说明内存序和 ABA；第二轮只追问如何避免下标回绕，仍沿用 Luna。',
 
     'Step 1 · Five repeats, zero probability drift':
         '步骤 1 · 同一输入连续调用 5 次，结果没有波动',

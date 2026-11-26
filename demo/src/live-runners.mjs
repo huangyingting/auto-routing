@@ -1116,18 +1116,21 @@ export async function runFoundryStepLive(step, emit) {
   }
 
   if (step === 3) {
+    const turn1Prompt =
+      "Design a lock-free MPMC ring buffer in Rust and state the exact Acquire/Release memory-ordering and ABA epoch-reclamation invariants in 5 concise lines.";
+    const turn2Prompt = "Now add 1 sentence on how wrap-around index overflow is prevented.";
     const msgs = [
       {
         role: "user",
-        content:
-          "Design a lock-free MPMC ring buffer in Rust and state the exact Acquire/Release memory-ordering and ABA epoch-reclamation invariants in 5 concise lines.",
+        content: turn1Prompt,
       },
     ];
     emit({
       kind: "output",
       text:
         `[CONFIG] Same endpoint · model="auto" · mode="balanced" · session_affinity="adaptive"\n` +
-        `[REQUEST] Design lock-free Rust MPMC ring buffer with Acquire/Release & ABA proofs (+ Turn 2 follow-up)\n`,
+        `[REQUEST 1] ${turn1Prompt}\n` +
+        `[REQUEST 2] ${turn2Prompt}\n`,
     });
     const turn1 = await callFoundryRouter({
       messages: msgs,
@@ -1140,7 +1143,7 @@ export async function runFoundryStepLive(step, emit) {
       messages: [
         ...msgs,
         { role: "assistant", content: reply1 },
-        { role: "user", content: "Now add 1 sentence on how wrap-around index overflow is prevented." },
+        { role: "user", content: turn2Prompt },
       ],
       mode: "balanced",
       sessionAffinity: { strategy: "adaptive" },
@@ -1170,6 +1173,8 @@ export async function runFoundryStepLive(step, emit) {
       turn2Model: turn2.json.model,
       routerMs: rMs,
       affinityDecision,
+      turn1Prompt,
+      turn2Prompt,
       turn2Reply: turn2.json.choices?.[0]?.message?.content?.trim() || "",
     });
     emit({
