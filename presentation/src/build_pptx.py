@@ -26,6 +26,7 @@ W,H=12192000,6858000; M=457200; CW=W-2*M
 BG='F3EEE4'; CARD='E9E2D4'; CARD2='FAF7F1'; EDGE='C9C0AE'; INK='2B2B2B'; MUTED='57534C'; FOOT='6E685F'
 CY='3F607E'; AMB='A84A35'; CODEBG='FAF7F1'; CODE='2F4B66'
 HF='Segoe UI Variable Display'; BF='Calibri'; MF='Consolas'
+DEMO_CALL_COUNTS = {'fusion': 5, 'foundry': 6, 'decision': 12}
 
 REFS_LEFT = [
     ('Charles Lamanna — Auto in Copilot (>90% queries)', 'https://www.linkedin.com/posts/charleslamanna_there-isnt-one-model-thats-the-best-at-ugcPost-7521988229508628480-GPoC/'),
@@ -661,13 +662,13 @@ d1_code=(
 tb(s,M+220000,cy0+480000,cx_-440000,d1_code,size=11.1,color=CODE,font=MF,cy=2600000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:fusion:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'Auto → Single → Native Cascade → Native Critique → 99% Cache','sizePt':10.6,'color':CY},
+    {'text':f'5 steps · {DEMO_CALL_COUNTS["fusion"]} real Copilot CLI calls','sizePt':10.6,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d1_cards=[
-    ('✓  Auto & Fusion Single fast path','categoryScores ≤ 0.10 & pattern="single"','Even on Fusion High, simple lookups & routine patches run 1 solver with zero review calls (3/3 node --test).',CY),
-    ('↗  1-command native Cascade','gpt-6.1-sol → gpt-6-luna Judge → Opus skipped','One CLI call fixes ABBA lock order; native Judge scores 5/5 (accept) & skips conditional Opus 5.5 repair.',CY),
-    ('⇄  1-command Critique + 99% Cache','Opus draft → Luna Critic → Opus revise','Native Critic flags Active-Active zero-RPO gap for Opus to revise; --resume hits 99% cacheReadTokens.',AMB),
+    ('Steps 1–2 · Easy work stays single-model','Auto: Luna 0.055 AIU · Fusion Single: Terra, 3/3 tests','Two separate one-command runs prove both Auto and Fusion High avoid extra review when one model is enough.',CY),
+    ('Step 3 · Fix, then verify independently','gpt-6.1-sol fix → gpt-6-luna check → Opus skipped','One command fixes ABBA lock order, Judge accepts 5/5, and all 500 stress runs pass.',CY),
+    ('Steps 4–5 · Review architecture, then reuse cache','Opus draft → Luna finds RPO gap → Opus revises · 99% cache','Critique catches missing cross-region durability; the resumed follow-up reads 5,655 / 5,733 tokens from cache.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d1_cards):
     yy=1540000+idx*1520000
@@ -677,7 +678,7 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
 footer(s,'',22)
-note(s,'下面进入第一组演示。它调用本机 GitHub Copilot CLI，一共五步；每一步只发起一条 copilot 命令，模型选择和多模型协作都由服务端完成。\n第一步让 Auto 读取配置文件里的默认端口。这个任务很简单，四项能力需求分都低于 0.1，因此系统直接选择 GPT-6 Luna，一次返回 8787，同时建立当前会话的缓存，消耗 0.055 AIU。\n第二到第四步的命令参数完全相同，都是 Fusion High；我们只改变任务本身。第二步修复字符串首尾空白，系统判断一个模型就够了，所以使用 Single，由 Terra 一次改完并通过 3 项单元测试，没有额外评审。第三步处理两把锁顺序相反造成的死锁，系统改用 Cascade：Sol 先修正加锁顺序，Luna 再检查代码并给出 5 分通过；既然评审通过，就不再调用 Opus 重做，最后 500 次并发测试全部通过。第四步要求设计五万并发的多区域支付网关，系统改用 Critique：Opus 先写初稿，Luna 指出“防止重复写入”并不能保证跨区域数据零丢失，Opus 再补上三区域同步多数派提交方案。\n第五步通过 --resume 在第一步的会话里继续生成监控指标。模型仍是 Luna，5,655 个输入 Token 直接从缓存读取，缓存命中率 99%，本轮只消耗 0.024 AIU。演示时可以随时切到“原始日志”，核对完整 JSONL 和 usage.json。')
+note(s,'下面进入第一组演示。它调用本机 GitHub Copilot CLI，一共五个步骤、五次真实 CLI 调用；每一步只发起一条 copilot 命令，模型选择和多模型协作都由服务端完成。\n第一步让 Auto 读取配置文件里的默认端口。这个任务很简单，四项能力需求分都低于 0.1，因此系统直接选择 GPT-6 Luna，一次返回 8787，同时建立当前会话的缓存，消耗 0.055 AIU。第二步仍然是一条命令，只是改用 Fusion High 修复字符串首尾空白；系统判断一个模型就够了，所以选择 Single，由 Terra 一次改完并通过 3 项单元测试，没有额外评审。\n第三步处理两把锁顺序相反造成的死锁。Sol 先修正加锁顺序，Luna 再检查代码并给出 5 分通过；既然评审通过，就不再调用 Opus 重做，最后 500 次并发测试全部通过。第四步要求设计五万并发的多区域支付网关。Opus 先写初稿，Luna 指出“防止重复写入”并不能保证跨区域数据零丢失，Opus 再补上三区域同步多数派提交方案。\n第五步通过 --resume 在第一步的会话里继续生成监控指标。模型仍是 Luna，5,655 个输入 Token 直接从缓存读取，缓存命中率 99%，本轮只消耗 0.024 AIU。演示时可以随时切到“原始日志”，核对当前步骤的完整 JSONL 和 usage.json。')
 
 # ---------- 22 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
 s=22
@@ -702,13 +703,13 @@ d2_code=(
 tb(s,M+220000,cy0+480000,cx_-440000,d2_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:foundry:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'4 live Foundry V1Preview cloud traces (0 local mocks)','sizePt':11,'color':CY},
+    {'text':f'4 steps · {DEMO_CALL_COUNTS["foundry"]} live Foundry requests (0 local mocks)','sizePt':11,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d2_cards=[
-    ('✓  Pre-rank gate & param normalization','developer role + json_object → gpt-5.6-luna','One V1Preview endpoint normalizes cross-provider params and serves valid JSON in 30 ms router overhead.',CY),
-    ('⚡  27–30 ms ML routing & retain affinity','DeepSeek-V4.1-Flash (JSON) vs. gpt-6-luna (Rust)','Routes simple JSON to Flash (0 reason tok) and escalates Rust proofs to Luna with retain affinity on Turn 2.',CY),
-    ('⇄  Two-stage cost → quality routing','grok-4-1-fast (cost) → gpt-5.6-terra (quality)','Splits renewal analysis into two live calls: cheap extraction in cost mode followed by strategy in quality mode.',CY),
+    ('Step 1 · One request format across providers','developer + json_object → gpt-5.6-luna · 30 ms','Foundry removes incompatible candidates and adapts parameters before returning valid JSON.',CY),
+    ('Steps 2–3 · Easy stays cheap; hard escalates','Invoice → DeepSeek Flash (27 ms, 0 reason) · Rust → Luna (30 ms, retain)','The endpoint and code stay unchanged; Turn 2 keeps Luna so the context does not need rebuilding.',CY),
+    ('Step 4 · Split extraction from strategy','grok fast (cost) → 2 bullets → terra (quality)','First organize the raw data cheaply, then use the stronger model only for renewal strategy.',CY),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d2_cards):
     yy=1540000+idx*1520000
@@ -718,7 +719,7 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':desc,'sizePt':12.6,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
 footer(s,'',23)
-note(s,'第二组演示使用 Foundry Model Router。四个步骤都调用同一个 /chat/completions 接口，model 始终设为 auto；业务代码不改，只看请求内容变化后，云端会选择什么模型。\n第一步把 developer 角色、temperature 和 JSON 输出格式放在同一个请求里。自己对接多家模型时，这些参数经常因为支持方式不同而报 400；Foundry 会先排除不兼容的模型，再做参数转换，30 毫秒完成路由，最终由 gpt-5.6-luna 返回正确 JSON。\n第二步从发票文本中提取编号和币种。任务很简单，Balanced 模式在 27 毫秒内选择 DeepSeek-V4.1-Flash，推理 Token 为 0。第三步接口和配置都不变，只把任务换成 Rust 无锁队列和内存序推导；轻量模型不再满足要求，系统在 30 毫秒内升级到 gpt-6-luna。紧接着第二轮追问下标回绕问题时，系统识别出这是同一段对话，返回 retain，继续使用原模型和原有缓存。\n第四步把续约分析拆成两个明确阶段：先用 cost 模式，让 grok-4-1-fast 从原始材料里整理关键数字；再把精简后的结果交给 quality 模式，由 gpt-5.6-terra 制定续约报价和谈判方案。这样高价模型只处理真正需要深度分析的部分。切到“原始日志”可以核对每次请求的 routing_trace。')
+note(s,'第二组演示使用 Foundry Model Router。它有四个步骤、共六次真实云端请求，全部调用同一个 /chat/completions 接口，model 始终设为 auto；业务代码不改，只看请求内容变化后，云端会选择什么模型。\n第一步只有一次请求：把 developer 角色、temperature 和 JSON 输出格式放在一起。Foundry 先排除不兼容的模型，再做参数转换，30 毫秒完成选择，最终由 gpt-5.6-luna 返回正确 JSON。第二步也是一次请求：从发票文本中提取编号和币种，Balanced 模式在 27 毫秒内选择 DeepSeek-V4.1-Flash，推理 Token 为 0。\n第三步包含两次请求：第一轮把任务换成 Rust 无锁队列和内存序推导，系统在 30 毫秒内升级到 gpt-6-luna；第二轮追问下标回绕问题时，系统识别出这是同一段对话，返回 retain，继续使用原模型和原有缓存。第四步再包含两次请求：先用 cost 模式让 grok-4-1-fast 整理关键数字，再把精简结果交给 quality 模式，由 gpt-5.6-terra 制定续约报价和谈判方案。这样合计正好六次云端请求。切到“原始日志”可以核对当前步骤的 routing_trace。')
 
 # ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
 s=23
@@ -744,13 +745,13 @@ d3_code=(
 tb(s,M+220000,cy0+490000,cx_-440000,d3_code,size=11.5,color=CODE,font=MF,cy=2640000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:decision:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
-    {'text':'5 live /v1/systemone traces + custom prompt tester','sizePt':11,'color':CY},
+    {'text':f'5 steps · {DEMO_CALL_COUNTS["decision"]} live /v1/systemone requests + custom probe','sizePt':11,'color':CY},
 ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=90000,font=MF)
 rx=M+cx_+320000; rw=W-M-rx
 d3_cards=[
-    ('✓  Zero-spread routing (choice & noul)','5/5 identical 0.9835 · 4/4 inbox p=1.00','5 consecutive live calls return 0.00 pt spread; 3 of 4 routine inbox messages skip the frontier LLM.',CY),
-    ('!  3-in-1 safety triage (choice+score+noul)','safety_support (0.998) + score 1.97 + repeat 1.00','One 348 ms call classifies injury risk, scores urgency & flags 3rd repeat contact — blocking bot reply.',AMB),
-    ('✕  Outbound guardrail & missing-doc abstain','Rival promo noul=0.970 & missing Exhibit B p=0.9999','Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.',AMB),
+    ('Steps 1–2 · Stable scores and inbox routing','5× 0.9835 · 4 messages routed · 3 skip frontier','Nine calls prove repeatability and filter routine messages before the generative LLM.',CY),
+    ('Step 3 · One call returns team, urgency, and repeat','safety_support 0.998 · score 1.97 · repeat 0.998','The bot stops immediately and a human safety specialist is notified.',AMB),
+    ('Steps 4–5 · Hold unsafe draft; ask for missing file','competitor 0.970 · request_missing_exhibit 0.99994','Two more calls block the rival draft and prevent a made-up contract comparison.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d3_cards):
     yy=1540000+idx*1520000
@@ -760,7 +761,7 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':desc,'sizePt':12.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=200000,pad_y=95000)
 footer(s,'',24)
-note(s,'第三组演示调用 /v1/systemone，重点不是生成回答，而是让业务代码快速做出可解释的判断。\n第一步把同一条购买咨询连续提交 5 次。五次 noul 结果都是 0.9835，没有波动，中位耗时约 354 毫秒，而且不收输出 Token 费用。\n第二步先给客服收件箱分流。我们准备了四条消息：“谢谢”、“退订 STOP”、“促销规则咨询”和“跨产品质保对比”。系统分别选择无需回复、业务代码、小模型和大模型；前三条都不用调用高成本大模型。\n第三步处理一条受伤投诉。客户说床架坍塌伤到家人，而且已经第三次联系。一次请求同时返回负责团队、紧急程度和是否重复投诉：团队为 safety_support，紧急程度 1.97，重复投诉概率接近 1。业务代码立即停用自动回复并通知人工专员。\n第四步检查待发送草稿。草稿中出现“Fabrikam 有类似沙发，只要 749 美元”，提及竞品的概率为 0.970，超过 0.50 阈值，因此在发送前暂停并转人工审核。\n第五步检查资料是否齐全。用户要求对比合同 A 和附件 B，但当前只上传了合同 A。系统以 0.9999 的概率选择“请用户补充附件”，没有把不完整的材料交给大模型猜测。底部输入框还可以现场输入任意句子；“原始日志”里可以核对完整请求和返回 JSON。')
+note(s,'第三组演示调用 /v1/systemone，共五个步骤、十二次真实 HTTP 请求，重点不是生成回答，而是让业务代码快速做出可解释的判断。\n第一步连续发出五次请求，把同一条购买咨询提交五遍。五次 noul 结果都是 0.9835，没有波动，中位耗时约 354 毫秒。第二步再发出四次请求，分别处理“谢谢”、“退订 STOP”、“促销规则咨询”和“跨产品质保对比”；四条消息都正确分流，其中前三条不用调用高成本大模型。前两步合计九次请求。\n第三步用一次请求处理受伤投诉，同时返回负责团队、紧急程度和是否重复投诉：团队为 safety_support，紧急程度 1.97，重复投诉概率接近 1。第四步再用一次请求检查待发送草稿，发现推荐竞品的概率为 0.970，因此在发送前暂停并转人工审核。第五步最后用一次请求检查资料是否齐全；由于附件 B 没上传，系统以 0.9999 的概率选择“请用户补充附件”。九加一加一加一，合计十二次真实调用。底部输入框还可以现场测试任意句子；“原始日志”里可以核对当前操作的完整请求和返回 JSON。')
 
 # ---------- 24 CLOSER: KEY TAKEAWAYS
 s=24

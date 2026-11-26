@@ -796,6 +796,8 @@ ZH_DEMO_TEXT_MAP = {
 # 中文版按演讲语境重新表达，不照搬英文句式。产品名、模型名、API、
 # 参数名和代码字段保留英文，便于现场与日志逐项对应。
 ZH_TEXT_MAP.update({
+    '5 steps · 5 real Copilot CLI calls':
+        '5 个步骤 · 5 次真实 Copilot CLI 调用（每步一条命令）',
     'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.':
         '根据每项任务的难度和特点自动选择模型，在效果、成本和响应速度之间取得平衡——从 Microsoft Copilot、Foundry 到 Microsoft-Decision-1.1。',
     'AGENDA': '内容安排',
@@ -1636,4 +1638,65 @@ ZH_TEXT_MAP.update({
         '约 20 ms 在可用模型中完成选择；简单任务优先低成本模型，多轮追问尽量沿用原模型，遇到限流自动切换。',
     'Purpose-built decision API that classifies, scores priority, and runs yes/no safety gates in ~123 ms at $0.042/1M.':
         '直接为业务代码返回分类、优先级和是非概率，典型耗时约 123 ms，每百万输入 Token 费用为 $0.042。',
+})
+
+ZH_TEXT_MAP.update({
+    'Steps 1–2 · Easy work stays single-model': '步骤 1–2 · 简单任务都只用一个模型',
+    'Auto: Luna 0.055 AIU · Fusion Single: Terra, 3/3 tests':
+        'Auto：Luna 0.055 AIU · Fusion Single：Terra，3/3 测试通过',
+    'Two separate one-command runs prove both Auto and Fusion High avoid extra review when one model is enough.':
+        '前两步各运行一条命令：Auto 负责读取配置，Fusion High 负责常规修改；一个模型足够时都不会增加额外检查。',
+    'Step 3 · Fix, then verify independently': '步骤 3 · 先修复并发死锁，再换一个模型检查',
+    'gpt-6.1-sol fix → gpt-6-luna check → Opus skipped':
+        'gpt-6.1-sol 修复 → gpt-6-luna 检查 → 无需调用 Opus 重做',
+    'One command fixes ABBA lock order, Judge accepts 5/5, and all 500 stress runs pass.':
+        '一条命令修正加锁顺序，独立检查结果为 5/5 通过，随后 500 次并发测试全部通过。',
+    'Steps 4–5 · Review architecture, then reuse cache':
+        '步骤 4–5 · 架构方案先审后改，连续追问继续复用缓存',
+    'Opus draft → Luna finds RPO gap → Opus revises · 99% cache':
+        'Opus 写初稿 → Luna 找出 RPO 漏洞 → Opus 修订 · 99% 缓存命中',
+    'Critique catches missing cross-region durability; the resumed follow-up reads 5,655 / 5,733 tokens from cache.':
+        '第 4 步发现跨区域持久化前提不足；第 5 步通过 --resume 继续追问，5,655 / 5,733 个 Token 直接从缓存读取。',
+
+    '4 steps · 6 live Foundry requests (0 local mocks)':
+        '4 个步骤 · 6 次真实 Foundry 云端请求（无本地模拟）',
+    'Step 1 · One request format across providers':
+        '步骤 1 · 一套请求参数，Foundry 自动处理模型差异',
+    'developer + json_object → gpt-5.6-luna · 30 ms':
+        'developer + json_object → gpt-5.6-luna · 30 ms',
+    'Foundry removes incompatible candidates and adapts parameters before returning valid JSON.':
+        'Foundry 先排除不兼容的模型，再把参数转换成目标模型支持的格式，最后返回正确 JSON。',
+    'Steps 2–3 · Easy stays cheap; hard escalates':
+        '步骤 2–3 · 简单任务用轻量模型，难题自动升级',
+    'Invoice → DeepSeek Flash (27 ms, 0 reason) · Rust → Luna (30 ms, retain)':
+        '发票提取 → DeepSeek Flash（27 ms，0 推理 Token）· Rust 推导 → Luna（30 ms，第二轮沿用）',
+    'The endpoint and code stay unchanged; Turn 2 keeps Luna so the context does not need rebuilding.':
+        '接口和业务代码都不变；Rust 任务变难后自动升级到 Luna，第二轮继续沿用，不必重建上下文。',
+    'Step 4 · Split extraction from strategy':
+        '步骤 4 · 把整理数据和制定方案拆成两次请求',
+    'grok fast (cost) → 2 bullets → terra (quality)':
+        'grok fast（cost）→ 两条摘要 → terra（quality）',
+    'First organize the raw data cheaply, then use the stronger model only for renewal strategy.':
+        '先用低成本模型整理原始材料，再只让更强模型处理续约策略。',
+
+    '5 steps · 12 live /v1/systemone requests + custom probe':
+        '5 个步骤 · 12 次真实 /v1/systemone 请求 + 自定义输入',
+    'Steps 1–2 · Stable scores and inbox routing':
+        '步骤 1–2 · 同一输入结果稳定，4 条消息先分流',
+    '5× 0.9835 · 4 messages routed · 3 skip frontier':
+        '连续 5 次都是 0.9835 · 4 条消息全部分流 · 3 条不用大模型',
+    'Nine calls prove repeatability and filter routine messages before the generative LLM.':
+        '前两步一共 9 次请求：5 次验证结果不波动，4 次把常规消息挡在大模型前面。',
+    'Step 3 · One call returns team, urgency, and repeat':
+        '步骤 3 · 一次请求同时返回负责团队、紧急程度和重复投诉',
+    'safety_support 0.998 · score 1.97 · repeat 0.998':
+        'safety_support 0.998 · 紧急程度 1.97 · 重复投诉 0.998',
+    'The bot stops immediately and a human safety specialist is notified.':
+        '业务代码立即停用自动回复，并通知人工安全专员。',
+    'Steps 4–5 · Hold unsafe draft; ask for missing file':
+        '步骤 4–5 · 拦下不当草稿，缺少附件时先询问',
+    'competitor 0.970 · request_missing_exhibit 0.99994':
+        '提及竞品 0.970 · 请求补充附件 0.99994',
+    'Two more calls block the rival draft and prevent a made-up contract comparison.':
+        '最后两次请求分别拦下推荐竞品的草稿，并在附件 B 缺失时停止对比，避免模型猜测。',
 })

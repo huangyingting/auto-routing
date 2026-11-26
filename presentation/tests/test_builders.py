@@ -272,6 +272,37 @@ class BuilderTests(unittest.TestCase):
         self.assertEqual(decision_step_1_raw.count('# --- Run #'), 5)
         self.assertEqual(decision_step_1_raw.count('# HTTP 200 Response JSON'), 5)
 
+        raw_by_demo = {}
+        for demo in ('fusion', 'foundry', 'decision'):
+            raw_by_demo[demo] = [
+                item['event']['text']
+                for step_items in rec['steps'][demo].values()
+                for item in step_items
+                if item['event']['kind'] == 'raw'
+            ]
+        self.assertEqual(len(raw_by_demo['fusion']), D.DEMO_CALL_COUNTS['fusion'])
+        self.assertTrue(all('Single native' in text for text in raw_by_demo['fusion']))
+        self.assertEqual(
+            '\n'.join(raw_by_demo['foundry']).count('# HTTP 200 Response JSON'),
+            D.DEMO_CALL_COUNTS['foundry'],
+        )
+        self.assertEqual(
+            '\n'.join(raw_by_demo['decision']).count('# HTTP 200 Response JSON'),
+            D.DEMO_CALL_COUNTS['decision'],
+        )
+
+        def visible_text(slide_ops):
+            return '\n'.join(
+                op.get('text', '') or '\n'.join(p.get('text', '') for p in op.get('paragraphs', []))
+                for op in slide_ops
+                if op.get('op') in {'add_text_box', 'add_shape'}
+            )
+
+        zh_slides = D.get_localized_slides('zh')
+        self.assertIn('5 个步骤 · 5 次真实 Copilot CLI 调用', visible_text(zh_slides[21]))
+        self.assertIn('4 个步骤 · 6 次真实 Foundry 云端请求', visible_text(zh_slides[22]))
+        self.assertIn('5 个步骤 · 12 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
+
     @unittest.skipUnless(shutil.which('node'), 'node is required to syntax-check embedded JS')
     def test_embedded_javascript_has_valid_syntax(self):
         with tempfile.TemporaryDirectory() as directory:
