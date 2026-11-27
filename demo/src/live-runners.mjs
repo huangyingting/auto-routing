@@ -1534,38 +1534,40 @@ export async function runDecisionStepLive(step, emit) {
   }
 
   if (step === 5) {
-    const imageName = "m365-cowork-ui.png";
+    const imageName = "cargo-damage.jpg";
     const imageBytes = await readFile(path.join(presentationImagesDir, imageName));
-    const state = `Microsoft Copilot Cowork interface screenshot: image:${imageName}`;
+    const state = `Cargo inside a shipping container after transport: image:${imageName}`;
     const assets = {
       [imageName]: {
         type: "image",
-        format: "png",
+        format: "jpeg",
         data_base64: imageBytes.toString("base64"),
       },
     };
     const questions = {
-      auto_selector_visible: {
+      cargo_damage_visible: {
         type: "noul",
-        instructions: "Does the screenshot visibly show Auto as a model selection option?",
+        instructions: "Does the photo show cargo damage or serious unsafe displacement during transport?",
       },
     };
     const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions, assets });
     const probability = Number(
-      json.answers?.auto_selector_visible?.noul ??
-      json.auto_selector_visible?.noul ??
+      json.answers?.cargo_damage_visible?.noul ??
+      json.cargo_damage_visible?.noul ??
       0,
     );
     const detected = probability >= 0.5;
+    const inputTokens = Number(json.usage?.input_tokens ?? 0);
+    const outputTokens = Number(json.usage?.output_tokens ?? 0);
     emit({
       kind: "output",
       text:
-        `[CONFIG] Multimodal Decision-1.1 check · assets.${imageName} = { type: "image", format: "png", data_base64: ... }\n` +
-        `[REQUEST] Does the screenshot visibly show Auto as a model selection option?\n` +
-        `  image bytes=${imageBytes.length} · auto_selector_visible.noul=${probability.toFixed(3)}\n` +
-        `${detected ? "✓ PASS" : "✕ NOT DETECTED"} — Screenshot evaluated in ${wallMs} ms\n` +
-        `Why: Decision-1.1 can apply the same typed noul gate to UI screenshots without OCR or a generative response.\n` +
-        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.auto_selector_visible.noul)  |  Scenario: Image input\n`,
+        `[CONFIG] Multimodal Decision-1.1 check · assets.${imageName} = { type: "image", format: "jpeg", data_base64: ... }\n` +
+        `[REQUEST] Does the photo show cargo damage or serious unsafe displacement during transport?\n` +
+        `  image bytes=${imageBytes.length} · cargo_damage_visible.noul=${probability.toFixed(3)}\n` +
+        `${detected ? "✓ DAMAGE DETECTED" : "✕ NO DAMAGE DETECTED"} — Cargo photo evaluated in ${wallMs} ms\n` +
+        `Why: A claims workflow can route visibly damaged cargo for human inspection using one typed image probability.\n` +
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.cargo_damage_visible.noul)  |  Scenario: Cargo damage image\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n${rawTrace}` });
     emit({
@@ -1578,16 +1580,18 @@ export async function runDecisionStepLive(step, emit) {
       detected,
       wallMs,
       wallSec: wallMs / 1000,
-      credits: 305 * 0.042 / 1_000_000,
+      inputTokens,
+      outputTokens,
+      credits: inputTokens * 0.042 / 1_000_000,
     });
     emit({
       kind: "route",
-      model: `image noul = ${probability.toFixed(3)}`,
-      meta: `${wallMs} ms multimodal gate`,
-      chip1: "Image: PNG ✓",
+      model: `cargo damage = ${probability.toFixed(3)}`,
+      meta: `${wallMs} ms image gate`,
+      chip1: "Image: JPEG ✓",
       chip1Tone: "on",
-      chip2: `Auto: ${probability.toFixed(3)} ✓`,
-      chip2Tone: detected ? "on" : "denied",
+      chip2: `Damage: ${probability.toFixed(3)} ${detected ? "✕" : "✓"}`,
+      chip2Tone: detected ? "denied" : "on",
       chip3: "Base64 Sent ✓",
       chip3Tone: "on",
     });

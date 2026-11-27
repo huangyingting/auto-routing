@@ -50,7 +50,7 @@ npm --prefix demo run demo:decision:live
 2. **受伤投诉转人工（`choice` + `score` + `noul`，1 次调用）**：一次返回负责团队、紧急程度与重复投诉判断。
 3. **发送前拦截竞品草稿（`noul`，1 次调用）**：检测推荐竞品 Fabrikam 的回复并在发送前转人工。
 4. **缺失附件时先询问（`choice`，1 次调用）**：只有 `Contract A`、缺少 `Exhibit B` 时，停止比较并提示用户补充材料。
-5. **界面截图判断（图片 + `noul`，1 次调用）**：把真实 Copilot Cowork PNG 截图以 Base64 放入 `assets`，在 `state` 中通过 `image:m365-cowork-ui.png` 引用，并判断截图里是否显示 Auto 模型选项。
+5. **货物破损判断（图片 + `noul`，1 次调用）**：把真实货损 JPEG 以 Base64 放入 `assets`，在 `state` 中通过 `image:cargo-damage.jpg` 引用，判断运输中的货物是否破损或发生严重位移，并在概率超过阈值时转人工验货。
 
 ## 命令行单步与自定义句子实时探测
 

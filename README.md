@@ -20,7 +20,7 @@
 2. **成本压缩与缓存边界（Slides 5–6）**：引用 GenisisIQ 28 模型 × 8 多模态任务基准（前 14 名质量仅差 4.2 分，算力却相差 **163×**），证明常规工作无需动用昂贵旗舰，同时阐述 **10×–20×** 前缀缓存自然边界铁律。
 3. **自动路由在微软产品中的实现（Slides 7–13）**：以官方截图为例，分析 **Microsoft Copilot Home**、**Copilot Cowork Auto**、**GitHub Copilot Fusion**（`Single` / `Cascade` / `Critique` 三种执行拓扑）与 **Microsoft Foundry Model Router** 的路由机制（非 LLM 毫秒级专用 ML 排序器、1–2% / 5–6% 质量带与子集重校准、`Adaptive` 消息指纹缓存亲和、排序前资格过滤 + 跨厂商参数自动适配，以及 `PTU（$0 模型费） → PAYG → 托管 → 子集内第 2 顺位模型` 两级容量与故障转移）。
 4. **底层架构：常见方法与 HyDRA（Slides 14–15）**：对比规则/向量路由、二分类偏好路由（如 RouteLLM 绑死模型 ID 的重训痛点）、级联 FrugalGPT 与生成式 LLM 路由；详解 GitHub **HyDRA（`arXiv:2605.17106`）** 4 头 `ModernBERT` 能力需求预测（86 ms CPU）+ 零重训配置短板匹配（等质量省费 **54.1%**）。
-5. **Microsoft-Decision-1.1 与交互式 Demo（Slides 16–24）**：介绍基于 Gemma 4 26B-A4B MoE 与定制推理引擎的 **Microsoft-Decision-1.1**（`$0.042/1M` 输入、输出免费，支持文本/JSON/图片），先讲清 `/providers/microsoft/v1/systemone` 的 `choice`、`noul`、`score` 三大原语与四个生产模式，再用 102 项盲测第一的评测结果说明效果；Demo 3 还会把真实 PNG 截图通过 `assets` 传入并执行图片 `noul` 判断。
+5. **Microsoft-Decision-1.1 与交互式 Demo（Slides 16–24）**：介绍基于 Gemma 4 26B-A4B MoE 与定制推理引擎的 **Microsoft-Decision-1.1**（`$0.042/1M` 输入、输出免费，支持文本/JSON/图片），先讲清 `/providers/microsoft/v1/systemone` 的 `choice`、`noul`、`score` 三大原语与四个生产模式，再用 102 项盲测第一的评测结果说明效果；Demo 3 还会把真实货损 JPEG 通过 `assets` 传入并执行图片 `noul` 判断。
 
 ## 快速开始
 
@@ -55,7 +55,7 @@ npm --prefix demo run demo:replay
 - **GitHub Pages 公开版双语 HTML**：`docs/index.html`（英文 `/`）与 `docs/zh/index.html`（中文 `/zh/`，左下角 `EN | 中文` 切换；保留右上角 Demo 入口按钮与录制回放工作台，不含底部 `Notes`、`Studio` 栏、讲者备注及 `N`/`D` 快捷键）
 - **网页集成可视化 Auto-Routing Studio**：
   - **操作与备注快捷键**：方向键 / PageUp / PageDown / 空格翻页，Shift+Space 返回，Home/End 跳至首页/末页；`F` 全屏；本地运行 `dist/html/index.html` 时，`N` 或底部 `Notes` 按钮展开/收起中文讲者备注浮层，`Esc` 关闭，`D` 打开可视化路由决策台；`Ctrl+P` 导出 PDF。
-  - **GitHub Pages / 静态离线回放**：打开在线 Pages 或本地 `dist/html/index.html`，在第 11、13、19 页对应产品处或第 20–22 页点击右上角按钮（本地版还可在任意页按 `D`），即可在可视化工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · Fusion Single / Cascade / Critique / 99% Cache，4 个独立场景、5 次真实 CLI 调用）**、**Demo 2（Cloud API · Foundry Model Router，4 个场景）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1，5 个生产场景、8 次真实请求，包含 1 次 PNG 图片判断）**——全部 13 个场景均由真实 CLI / 云端 HTTP 调用实测抓包生成（零本地模拟、零客户端拼装）。Demo 1 的缓存场景包含一次真实预热和一次 `--resume` 追问。顶部实时汇总累计成本与耗时对比，工作台右上角支持一键切换 **`✦ Visual`（代码对比、评审意见与智能收件箱视图） | `Summary` | `{ } Raw Log`**；原始日志只显示当前步骤或当前自定义输入，切换步骤后不会混入前面的日志。
+  - **GitHub Pages / 静态离线回放**：打开在线 Pages 或本地 `dist/html/index.html`，在第 11、13、19 页对应产品处或第 20–22 页点击右上角按钮（本地版还可在任意页按 `D`），即可在可视化工作台中逐步运行或 `Auto-Play` **Demo 1（Coding Agent · Fusion Single / Cascade / Critique / 99% Cache，4 个独立场景、5 次真实 CLI 调用）**、**Demo 2（Cloud API · Foundry Model Router，4 个场景）** 与 **Demo 3（App Controller · Microsoft-Decision-1.1，5 个生产场景、8 次真实请求，包含 1 次 JPEG 货损图片判断）**——全部 13 个场景均由真实 CLI / 云端 HTTP 调用实测抓包生成（零本地模拟、零客户端拼装）。Demo 1 的缓存场景包含一次真实预热和一次 `--resume` 追问。顶部实时汇总累计成本与耗时对比，工作台右上角支持一键切换 **`✦ Visual`（代码对比、评审意见与智能收件箱视图） | `Summary` | `{ } Raw Log`**；原始日志只显示当前步骤或当前自定义输入，切换步骤后不会混入前面的日志。
   - **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#20`，会自动检测并驱动本机 `copilot` CLI（真实运行 Demo 1 的 4 个场景及自定义 Prompt 探测；缓存场景首次运行会执行预热 + `--resume` 两次调用），以及在配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`）后真实请求云端 Foundry Model Router（Demo 2 全部 4 个场景）与 `/providers/microsoft/v1/systemone`（Demo 3 全部 4 个场景）。
 
 ## 视觉系统

@@ -699,13 +699,13 @@ rect(s,M+220000,cy0+450000,cx_-440000,14000,fill=EDGE)
 d3_code=(
     'const res = await systemOne({\n'
     '  model: "microsoft-decision-1.1",\n'
-    '  state: { customer_msg, draft_reply, ui: "image:ui.png" },\n'
-    '  assets: { "ui.png": { type: "image", format: "png", data_base64 } },\n'
+    '  state: { customer_msg, draft_reply, photo: "image:cargo-damage.jpg" },\n'
+    '  assets: { "cargo-damage.jpg": { type: "image", format: "jpeg", data_base64 } },\n'
     '  questions: {\n'
     '    team:     { type: "choice", criteria: TEAMS },\n'
     '    priority: { type: "score",  criteria: P0_TO_P3 },\n'
     '    rival:    { type: "noul",   instructions: "Names rival?" },\n'
-    '    has_auto: { type: "noul",   instructions: "UI shows Auto?" }\n'
+    '    damaged:  { type: "noul",   instructions: "Cargo damaged?" }\n'
     '  }\n'
     '});\n'
     'if (res.team.choice === "safety_support") return pageHuman();\n'
@@ -722,7 +722,7 @@ d3_cards=[
     ('Step 2 · One call returns team, urgency, and repeat','safety_support 0.998 · score 1.97 · repeat 0.998','The bot stops immediately and a human safety specialist is notified.',AMB),
     ('Step 3 · Hold competitor draft before send','mentions_competitor 0.970 · 347 ms','One call blocks the rival recommendation and sends it to human review.',AMB),
     ('Step 4 · Ask for the missing Exhibit B','request_missing_exhibit 0.99994 · 347 ms','One call stops the comparison instead of inventing missing contract terms.',AMB),
-    ('Step 5 · Inspect a UI screenshot','PNG asset → image noul · live probability','One multimodal call verifies whether the screenshot visibly offers Auto.',CY),
+    ('Step 5 · Inspect damaged cargo','cargo_damage 0.739 · 4.36 s','One multimodal call routes visibly damaged cargo to human inspection.',AMB),
 ]
 for idx,(t,sub,desc,col_) in enumerate(d3_cards):
     yy=1540000+idx*880000
@@ -732,7 +732,7 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':desc,'sizePt':10.2,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=150000,pad_y=50000)
 footer(s,'',22)
-note(s,'第三个 Demo 有五个生产场景，展示 Decision-1.1 怎么替业务代码先做判断，也验证它可以直接读取图片。\n第一个场景处理 4 条客服消息：“谢谢”、退订、促销咨询和复杂质保对比。前三条不需要高成本大模型，只有最后一条才升级。\n第二个场景是一条受伤投诉。一次请求同时返回负责团队、紧急程度和是否重复投诉，程序立即停用自动回复，并通知人工安全专员。\n第三个场景检查待发送草稿。草稿里推荐了竞品 Fabrikam，提及竞品的概率为 0.970，因此不会自动发给客户，而是转人工确认。\n第四个场景检查合同附件。用户要求对比合同 A 和附件 B，但附件 B 没有上传。系统选择先请用户补充材料，不继续比较，也不让模型猜测缺失条款。\n第五个场景把 Copilot Cowork 的真实界面截图作为 PNG 通过 assets 传入，并在 state 里用 image:ui.png 引用。noul 问题直接判断截图中是否显示 Auto 选项，不需要先做 OCR，也不生成解释文本。五个场景合计 8 次真实请求：4 + 1 + 1 + 1 + 1。')
+note(s,'第三个 Demo 有五个生产场景，展示 Decision-1.1 怎么替业务代码先做判断，也验证它可以直接读取图片。\n第一个场景处理 4 条客服消息：“谢谢”、退订、促销咨询和复杂质保对比。前三条不需要高成本大模型，只有最后一条才升级。\n第二个场景是一条受伤投诉。一次请求同时返回负责团队、紧急程度和是否重复投诉，程序立即停用自动回复，并通知人工安全专员。\n第三个场景检查待发送草稿。草稿里推荐了竞品 Fabrikam，提及竞品的概率为 0.970，因此不会自动发给客户，而是转人工确认。\n第四个场景检查合同附件。用户要求对比合同 A 和附件 B，但附件 B 没有上传。系统选择先请用户补充材料，不继续比较，也不让模型猜测缺失条款。\n第五个场景使用 Wikimedia Commons 的真实货损照片。JPEG 通过 assets 传入，在 state 里用 image:cargo-damage.jpg 引用；noul 直接判断货物是否明显破损或发生严重位移。真实返回的货损概率为 0.739，超过 0.50 阈值，因此转人工验货。照片作者为 Astrid Groeneveld，许可为 CC BY-SA 3.0。五个场景合计 8 次真实请求：4 + 1 + 1 + 1 + 1。')
 
 # ---------- 22 CLOSER: KEY TAKEAWAYS
 s=22

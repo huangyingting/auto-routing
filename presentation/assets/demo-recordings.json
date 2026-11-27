@@ -694,14 +694,14 @@
           "delayMs": 160,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Multimodal Decision-1.1 check · assets.m365-cowork-ui.png = { type: \"image\", format: \"png\", data_base64: ... }\n[REQUEST] Does the screenshot visibly show Auto as a model selection option?\n  image bytes=57356 · auto_selector_visible.noul=0.973\n✓ PASS — Screenshot evaluated in 2672 ms\nWhy: Decision-1.1 can apply the same typed noul gate to UI screenshots without OCR or a generative response.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.auto_selector_visible.noul)  |  Scenario: Image input\n"
+            "text": "[CONFIG] Multimodal Decision-1.1 check · assets.cargo-damage.jpg = { type: \"image\", format: \"jpeg\", data_base64: ... }\n[REQUEST] Does the photo show cargo damage or serious unsafe displacement during transport?\n  image bytes=211333 · cargo_damage_visible.noul=0.739\n✓ DAMAGE DETECTED — Cargo photo evaluated in 4359 ms\nWhy: A claims workflow can route visibly damaged cargo for human inspection using one typed image probability.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.cargo_damage_visible.noul)  |  Scenario: Cargo damage image\n"
           }
         },
         {
           "delayMs": 15,
           "event": {
             "kind": "raw",
-            "text": "# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Microsoft Copilot Cowork interface screenshot: image:m365-cowork-ui.png\",\n  \"questions\": {\n    \"auto_selector_visible\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Does the screenshot visibly show Auto as a model selection option?\"\n    }\n  },\n  \"assets\": {\n    \"m365-cowork-ui.png\": {\n      \"type\": \"image\",\n      \"format\": \"png\",\n      \"data_base64\": \"<base64 omitted: 76476 chars>\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (2672 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"auto_selector_visible\": {\n      \"type\": \"noul\",\n      \"noul\": 0.9725198343414589\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 305,\n    \"output_tokens\": 1\n  }\n}"
+            "text": "# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Cargo inside a shipping container after transport: image:cargo-damage.jpg\",\n  \"questions\": {\n    \"cargo_damage_visible\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Does the photo show cargo damage or serious unsafe displacement during transport?\"\n    }\n  },\n  \"assets\": {\n    \"cargo-damage.jpg\": {\n      \"type\": \"image\",\n      \"format\": \"jpeg\",\n      \"data_base64\": \"<base64 omitted: 281780 chars>\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (4359 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"cargo_damage_visible\": {\n      \"type\": \"noul\",\n      \"noul\": 0.7389602203173705\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 308,\n    \"output_tokens\": 1\n  }\n}"
           }
         },
         {
@@ -710,25 +710,27 @@
             "kind": "artifact",
             "demo": "decision",
             "step": 5,
-            "imageName": "m365-cowork-ui.png",
-            "imageBytes": 57356,
-            "probability": 0.9725198343414589,
+            "imageName": "cargo-damage.jpg",
+            "imageBytes": 211333,
+            "probability": 0.7389602203173705,
             "detected": true,
-            "wallMs": 2672,
-            "wallSec": 2.672,
-            "credits": 0.000012810000000000001
+            "wallMs": 4359,
+            "wallSec": 4.359,
+            "inputTokens": 308,
+            "outputTokens": 1,
+            "credits": 0.000012936
           }
         },
         {
           "delayMs": 15,
           "event": {
             "kind": "route",
-            "model": "image noul = 0.973",
-            "meta": "2672 ms multimodal gate",
-            "chip1": "Image: PNG ✓",
+            "model": "cargo damage = 0.739",
+            "meta": "4359 ms image gate",
+            "chip1": "Image: JPEG ✓",
             "chip1Tone": "on",
-            "chip2": "Auto: 0.973 ✓",
-            "chip2Tone": "on",
+            "chip2": "Damage: 0.739 ✕",
+            "chip2Tone": "denied",
             "chip3": "Base64 Sent ✓",
             "chip3Tone": "on"
           }

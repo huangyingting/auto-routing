@@ -146,7 +146,7 @@ EN_NOTES = {
         "Step 2 packs `choice`, `score`, and `noul` into one request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
         "Step 3 screens an outbound AI draft recommending rival 'Fabrikam for $749', scoring competitor mention at `0.970` and holding the draft before send.\n"
         "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing.\n"
-        "Step 5 sends the real Copilot Cowork PNG screenshot in `assets`, references it as `image:m365-cowork-ui.png`, and asks one `noul` question. The live response returns `auto_selector_visible = 0.973`. The count is 4 + 1 + 1 + 1 + 1 = 8 real requests."
+        "Step 5 sends a real cargo-damage JPEG in `assets`, references it as `image:cargo-damage.jpg`, and asks one `noul` question. The live response returns `cargo_damage_visible = 0.739` in 4.36 seconds, crossing the 0.50 threshold and routing the claim to human inspection. The count is 4 + 1 + 1 + 1 + 1 = 8 real requests."
     ),
     22: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
@@ -1147,12 +1147,12 @@ ZH_TEXT_MAP.update({
         '场景 3 · 回复发送前，拦下推荐竞品的草稿',
     'Step 4 · Ask for the missing Exhibit B':
         '场景 4 · 缺少附件 B，就停下来请用户补充',
-    'Step 5 · Inspect a UI screenshot':
-        '场景 5 · 直接判断界面截图中的内容',
-    'PNG asset → image noul · live probability':
-        'PNG 图片 → image noul · 返回真实概率',
-    'One multimodal call verifies whether the screenshot visibly offers Auto.':
-        '一次多模态调用判断截图中是否显示 Auto 选项。',
+    'Step 5 · Inspect damaged cargo':
+        '场景 5 · 检查运输中的货物破损',
+    'cargo_damage 0.739 · 4.36 s':
+        '货损概率 0.739 · 耗时 4.36 秒',
+    'One multimodal call routes visibly damaged cargo to human inspection.':
+        '一次多模态调用识别明显货损，并转交人工验货。',
     'Foundry Model Router live': 'Foundry Model Router：自动选模型',
     '✓  Pre-rank gate & param normalization': '✓  一套请求参数，Foundry 自动处理模型差异',
     'One V1Preview endpoint normalizes cross-provider params and serves valid JSON in 30 ms router overhead.':
@@ -1898,60 +1898,67 @@ ZH_DEMO_TEXT_MAP.update({
     'Text + Image · 8 Calls': '文本与图片 · 8 次调用',
     'Image Input': '图片输入',
     'Live Decision': '实时判断',
-    '305 input tokens · 1 output token · p = ': '305 个输入 Token · 1 个输出 Token · p = ',
     'IMAGE INPUT': '图片输入',
     'DECISION RESULT': '判断结果',
+    'Image Evidence → Typed Decision': '图片证据 → 结构化判断',
+    'Measured live result': '真实调用结果',
     '⑤ Image': '⑤ 图片',
-    'Multimodal Asset Gate': '多模态图片判断',
-    'Check 5 (image + noul): Live UI Screenshot Inspection':
-        '场景 5（image + noul）：实时检查界面截图',
-    'PNG in assets · state references image:m365-cowork-ui.png':
-        'PNG 放入 assets · state 通过 image:m365-cowork-ui.png 引用',
-    'Does the screenshot visibly show Auto as a model selection option?':
-        '截图中是否清楚显示 Auto 模型选项？',
     'Live Microsoft-Decision-1.1 · image noul':
         '实时 Microsoft-Decision-1.1 · 图片 noul 判断',
-    'IMAGE ASSET · TYPED VISUAL DECISION':
-        '图片输入 · 返回结构化概率',
-    'PNG Asset': 'PNG 图片',
-    'Cowork UI Screenshot': 'Cowork 界面截图',
     'Base64 image in assets': '图片以 Base64 放入 assets',
     'Image noul': '图片 noul 判断',
-    'Auto Selector Visible?': '是否显示 Auto 选项？',
     'One typed probability': '返回一个结构化概率',
-    'App Action': '程序处理',
-    'Visual Check Complete': '图片检查完成',
-    'No OCR pipeline needed': '不需要单独 OCR',
-    'Sent a real PNG through assets and received a typed noul probability for the visible Auto selector.':
-        '通过 assets 发送真实 PNG，并得到 Auto 选项是否可见的 noul 概率。',
-    'Decision-1.1 reads the screenshot directly. The application references image:m365-cowork-ui.png in state and thresholds one numerical answer.':
-        'Decision-1.1 直接读取截图；程序在 state 中引用 image:m365-cowork-ui.png，并直接按返回概率设置阈值。',
-    'Unstructured Image Input': '尚未判断的图片输入',
-    '57,356-byte PNG': '57,356 字节 PNG',
-    'Raw screenshot has no typed application decision': '原始截图本身没有可供程序直接使用的判断结果',
-    'Image noul Gate': '图片 noul 判断',
     '1 Typed Probability': '一个结构化概率',
-    'PNG asset · no filler prose': 'PNG 图片输入 · 不生成多余文字',
-    'Image: PNG ✓': '图片：PNG ✓',
-    'Typed noul ✓': '结构化 noul ✓',
-    'No OCR Stage ✓': '无需 OCR 阶段 ✓',
-    'Multimodal request: PNG in assets, referenced from state as image:m365-cowork-ui.png':
-        '多模态请求：PNG 放入 assets，并在 state 中通过 image:m365-cowork-ui.png 引用',
-    'REAL SCREENSHOT SENT TO DECISION-1.1':
-        '发送给 Decision-1.1 的真实界面截图',
-    'TYPED IMAGE DECISION': '结构化图片判断',
-    '✓ Image evaluated in ': '✓ 图片判断完成，耗时 ',
-    'Free-form output': '自由文本输出',
-    'None · typed probability only': '无 · 只返回结构化概率',
     'assets + image: reference': 'assets + image: 引用',
-    'The application can threshold this result directly; no OCR stage or generated explanation is required.':
-        '程序可以直接按概率设置阈值，不需要单独 OCR，也不需要生成解释文字。',
-    'Click Run Step 5 to send the embedded screenshot as real base64 image data.':
-        '点击“运行步骤 5”，把内嵌截图作为真实 Base64 图片发送。',
     '[CONFIG] Multimodal Decision-1.1 check':
         '[配置] Decision-1.1 多模态图片检查',
-    '[REQUEST] Does the screenshot visibly show Auto as a model selection option?':
-        '[请求] 截图中是否清楚显示 Auto 模型选项？',
-    'Why: Decision-1.1 can apply the same typed noul gate to UI screenshots without OCR or a generative response.':
-        '说明：Decision-1.1 可以直接对界面截图执行 noul 判断，不需要 OCR，也不生成自由文本回答。',
+})
+
+ZH_DEMO_TEXT_MAP.update({
+    'Multimodal Damage Gate': '多模态货损判断',
+    'Check 5 (image + noul): Live Cargo Damage Inspection':
+        '场景 5（image + noul）：实时判断货物破损',
+    'JPEG in assets · state references image:cargo-damage.jpg':
+        'JPEG 放入 assets · state 通过 image:cargo-damage.jpg 引用',
+    'Does the photo show cargo damage or serious unsafe displacement during transport?':
+        '照片中的货物是否在运输中发生破损或严重位移？',
+    'CARGO PHOTO · TYPED DAMAGE DECISION':
+        '货损照片 · 返回结构化概率',
+    'JPEG Asset': 'JPEG 图片',
+    'Damaged Cargo Photo': '货损照片',
+    'Damage Visible?': '是否存在明显货损？',
+    'Claims Action': '理赔处理',
+    'Human Inspection': '转人工验货',
+    'Damage threshold crossed': '货损概率超过阈值',
+    'Sent a real cargo photo through assets and received a typed noul probability for visible transport damage.':
+        '通过 assets 发送真实货损照片，并得到运输损坏是否可见的 noul 概率。',
+    'Decision-1.1 reads the cargo photo directly. The application references image:cargo-damage.jpg in state and thresholds one numerical answer for claims routing.':
+        'Decision-1.1 直接读取货损照片；程序在 state 中引用 image:cargo-damage.jpg，并按返回概率决定是否转人工验货。',
+    'Unstructured Cargo Photo': '尚未判断的货损照片',
+    '211,333-byte JPEG': '211,333 字节 JPEG',
+    'Raw image has no typed claims decision': '原始图片本身没有可供理赔流程直接使用的判断结果',
+    'Damage noul Gate': '货损 noul 判断',
+    'JPEG asset · no filler prose': 'JPEG 图片输入 · 不生成多余文字',
+    'Image: JPEG ✓': '图片：JPEG ✓',
+    'Damage noul ✓': '货损 noul ✓',
+    'Claims Routed ✓': '已进入理赔流程 ✓',
+    'Multimodal claim check: JPEG in assets, referenced from state as image:cargo-damage.jpg':
+        '多模态理赔检查：JPEG 放入 assets，并在 state 中通过 image:cargo-damage.jpg 引用',
+    'REAL CARGO PHOTO SENT TO DECISION-1.1':
+        '发送给 Decision-1.1 的真实货损照片',
+    'TYPED DAMAGE DECISION': '结构化货损判断',
+    '✕ DAMAGE DETECTED in ': '✕ 检测到货损，耗时 ',
+    'Claims action': '理赔处理',
+    'Route to human inspection': '转人工验货',
+    'Continue normal flow': '继续正常流程',
+    'The claims workflow can threshold this typed result directly and route visible cargo damage to a human inspector.':
+        '理赔流程可以直接按这个概率设置阈值，把明显货损转交人工验货。',
+    'Click Run Step 5 to send the embedded cargo photo as real base64 image data.':
+        '点击“运行步骤 5”，把内嵌货损照片作为真实 Base64 图片发送。',
+    '[REQUEST] Does the photo show cargo damage or serious unsafe displacement during transport?':
+        '[请求] 照片中的货物是否在运输中发生破损或严重位移？',
+    'Why: A claims workflow can route visibly damaged cargo for human inspection using one typed image probability.':
+        '说明：理赔流程可以依据一个结构化图片概率，把明显货损转交人工验货。',
+    ' input tokens · ': ' 个输入 Token · ',
+    ' output token · p = ': ' 个输出 Token · p = ',
 })

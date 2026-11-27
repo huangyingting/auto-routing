@@ -998,23 +998,23 @@ var SCENARIOS={
     baseName:'Direct Frontier Call',baseNums:'Hallucinated Terms ✕',baseMeta:'Guesses missing Exhibit B clauses confidently',
     agentName:'Abstain · Ask User',agentNums:'p = 0.9999 · 334 ms',agentMeta:'Missing file caught · no guessed terms',
      chips:[['Missing File Caught ✓','on'],['Latency: 334 ms ✓','on'],['Zero Frontier Waste ✓','on']],risk:1},
-    {short:'⑤ Image',boundary:'Multimodal Asset Gate',title:'Check 5 (image + noul): Live UI Screenshot Inspection',
-     ctx:'PNG in assets · state references image:m365-cowork-ui.png',
-     prompt:'Does the screenshot visibly show Auto as a model selection option?',
+    {short:'⑤ Image',boundary:'Multimodal Damage Gate',title:'Check 5 (image + noul): Live Cargo Damage Inspection',
+     ctx:'JPEG in assets · state references image:cargo-damage.jpg',
+     prompt:'Does the photo show cargo damage or serious unsafe displacement during transport?',
      scorer:'Live Microsoft-Decision-1.1 · image noul',
      bars:[],
-     pattern:'IMAGE ASSET · TYPED VISUAL DECISION',
+     pattern:'CARGO PHOTO · TYPED DAMAGE DECISION',
      nodes:[
-      {role:'PNG Asset',name:'Cowork UI Screenshot',sub:'Base64 image in assets',state:'active'},
-      {role:'Image noul',name:'Auto Selector Visible?',sub:'One typed probability',state:'active'},
-      {role:'App Action',name:'Visual Check Complete',sub:'No OCR pipeline needed',state:'win'}
+      {role:'JPEG Asset',name:'Damaged Cargo Photo',sub:'Base64 image in assets',state:'err'},
+      {role:'Image noul',name:'Damage Visible?',sub:'One typed probability',state:'active'},
+      {role:'Claims Action',name:'Human Inspection',sub:'Damage threshold crossed',state:'win'}
      ],
-     outcome:'✓ Sent a real PNG through assets and received a typed noul probability for the visible Auto selector.',
-     what:'Decision-1.1 reads the screenshot directly. The application references image:m365-cowork-ui.png in state and thresholds one numerical answer.',
-     code:'assets["m365-cowork-ui.png"] → answers.auto_selector_visible.noul',
-     baseName:'Unstructured Image Input',baseNums:'57,356-byte PNG',baseMeta:'Raw screenshot has no typed application decision',
-     agentName:'Image noul Gate',agentNums:'1 Typed Probability',agentMeta:'PNG asset · no filler prose',
-     chips:[['Image: PNG ✓','on'],['Typed noul ✓','on'],['No OCR Stage ✓','on']],risk:0}
+     outcome:'✓ Sent a real cargo photo through assets and received a typed noul probability for visible transport damage.',
+     what:'Decision-1.1 reads the cargo photo directly. The application references image:cargo-damage.jpg in state and thresholds one numerical answer for claims routing.',
+     code:'assets["cargo-damage.jpg"] → answers.cargo_damage_visible.noul',
+     baseName:'Unstructured Cargo Photo',baseNums:'211,333-byte JPEG',baseMeta:'Raw image has no typed claims decision',
+     agentName:'Damage noul Gate',agentNums:'1 Typed Probability',agentMeta:'JPEG asset · no filler prose',
+     chips:[['Image: JPEG ✓','on'],['Damage noul ✓','on'],['Claims Routed ✓','on']],risk:1}
   ]
  }
 };
@@ -1069,7 +1069,7 @@ var LEDGER_SPECS={
    {base:0.1500,auto:0.00002,baseSec:3.80,autoSec:0.37},
    {base:0.2400,auto:0.00006,baseSec:12.00,autoSec:0.35},
    {base:0.1500,auto:0.00002,baseSec:4.10,autoSec:0.35},
-   {base:0.00001281,auto:0.00001281,baseSec:2.65,autoSec:2.65}
+   {base:0.000012936,auto:0.000012936,baseSec:4.359,autoSec:4.359}
   ]
  }
 };
@@ -1146,14 +1146,16 @@ function updateLedger(){
  }
  var imageOnly=curKind==='decision'&&curStep===5&&(doneCount===0||(doneCount===1&&doneSet.decision[5]));
  if(imageOnly){
-  var imageArt=lastArtifact['decision:5'],imageP=imageArt&&typeof imageArt.probability==='number'?imageArt.probability:0.973;
+  var imageArt=lastArtifact['decision:5'],imageP=imageArt&&typeof imageArt.probability==='number'?imageArt.probability:0.739;
   byId('ledger-base-lbl').textContent='Image Input';
   byId('ledger-auto-lbl').textContent='Live Decision';
   byId('ledger-base-bar').style.width='100%';
   byId('ledger-auto-bar').style.width='100%';
-  byId('ledger-base-val').textContent='57,356-byte PNG';
+  byId('ledger-base-val').textContent='211,333-byte JPEG';
   byId('ledger-auto-val').textContent=fmtLedgerCost(spec.unit,aCost)+' · '+aSec.toFixed(1)+'s';
-  byId('ledger-delta').textContent='305 input tokens · 1 output token · p = '+imageP.toFixed(3);
+  var imageTokens=imageArt&&typeof imageArt.inputTokens==='number'?imageArt.inputTokens:308;
+  var imageOutputTokens=imageArt&&typeof imageArt.outputTokens==='number'?imageArt.outputTokens:1;
+  byId('ledger-delta').textContent=imageTokens+' input tokens · '+imageOutputTokens+' output token · p = '+imageP.toFixed(3);
   return;
  }
  byId('ledger-base-lbl').textContent='Pinned Baseline';
@@ -1354,14 +1356,14 @@ function renderVisualStage(){
     ])+'</div>'
     +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">SAFE ASSISTANT ACTION</span><div class="vs-pbody">'+(done?'<strong>Asked Customer:</strong> "Contract A specifies 60 days prior written notice, but <strong>Exhibit B is not attached</strong>. Please upload Exhibit B so I can compare both clauses accurately."':'Instead of letting a frontier LLM guess missing Exhibit B terms, Decision-1.1 catches missing context upfront.')+'</div></div></div>';
   }else{
-   var imageProb=art.probability!==undefined?Number(art.probability):0.98;
-   var decisionImage=Array.prototype.find.call(document.images,function(img){return /Copilot Cowork composer/i.test(img.alt||'');});
-   var imageMarkup=decisionImage?'<img class="vs-image-preview" src="'+decisionImage.src+'" alt="Copilot Cowork screenshot used for the live image decision">':'<div class="vs-mono-box">m365-cowork-ui.png · embedded PNG asset</div>';
-   h=stateBannerHtml(done,stepRunning,false,'Multimodal request: PNG in assets, referenced from state as image:m365-cowork-ui.png','✓ Image evaluated in '+(art.wallMs||550)+' ms — auto_selector_visible.noul = '+imageProb.toFixed(3))
-    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">REAL SCREENSHOT SENT TO DECISION-1.1</span>'+imageMarkup+'<div class="vs-annot-foot"><span class="vs-mini-tag ok">PNG · '+(art.imageBytes||'embedded')+' bytes</span><span class="vs-mini-tag">assets + image: reference</span></div></div>'
-    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">TYPED IMAGE DECISION</span><div class="vs-ptitle">Does the screenshot visibly show Auto as a model selection option?</div>'
-    +renderMeterRows([{lbl:'auto_selector_visible.noul',val:done?imageProb.toFixed(3):'pending',pct:done?Math.round(imageProb*100):10,tone:imageProb>=0.5?'ok':'warn'},{lbl:'Free-form output',val:'None · typed probability only',pct:3,tone:'muted'}])
-    +'<div class="vs-pbody">'+(done?'The application can threshold this result directly; no OCR stage or generated explanation is required.':'Click Run Step 5 to send the embedded screenshot as real base64 image data.')+'</div></div></div>';
+   var imageProb=art.probability!==undefined?Number(art.probability):0.739;
+   var imageSrc=window.DECISION_DAMAGE_IMAGE||'';
+   var imageMarkup=imageSrc?'<img class="vs-image-preview" src="'+imageSrc+'" alt="Damaged cargo inside a shipping container used for the live image decision">':'<div class="vs-mono-box">cargo-damage.jpg · embedded JPEG asset</div>';
+   h=stateBannerHtml(done,stepRunning,false,'Multimodal claim check: JPEG in assets, referenced from state as image:cargo-damage.jpg','✕ DAMAGE DETECTED in '+(art.wallMs||4359)+' ms — cargo_damage_visible.noul = '+imageProb.toFixed(3))
+    +'<div class="vs-cols"><div class="vs-panel err"><span class="vs-pkicker">REAL CARGO PHOTO SENT TO DECISION-1.1</span>'+imageMarkup+'<div class="vs-annot-foot"><span class="vs-mini-tag warn">JPEG · '+(art.imageBytes||'embedded')+' bytes</span><span class="vs-mini-tag">Astrid Groeneveld · Wikimedia Commons · CC BY-SA 3.0</span></div></div>'
+    +'<div class="vs-panel '+(done?'err':'')+'"><span class="vs-pkicker">TYPED DAMAGE DECISION</span><div class="vs-ptitle">Does the photo show cargo damage or serious unsafe displacement during transport?</div>'
+    +renderMeterRows([{lbl:'cargo_damage_visible.noul',val:done?imageProb.toFixed(3):'pending',pct:done?Math.round(imageProb*100):10,tone:imageProb>=0.5?'warn':'ok'},{lbl:'Claims action',val:done?(imageProb>=0.5?'Route to human inspection':'Continue normal flow'):'pending',pct:done?Math.round(imageProb*100):10,tone:imageProb>=0.5?'warn':'ok'}])
+    +'<div class="vs-pbody">'+(done?'The claims workflow can threshold this typed result directly and route visible cargo damage to a human inspector.':'Click Run Step 5 to send the embedded cargo photo as real base64 image data.')+'</div></div></div>';
   }
  }
  stage.innerHTML=h;
@@ -1416,10 +1418,10 @@ function setChip(id,text,tone){var el=byId(id);if(!el)return;el.textContent=text
 function localizeLiveRouteText(value){
  if((document.documentElement.lang||'').indexOf('zh')!==0)return value;
  return String(value)
-  .replace(/^image noul = /,'图片 noul = ')
-  .replace(/ ms multimodal gate$/,' ms · 多模态判断')
-  .replace(/^Image: PNG/,'图片：PNG')
-  .replace(/^Auto: /,'Auto：')
+  .replace(/^cargo damage = /,'货损概率 = ')
+  .replace(/ ms image gate$/,' ms · 图片判断')
+  .replace(/^Image: JPEG/,'图片：JPEG')
+  .replace(/^Damage: /,'货损：')
   .replace(/^Base64 Sent/,'Base64 已发送');
 }
 
@@ -1544,6 +1546,8 @@ function renderVisualStep(kind,stepNum,keepExplicitRun){
  byId('live-agent-session').textContent=g.agentMeta;
  byId('base-role-label').textContent=imageDecision?'IMAGE INPUT':'WITHOUT ROUTING';
  byId('agent-role-label').textContent=imageDecision?'DECISION RESULT':'WITH AUTO-ROUTING';
+ byId('compare-heading').textContent=imageDecision?'Image Evidence → Typed Decision':'Payoff vs. Naive Baseline';
+ byId('compare-sub').textContent=imageDecision?'Measured live result':'Cost, latency & safety';
  setChip('live-chip-1',g.chips[0][0],g.chips[0][1]);
  setChip('live-chip-2',g.chips[1][0],g.chips[1][1]);
  setChip('live-chip-3',g.chips[2][0],g.chips[2][1]);
@@ -2046,14 +2050,19 @@ def build(out, img_dir, maxw, pages_url=None, presenter_tools=True, lang='en', a
     effective_url = pages_url if pages_url is not None else os.environ.get('PAGES_URL')
     body = ''.join(slide_html(k, loc_slides[k], img_dir, maxw, pages_url=effective_url, lang=lang) for k in sorted(loc_slides))
     recorded_json = load_recorded_demo(img_dir)
+    cargo_image_path = os.path.join(img_dir, 'cargo-damage.jpg')
+    cargo_image_json = json.dumps(
+        data_uri(cargo_image_path, maxw) if os.path.exists(cargo_image_path) else '',
+        separators=(',', ':'),
+    ).replace('</', '<\\/')
     if presenter_tools:
         notes_json = json.dumps({str(k): v for k, v in loc_notes.items()}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
         presenter_block = f"\n{presenter_ui_html(lang)}"
-        data_script = f"<script>window.RECORDED_DEMO={recorded_json};window.SLIDE_NOTES={notes_json};</script>"
+        data_script = f"<script>window.RECORDED_DEMO={recorded_json};window.DECISION_DAMAGE_IMAGE={cargo_image_json};window.SLIDE_NOTES={notes_json};</script>"
         script_body = localize_demo_fragment(JS, lang)
     else:
         presenter_block = ""
-        data_script = f"<script>window.RECORDED_DEMO={recorded_json};</script>"
+        data_script = f"<script>window.RECORDED_DEMO={recorded_json};window.DECISION_DAMAGE_IMAGE={cargo_image_json};</script>"
         script_body = localize_demo_fragment(PUBLIC_JS, lang)
     html_lang = 'zh-CN' if lang == 'zh' else 'en'
     doc_title = (

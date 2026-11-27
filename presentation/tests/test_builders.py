@@ -377,13 +377,13 @@ class BuilderTests(unittest.TestCase):
             for item in rec['steps']['decision']['5']
             if item['event']['kind'] == 'raw'
         )
-        self.assertIn('image:m365-cowork-ui.png', image_raw)
+        self.assertIn('image:cargo-damage.jpg', image_raw)
         self.assertIn('<base64 omitted:', image_raw)
-        self.assertNotIn('"data_base64": "iVBOR', image_raw)
+        self.assertNotIn('"data_base64": "/9j/', image_raw)
         self.assertTrue(
             any(
                 item['event']['kind'] == 'artifact'
-                and item['event'].get('imageName') == 'm365-cowork-ui.png'
+                and item['event'].get('imageName') == 'cargo-damage.jpg'
                 for item in rec['steps']['decision']['5']
             )
         )
@@ -417,7 +417,7 @@ class BuilderTests(unittest.TestCase):
             '只提取两个字段，用 Flash 就够了',
             '只把难题交给大模型',
             '缺少附件 B，就停下来请用户补充',
-            '直接判断界面截图中的内容',
+            '检查运输中的货物破损',
         ):
             self.assertIn(expected, natural_copy)
         for forbidden in (
@@ -475,17 +475,25 @@ class BuilderTests(unittest.TestCase):
 
     def test_decision_studio_has_real_image_scenario(self):
         self.assertIn('Microsoft-Decision-1.1 · 5 scenarios / 8 calls', H.LIVE_DEMO)
-        self.assertIn('Check 5 (image + noul): Live UI Screenshot Inspection', H.STUDIO_JS)
-        self.assertIn('image:m365-cowork-ui.png', H.STUDIO_JS)
+        self.assertIn('Check 5 (image + noul): Live Cargo Damage Inspection', H.STUDIO_JS)
+        self.assertIn('image:cargo-damage.jpg', H.STUDIO_JS)
         self.assertIn('vs-image-preview', H.STUDIO_JS)
+        cargo_path = Path(__file__).resolve().parents[1] / 'assets' / 'images' / 'cargo-damage.jpg'
+        self.assertTrue(cargo_path.is_file())
+        with Image.open(cargo_path) as cargo_image:
+            self.assertEqual(cargo_image.size, (960, 720))
+        asset_readme = (cargo_path.parent.parent / 'README.md').read_text(encoding='utf-8')
+        self.assertIn('Astrid Groeneveld', asset_readme)
+        self.assertIn('CC BY-SA 3.0', asset_readme)
+        self.assertIn('https://commons.wikimedia.org/wiki/File:Cargo_damage.JPG', asset_readme)
         runner_source = (
             Path(__file__).resolve().parents[2] / 'demo' / 'src' / 'live-runners.mjs'
         ).read_text(encoding='utf-8')
         for expected in (
             'data_base64: imageBytes.toString("base64")',
             'type: "image"',
-            'format: "png"',
-            'auto_selector_visible',
+            'format: "jpeg"',
+            'cargo_damage_visible',
             '<base64 omitted:',
         ):
             self.assertIn(expected, runner_source)
