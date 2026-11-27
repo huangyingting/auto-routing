@@ -333,7 +333,7 @@ class BuilderTests(unittest.TestCase):
         rec = json.loads(rec_path.read_text(encoding='utf-8'))
         self.assertEqual(sorted(rec['steps']['fusion'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(sorted(rec['steps']['foundry'].keys()), ['1', '2', '3', '4'])
-        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4'])
+        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4', '5'])
         self.assertEqual(
             {demo: len(steps) for demo, steps in rec['steps'].items()},
             D.DEMO_STEP_COUNTS,
@@ -372,6 +372,21 @@ class BuilderTests(unittest.TestCase):
             '\n'.join(raw_by_demo['decision']).count('# HTTP 200 Response JSON'),
             D.DEMO_CALL_COUNTS['decision'],
         )
+        image_raw = '\n'.join(
+            item['event']['text']
+            for item in rec['steps']['decision']['5']
+            if item['event']['kind'] == 'raw'
+        )
+        self.assertIn('image:m365-cowork-ui.png', image_raw)
+        self.assertIn('<base64 omitted:', image_raw)
+        self.assertNotIn('"data_base64": "iVBOR', image_raw)
+        self.assertTrue(
+            any(
+                item['event']['kind'] == 'artifact'
+                and item['event'].get('imageName') == 'm365-cowork-ui.png'
+                for item in rec['steps']['decision']['5']
+            )
+        )
 
         def visible_text(slide_ops):
             return '\n'.join(
@@ -383,7 +398,7 @@ class BuilderTests(unittest.TestCase):
         zh_slides = D.get_localized_slides('zh')
         self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[19]))
         self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[20]))
-        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[21]))
+        self.assertIn('5 个场景 · 8 次真实 /v1/systemone 请求', visible_text(zh_slides[21]))
 
         foundry_slide = visible_text(zh_slides[20])
         for step in range(1, 5):
@@ -391,9 +406,8 @@ class BuilderTests(unittest.TestCase):
         self.assertNotIn('步骤 2–3', foundry_slide)
 
         decision_slide = visible_text(zh_slides[21])
-        for step in range(1, 5):
+        for step in range(1, 6):
             self.assertIn(f'场景 {step} ·', decision_slide)
-        self.assertNotIn('场景 5 ·', decision_slide)
         self.assertNotIn('步骤 1–2', decision_slide)
         self.assertNotIn('步骤 4–5', decision_slide)
 
@@ -403,6 +417,7 @@ class BuilderTests(unittest.TestCase):
             '只提取两个字段，用 Flash 就够了',
             '只把难题交给大模型',
             '缺少附件 B，就停下来请用户补充',
+            '直接判断界面截图中的内容',
         ):
             self.assertIn(expected, natural_copy)
         for forbidden in (
@@ -457,6 +472,23 @@ class BuilderTests(unittest.TestCase):
             'Prefix-Cache Guard: 99% Cache Hit via --resume',
         ):
             self.assertIn(title, H.STUDIO_JS)
+
+    def test_decision_studio_has_real_image_scenario(self):
+        self.assertIn('Microsoft-Decision-1.1 · 5 scenarios / 8 calls', H.LIVE_DEMO)
+        self.assertIn('Check 5 (image + noul): Live UI Screenshot Inspection', H.STUDIO_JS)
+        self.assertIn('image:m365-cowork-ui.png', H.STUDIO_JS)
+        self.assertIn('vs-image-preview', H.STUDIO_JS)
+        runner_source = (
+            Path(__file__).resolve().parents[2] / 'demo' / 'src' / 'live-runners.mjs'
+        ).read_text(encoding='utf-8')
+        for expected in (
+            'data_base64: imageBytes.toString("base64")',
+            'type: "image"',
+            'format: "png"',
+            'auto_selector_visible',
+            '<base64 omitted:',
+        ):
+            self.assertIn(expected, runner_source)
 
     def test_foundry_step_three_requests_match_visual_and_summary(self):
         turn1 = (

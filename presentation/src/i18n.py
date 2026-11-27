@@ -141,11 +141,12 @@ EN_NOTES = {
         "Step 4 contributes the final two calls: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to `gpt-5.6-terra` (29 ms) for strategy. The count is 1 + 1 + 2 + 2 = 6. Switch to `{ } Raw Log` to inspect the current scenario's `routing_trace`."
     ),
     21: (
-        "Demo 3 is now focused on four production scenarios and seven real `/providers/microsoft/v1/systemone` requests. The previous five-repeat stability probe was removed because the benchmark section already covers consistency.\n"
+        "Demo 3 now contains five production scenarios and eight real `/providers/microsoft/v1/systemone` requests, including a multimodal image call.\n"
         "Step 1 runs a pre-LLM `choice` router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison). Three out of four skip the frontier LLM.\n"
         "Step 2 packs `choice`, `score`, and `noul` into one request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
         "Step 3 screens an outbound AI draft recommending rival 'Fabrikam for $749', scoring competitor mention at `0.970` and holding the draft before send.\n"
-        "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing. The count is 4 + 1 + 1 + 1 = 7 real requests."
+        "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing.\n"
+        "Step 5 sends the real Copilot Cowork PNG screenshot in `assets`, references it as `image:m365-cowork-ui.png`, and asks one `noul` question. The live response returns `auto_selector_visible = 0.973`. The count is 4 + 1 + 1 + 1 + 1 = 8 real requests."
     ),
     22: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
@@ -620,7 +621,7 @@ ZH_DEMO_TEXT_MAP = {
     'DEMO 2 · CLOUD API': '演示 2 · 云端 API',
     'One /chat/completions endpoint: param normalization, cheap Flash on easy JSON, auto-escalation, and cost→quality sub-jobs.': '同一个 /chat/completions 接口完成参数转换、简单任务低成本路由、复杂任务升级和子任务分流。',
     'DEMO 3 · APP CONTROLLER': '演示 3 · 应用控制',
-    'Replace slow LLM router prompts with 180 ms calibrated choice, score & noul gates ($0.042/1M).': '使用低延迟的 choice、score 和 noul 判断替代生成式大模型路由提示词。',
+    'Use calibrated choice, score & noul gates on text, JSON, and images ($0.042/1M).': '对文本、JSON 和图片使用 choice、score 与 noul 进行结构化判断。',
     'All 4 Verified ✓': '4 个步骤全部验证通过 ✓',
     'All 5 Verified ✓': '5 个步骤全部验证通过 ✓',
     'Step ': '步骤 ',
@@ -856,8 +857,8 @@ ZH_DEMO_LAUNCHERS = {
 }
 
 ZH_DEMO_TEXT_MAP.update({
-    'Microsoft-Decision-1.1 · 4 scenarios / 7 calls':
-        'Microsoft-Decision-1.1 · 4 个场景 / 7 次调用',
+    'Microsoft-Decision-1.1 · 5 scenarios / 8 calls':
+        'Microsoft-Decision-1.1 · 5 个场景 / 8 次调用',
     'Demo 1 · Coding Agent': '演示 1 · 编程 Agent',
     'Demo 3 · App Controller': '演示 3 · 业务流程判断',
     'Coding Agent Orchestration': '编程任务的多模型协作',
@@ -972,8 +973,8 @@ ZH_DEMO_TEXT_MAP.update({
     'DEMO 3 · APP CONTROLLER': '演示 3 · 业务流程判断',
     'Fast Single pass on easy code, Judge/Critic teams on hard bugs, and warm-cache retention.':
         '简单修改只用一个模型；复杂问题增加独立评审；连续追问尽量复用原会话缓存。',
-    'Replace slow LLM router prompts with 180 ms calibrated choice, score & noul gates ($0.042/1M).':
-        '用快速的 choice、score 和 noul 判断替代生成式大模型提示词，每百万输入 Token 费用为 $0.042。',
+    'Use calibrated choice, score & noul gates on text, JSON, and images ($0.042/1M).':
+        '对文本、JSON 和图片使用 choice、score 与 noul 做结构化判断，每百万输入 Token 费用为 $0.042。',
     '~0.45 AIU · Heavy': '约 0.45 AIU · 高成本',
     '0.055 AIU · Single': '0.055 AIU · Single 单模型',
     'pattern: single · 3/3 PASS': 'pattern: single · 3/3 测试通过',
@@ -1068,7 +1069,7 @@ ZH_DEMO_TEXT_MAP.update({
     'Fabrikam has a similar sofa for $749': 'Fabrikam 有一款类似沙发，只要 $749',
     '. Here’s the link."': '。这是链接。”',
     'Abstain · Ask User': '先请用户补充材料',
-    'Missing file caught · 7.2× CAC stack': '发现缺少附件 · 不调用大模型猜测',
+    'Missing file caught · no guessed terms': '发现缺少附件 · 不调用大模型猜测',
     'Ask user for Exhibit B': '请用户补充附件 B',
     '"Compare the renewal termination notice window in Contract A vs Exhibit B."':
         '“请对比主合同 A 和附件 B 里的续约终止通知期限。”',
@@ -1136,8 +1137,8 @@ ZH_DEMO_TEXT_MAP.update({
 
 # Demo 2 采用更适合现场讲解的中文：先说发生了什么，再保留技术字段供核对。
 ZH_TEXT_MAP.update({
-    '4 scenarios · 7 live /v1/systemone requests + custom probe':
-        '4 个场景 · 7 次真实 /v1/systemone 请求 · 支持现场输入',
+    '5 scenarios · 8 live /v1/systemone requests + custom probe':
+        '5 个场景 · 8 次真实 /v1/systemone 请求 · 支持现场输入',
     'Step 1 · Route four messages before the LLM':
         '场景 1 · 先给 4 条客服消息分流，只把难题交给大模型',
     'Step 2 · One call returns team, urgency, and repeat':
@@ -1146,6 +1147,12 @@ ZH_TEXT_MAP.update({
         '场景 3 · 回复发送前，拦下推荐竞品的草稿',
     'Step 4 · Ask for the missing Exhibit B':
         '场景 4 · 缺少附件 B，就停下来请用户补充',
+    'Step 5 · Inspect a UI screenshot':
+        '场景 5 · 直接判断界面截图中的内容',
+    'PNG asset → image noul · live probability':
+        'PNG 图片 → image noul · 返回真实概率',
+    'One multimodal call verifies whether the screenshot visibly offers Auto.':
+        '一次多模态调用判断截图中是否显示 Auto 选项。',
     'Foundry Model Router live': 'Foundry Model Router：自动选模型',
     '✓  Pre-rank gate & param normalization': '✓  一套请求参数，Foundry 自动处理模型差异',
     'One V1Preview endpoint normalizes cross-provider params and serves valid JSON in 30 ms router overhead.':
@@ -1885,4 +1892,66 @@ ZH_TEXT_MAP.update({
         '请求补充附件的概率 0.99994 · 耗时 347 ms',
     'One call stops the comparison instead of inventing missing contract terms.':
         '材料不完整时不继续比较，也不让模型猜测缺失的合同条款。',
+})
+
+ZH_DEMO_TEXT_MAP.update({
+    'Text + Image · 8 Calls': '文本与图片 · 8 次调用',
+    'Image Input': '图片输入',
+    'Live Decision': '实时判断',
+    '305 input tokens · 1 output token · p = ': '305 个输入 Token · 1 个输出 Token · p = ',
+    'IMAGE INPUT': '图片输入',
+    'DECISION RESULT': '判断结果',
+    '⑤ Image': '⑤ 图片',
+    'Multimodal Asset Gate': '多模态图片判断',
+    'Check 5 (image + noul): Live UI Screenshot Inspection':
+        '场景 5（image + noul）：实时检查界面截图',
+    'PNG in assets · state references image:m365-cowork-ui.png':
+        'PNG 放入 assets · state 通过 image:m365-cowork-ui.png 引用',
+    'Does the screenshot visibly show Auto as a model selection option?':
+        '截图中是否清楚显示 Auto 模型选项？',
+    'Live Microsoft-Decision-1.1 · image noul':
+        '实时 Microsoft-Decision-1.1 · 图片 noul 判断',
+    'IMAGE ASSET · TYPED VISUAL DECISION':
+        '图片输入 · 返回结构化概率',
+    'PNG Asset': 'PNG 图片',
+    'Cowork UI Screenshot': 'Cowork 界面截图',
+    'Base64 image in assets': '图片以 Base64 放入 assets',
+    'Image noul': '图片 noul 判断',
+    'Auto Selector Visible?': '是否显示 Auto 选项？',
+    'One typed probability': '返回一个结构化概率',
+    'App Action': '程序处理',
+    'Visual Check Complete': '图片检查完成',
+    'No OCR pipeline needed': '不需要单独 OCR',
+    'Sent a real PNG through assets and received a typed noul probability for the visible Auto selector.':
+        '通过 assets 发送真实 PNG，并得到 Auto 选项是否可见的 noul 概率。',
+    'Decision-1.1 reads the screenshot directly. The application references image:m365-cowork-ui.png in state and thresholds one numerical answer.':
+        'Decision-1.1 直接读取截图；程序在 state 中引用 image:m365-cowork-ui.png，并直接按返回概率设置阈值。',
+    'Unstructured Image Input': '尚未判断的图片输入',
+    '57,356-byte PNG': '57,356 字节 PNG',
+    'Raw screenshot has no typed application decision': '原始截图本身没有可供程序直接使用的判断结果',
+    'Image noul Gate': '图片 noul 判断',
+    '1 Typed Probability': '一个结构化概率',
+    'PNG asset · no filler prose': 'PNG 图片输入 · 不生成多余文字',
+    'Image: PNG ✓': '图片：PNG ✓',
+    'Typed noul ✓': '结构化 noul ✓',
+    'No OCR Stage ✓': '无需 OCR 阶段 ✓',
+    'Multimodal request: PNG in assets, referenced from state as image:m365-cowork-ui.png':
+        '多模态请求：PNG 放入 assets，并在 state 中通过 image:m365-cowork-ui.png 引用',
+    'REAL SCREENSHOT SENT TO DECISION-1.1':
+        '发送给 Decision-1.1 的真实界面截图',
+    'TYPED IMAGE DECISION': '结构化图片判断',
+    '✓ Image evaluated in ': '✓ 图片判断完成，耗时 ',
+    'Free-form output': '自由文本输出',
+    'None · typed probability only': '无 · 只返回结构化概率',
+    'assets + image: reference': 'assets + image: 引用',
+    'The application can threshold this result directly; no OCR stage or generated explanation is required.':
+        '程序可以直接按概率设置阈值，不需要单独 OCR，也不需要生成解释文字。',
+    'Click Run Step 5 to send the embedded screenshot as real base64 image data.':
+        '点击“运行步骤 5”，把内嵌截图作为真实 Base64 图片发送。',
+    '[CONFIG] Multimodal Decision-1.1 check':
+        '[配置] Decision-1.1 多模态图片检查',
+    '[REQUEST] Does the screenshot visibly show Auto as a model selection option?':
+        '[请求] 截图中是否清楚显示 Auto 模型选项？',
+    'Why: Decision-1.1 can apply the same typed noul gate to UI screenshots without OCR or a generative response.':
+        '说明：Decision-1.1 可以直接对界面截图执行 noul 判断，不需要 OCR，也不生成自由文本回答。',
 })

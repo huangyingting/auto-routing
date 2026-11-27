@@ -283,7 +283,7 @@ LIVE_DEMO = """
             </li>
             <li role="option" data-val="decision" aria-selected="false" class="cs-option">
               <span class="cs-opt-main">Demo 3 · App Controller</span>
-              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 4 scenarios / 7 calls</span>
+              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 5 scenarios / 8 calls</span>
             </li>
           </ul>
         </div>
@@ -627,6 +627,7 @@ img.a{object-fit:cover}
 .vs-panel{border:1px solid #253748;border-radius:10px;background:#111c27;padding:9px 11px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .vs-panel.win{border-color:rgba(74,222,128,.42);background:rgba(20,83,45,.16)}
 .vs-panel.err{border-color:rgba(248,113,113,.45);background:rgba(127,29,29,.18)}
+.vs-image-preview{width:100%%;max-height:190px;object-fit:contain;border:1px solid #2b4053;border-radius:8px;background:#fff}
 .vs-pkicker{font:800 9.5px/1.1 var(--font-mono);letter-spacing:.06em;color:#93c5fd;text-transform:uppercase}
 .vs-panel.win .vs-pkicker{color:#4ade80}
 .vs-panel.err .vs-pkicker{color:#fca5a5}
@@ -927,7 +928,7 @@ var SCENARIOS={
   ]
  },
  decision:{
-  ledgerSave:'7.2× Lower CAC ($1.81)',
+  ledgerSave:'Text + Image · 8 Calls',
   steps:[
    {short:'① Router',boundary:'Pre-LLM Inbox Filter',title:'Check 1 (choice): 4/4 Live Inbox Triage (3/4 Skip Frontier)',
     ctx:'4 live /v1/systemone calls · 4 handler tiers',
@@ -995,8 +996,25 @@ var SCENARIOS={
     what:'Before calling an expensive frontier model to compare legal clauses, Decision-1.1 verifies all referenced exhibits exist in state — stopping to ask when one is missing.',
     code:'answers.action: { choice: "request_missing_exhibit", p: 0.99994 } → Ask user for Exhibit B',
     baseName:'Direct Frontier Call',baseNums:'Hallucinated Terms ✕',baseMeta:'Guesses missing Exhibit B clauses confidently',
-    agentName:'Abstain · Ask User',agentNums:'p = 0.9999 · 334 ms',agentMeta:'Missing file caught · 7.2× CAC stack',
-    chips:[['Missing File Caught ✓','on'],['Latency: 334 ms ✓','on'],['Zero Frontier Waste ✓','on']],risk:1}
+    agentName:'Abstain · Ask User',agentNums:'p = 0.9999 · 334 ms',agentMeta:'Missing file caught · no guessed terms',
+     chips:[['Missing File Caught ✓','on'],['Latency: 334 ms ✓','on'],['Zero Frontier Waste ✓','on']],risk:1},
+    {short:'⑤ Image',boundary:'Multimodal Asset Gate',title:'Check 5 (image + noul): Live UI Screenshot Inspection',
+     ctx:'PNG in assets · state references image:m365-cowork-ui.png',
+     prompt:'Does the screenshot visibly show Auto as a model selection option?',
+     scorer:'Live Microsoft-Decision-1.1 · image noul',
+     bars:[],
+     pattern:'IMAGE ASSET · TYPED VISUAL DECISION',
+     nodes:[
+      {role:'PNG Asset',name:'Cowork UI Screenshot',sub:'Base64 image in assets',state:'active'},
+      {role:'Image noul',name:'Auto Selector Visible?',sub:'One typed probability',state:'active'},
+      {role:'App Action',name:'Visual Check Complete',sub:'No OCR pipeline needed',state:'win'}
+     ],
+     outcome:'✓ Sent a real PNG through assets and received a typed noul probability for the visible Auto selector.',
+     what:'Decision-1.1 reads the screenshot directly. The application references image:m365-cowork-ui.png in state and thresholds one numerical answer.',
+     code:'assets["m365-cowork-ui.png"] → answers.auto_selector_visible.noul',
+     baseName:'Unstructured Image Input',baseNums:'57,356-byte PNG',baseMeta:'Raw screenshot has no typed application decision',
+     agentName:'Image noul Gate',agentNums:'1 Typed Probability',agentMeta:'PNG asset · no filler prose',
+     chips:[['Image: PNG ✓','on'],['Typed noul ✓','on'],['No OCR Stage ✓','on']],risk:0}
   ]
  }
 };
@@ -1019,7 +1037,7 @@ var SCENARIO_META={
  decision:{
   kicker:'DEMO 3 · APP CONTROLLER',
   title:'Microsoft-Decision-1.1 (/v1/systemone)',
-  desc:'Replace slow LLM router prompts with 180 ms calibrated choice, score & noul gates ($0.042/1M).',
+  desc:'Use calibrated choice, score & noul gates on text, JSON, and images ($0.042/1M).',
   chrome:'Decision-1.1',
   visualPill:'SMART INBOX & GUARDRAILS'
  }
@@ -1050,7 +1068,8 @@ var LEDGER_SPECS={
    {base:0.6000,auto:0.15005,baseSec:15.20,autoSec:4.15},
    {base:0.1500,auto:0.00002,baseSec:3.80,autoSec:0.37},
    {base:0.2400,auto:0.00006,baseSec:12.00,autoSec:0.35},
-   {base:0.1500,auto:0.00002,baseSec:4.10,autoSec:0.35}
+   {base:0.1500,auto:0.00002,baseSec:4.10,autoSec:0.35},
+   {base:0.00001281,auto:0.00001281,baseSec:2.65,autoSec:2.65}
   ]
  }
 };
@@ -1125,6 +1144,20 @@ function updateLedger(){
  }else{
   byId('ledger-count').textContent='Completed: '+doneCount+' / '+totalSteps;
  }
+ var imageOnly=curKind==='decision'&&curStep===5&&(doneCount===0||(doneCount===1&&doneSet.decision[5]));
+ if(imageOnly){
+  var imageArt=lastArtifact['decision:5'],imageP=imageArt&&typeof imageArt.probability==='number'?imageArt.probability:0.973;
+  byId('ledger-base-lbl').textContent='Image Input';
+  byId('ledger-auto-lbl').textContent='Live Decision';
+  byId('ledger-base-bar').style.width='100%';
+  byId('ledger-auto-bar').style.width='100%';
+  byId('ledger-base-val').textContent='57,356-byte PNG';
+  byId('ledger-auto-val').textContent=fmtLedgerCost(spec.unit,aCost)+' · '+aSec.toFixed(1)+'s';
+  byId('ledger-delta').textContent='305 input tokens · 1 output token · p = '+imageP.toFixed(3);
+  return;
+ }
+ byId('ledger-base-lbl').textContent='Pinned Baseline';
+ byId('ledger-auto-lbl').textContent='Auto-Routed';
  var ratio=bCost>0?Math.max(4,Math.min(100,Math.round((aCost/bCost)*100))):50;
  var rawPct=bCost>0?Math.max(0,(1-aCost/bCost)*100):0;
  var saveStr=rawPct>=99.5?'99.7':String(Math.round(rawPct));
@@ -1309,7 +1342,7 @@ function renderVisualStage(){
       {lbl:'mentions_competitor',val:done?(compVal.toFixed(3)+' ≥ 0.50 HOLD ✕'):'threshold 0.50',pct:done?Math.round(compVal*100):8,tone:'warn'},
       {lbl:'unapproved_discount',val:done?(discVal.toFixed(3)+' < 0.50 Clean ✓'):'threshold 0.50',pct:done?Math.max(3,Math.round(discVal*100)):3,tone:'ok'}
     ])+'</div>';
-  }else{
+  }else if(curStep===4){
    h=stateBannerHtml(done,stepRunning,done,'Legal Comparison Request: Checking attached_documents completeness before Frontier call','✕ ABSTAINED in '+(art.wallMs||347)+' ms — Missing Exhibit B caught (p = 0.99994); zero hallucination!')
     +'<div class="vs-panel"><span class="vs-pkicker">LEGAL WORKSPACE STATE</span><div class="vs-ptitle">"Compare the renewal termination notice window in Contract A vs Exhibit B."</div>'
     +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">📄 Contract_A.pdf · Attached (Sec 9.2: 60 days)</span><span class="vs-mini-tag warn">⚠️ Exhibit_B.pdf · MISSING FROM STATE ✕</span></div></div>'
@@ -1320,6 +1353,15 @@ function renderVisualStage(){
       {lbl:'fast_extract',val:done?'0.0000':'pending',pct:3,tone:'muted'}
     ])+'</div>'
     +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">SAFE ASSISTANT ACTION</span><div class="vs-pbody">'+(done?'<strong>Asked Customer:</strong> "Contract A specifies 60 days prior written notice, but <strong>Exhibit B is not attached</strong>. Please upload Exhibit B so I can compare both clauses accurately."':'Instead of letting a frontier LLM guess missing Exhibit B terms, Decision-1.1 catches missing context upfront.')+'</div></div></div>';
+  }else{
+   var imageProb=art.probability!==undefined?Number(art.probability):0.98;
+   var decisionImage=Array.prototype.find.call(document.images,function(img){return /Copilot Cowork composer/i.test(img.alt||'');});
+   var imageMarkup=decisionImage?'<img class="vs-image-preview" src="'+decisionImage.src+'" alt="Copilot Cowork screenshot used for the live image decision">':'<div class="vs-mono-box">m365-cowork-ui.png · embedded PNG asset</div>';
+   h=stateBannerHtml(done,stepRunning,false,'Multimodal request: PNG in assets, referenced from state as image:m365-cowork-ui.png','✓ Image evaluated in '+(art.wallMs||550)+' ms — auto_selector_visible.noul = '+imageProb.toFixed(3))
+    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">REAL SCREENSHOT SENT TO DECISION-1.1</span>'+imageMarkup+'<div class="vs-annot-foot"><span class="vs-mini-tag ok">PNG · '+(art.imageBytes||'embedded')+' bytes</span><span class="vs-mini-tag">assets + image: reference</span></div></div>'
+    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">TYPED IMAGE DECISION</span><div class="vs-ptitle">Does the screenshot visibly show Auto as a model selection option?</div>'
+    +renderMeterRows([{lbl:'auto_selector_visible.noul',val:done?imageProb.toFixed(3):'pending',pct:done?Math.round(imageProb*100):10,tone:imageProb>=0.5?'ok':'warn'},{lbl:'Free-form output',val:'None · typed probability only',pct:3,tone:'muted'}])
+    +'<div class="vs-pbody">'+(done?'The application can threshold this result directly; no OCR stage or generated explanation is required.':'Click Run Step 5 to send the embedded screenshot as real base64 image data.')+'</div></div></div>';
   }
  }
  stage.innerHTML=h;
@@ -1371,6 +1413,15 @@ function completedModeLabel(step,total){
  return step===total?'Replay · All '+total+' Verified ✓':'Replay · Step '+step+' Verified ✓';
 }
 function setChip(id,text,tone){var el=byId(id);if(!el)return;el.textContent=text;el.classList.remove('on','denied');if(tone)el.classList.add(tone);}
+function localizeLiveRouteText(value){
+ if((document.documentElement.lang||'').indexOf('zh')!==0)return value;
+ return String(value)
+  .replace(/^image noul = /,'图片 noul = ')
+  .replace(/ ms multimodal gate$/,' ms · 多模态判断')
+  .replace(/^Image: PNG/,'图片：PNG')
+  .replace(/^Auto: /,'Auto：')
+  .replace(/^Base64 Sent/,'Base64 已发送');
+}
 
 function renderNodes(nodes){
  var box=byId('vis-nodes'),parts=[];
@@ -1474,6 +1525,7 @@ function renderTabsAndPills(keepExplicitRun){
 
 function renderVisualStep(kind,stepNum,keepExplicitRun){
  var list=SCENARIOS[kind].steps,idx=Math.max(0,Math.min(list.length-1,(Number(stepNum)||1)-1)),g=list[idx];
+ var imageDecision=kind==='decision'&&idx===4;
  curKind=kind;curStep=idx+1;
  byId('terminal-mode-sub').textContent=g.pattern;
  renderNodes(g.nodes);
@@ -1490,16 +1542,18 @@ function renderVisualStep(kind,stepNum,keepExplicitRun){
  byId('live-agent-user').textContent=g.agentName;
  byId('live-agent-nums').textContent=g.agentNums;
  byId('live-agent-session').textContent=g.agentMeta;
+ byId('base-role-label').textContent=imageDecision?'IMAGE INPUT':'WITHOUT ROUTING';
+ byId('agent-role-label').textContent=imageDecision?'DECISION RESULT':'WITH AUTO-ROUTING';
  setChip('live-chip-1',g.chips[0][0],g.chips[0][1]);
  setChip('live-chip-2',g.chips[1][0],g.chips[1][1]);
  setChip('live-chip-3',g.chips[2][0],g.chips[2][1]);
  var saved=lastLiveRoute[kind+':'+(idx+1)];
  if(saved){
-  if(saved.model)byId('live-agent-user').textContent=saved.model;
-  if(saved.meta)byId('live-agent-session').textContent=saved.meta;
-  if(saved.chip1)setChip('live-chip-1',saved.chip1,saved.chip1Tone);
-  if(saved.chip2)setChip('live-chip-2',saved.chip2,saved.chip2Tone);
-  if(saved.chip3)setChip('live-chip-3',saved.chip3,saved.chip3Tone);
+  if(saved.model)byId('live-agent-user').textContent=localizeLiveRouteText(saved.model);
+  if(saved.meta)byId('live-agent-session').textContent=localizeLiveRouteText(saved.meta);
+  if(saved.chip1)setChip('live-chip-1',localizeLiveRouteText(saved.chip1),saved.chip1Tone);
+  if(saved.chip2)setChip('live-chip-2',localizeLiveRouteText(saved.chip2),saved.chip2Tone);
+  if(saved.chip3)setChip('live-chip-3',localizeLiveRouteText(saved.chip3),saved.chip3Tone);
  }
  renderTabsAndPills(keepExplicitRun);
  updateLedger();

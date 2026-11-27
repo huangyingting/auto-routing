@@ -680,6 +680,68 @@
             "code": 0
           }
         }
+      ],
+      "5": [
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-start",
+            "demo": "decision",
+            "step": 5
+          }
+        },
+        {
+          "delayMs": 160,
+          "event": {
+            "kind": "output",
+            "text": "[CONFIG] Multimodal Decision-1.1 check · assets.m365-cowork-ui.png = { type: \"image\", format: \"png\", data_base64: ... }\n[REQUEST] Does the screenshot visibly show Auto as a model selection option?\n  image bytes=57356 · auto_selector_visible.noul=0.973\n✓ PASS — Screenshot evaluated in 2672 ms\nWhy: Decision-1.1 can apply the same typed noul gate to UI screenshots without OCR or a generative response.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.auto_selector_visible.noul)  |  Scenario: Image input\n"
+          }
+        },
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "raw",
+            "text": "# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Microsoft Copilot Cowork interface screenshot: image:m365-cowork-ui.png\",\n  \"questions\": {\n    \"auto_selector_visible\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Does the screenshot visibly show Auto as a model selection option?\"\n    }\n  },\n  \"assets\": {\n    \"m365-cowork-ui.png\": {\n      \"type\": \"image\",\n      \"format\": \"png\",\n      \"data_base64\": \"<base64 omitted: 76476 chars>\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (2672 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"auto_selector_visible\": {\n      \"type\": \"noul\",\n      \"noul\": 0.9725198343414589\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 305,\n    \"output_tokens\": 1\n  }\n}"
+          }
+        },
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "artifact",
+            "demo": "decision",
+            "step": 5,
+            "imageName": "m365-cowork-ui.png",
+            "imageBytes": 57356,
+            "probability": 0.9725198343414589,
+            "detected": true,
+            "wallMs": 2672,
+            "wallSec": 2.672,
+            "credits": 0.000012810000000000001
+          }
+        },
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "route",
+            "model": "image noul = 0.973",
+            "meta": "2672 ms multimodal gate",
+            "chip1": "Image: PNG ✓",
+            "chip1Tone": "on",
+            "chip2": "Auto: 0.973 ✓",
+            "chip2Tone": "on",
+            "chip3": "Base64 Sent ✓",
+            "chip3Tone": "on"
+          }
+        },
+        {
+          "delayMs": 15,
+          "event": {
+            "kind": "step-done",
+            "demo": "decision",
+            "step": 5,
+            "code": 0
+          }
+        }
       ]
     }
   }

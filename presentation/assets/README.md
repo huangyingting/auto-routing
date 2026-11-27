@@ -19,15 +19,15 @@ HTML embeds `.svg` files directly as native vector graphics (`data:image/svg+xml
 |---|---|---|
 | `bench-163x-frontier.svg` (`.png`) | GenisisIQ 28-model Creative & Multimodal Benchmark (`163×` Cost Compression Frontier) | Slide 5 |
 | `m365-copilot-home.png` | Official Microsoft Blog — Microsoft Copilot Home unified `Auto` composer (`Chat` + `Cowork`) | Slide 8 |
-| `m365-cowork-ui.png` | Official Microsoft Learn — Copilot Cowork `Chat / Cowork` + `Auto Medium` composer | Slide 9 |
+| `m365-cowork-ui.png` | Official Microsoft Learn — Copilot Cowork `Chat / Cowork` + `Auto Medium` composer | Slide 9 + Demo 3 image Step 5 |
 | `fusion-picker.png` | Official GitHub Changelog — GitHub Copilot Fusion composer (`Standard` / `High` / `Max`) | Slide 10 |
 | `fusion-patterns.png` | Official GitHub Changelog — Three execution patterns in Copilot Fusion (`Single` / `Cascade` / `Critique`) | Slide 11 |
 | `foundry-overview.png` | Official Microsoft Learn — Microsoft Foundry Auto (`"model": "auto"`) & Model Router overview across 40+ models & coding/agent SDKs | Slide 12 |
 | `foundry-router-flow.png` | Official Microsoft Learn — Foundry Model Router request flow (`Pool → Rank → PTU/PAYG → Failover`) | Slide 13 |
 | `hydra-pareto.png` | Official GitHub Blog — HyDRA 5-model production pool Pareto frontier (`arXiv:2605.17106`) | Slide 15 |
-| `decision-102-benchmarks.svg` (`.png`) | Official Microsoft Command Line (`Microsoft Decision benchmark report`, Nov 14, 2026) — `#1` overall (`78.8%`) across 102 blind benchmarks (385,246 questions) & leading 7 of 9 capability categories | Slide 20 |
+| `decision-102-benchmarks.svg` (`.png`) | Official Microsoft Command Line (`Microsoft Decision benchmark report`, Nov 14, 2026) — `#1` overall (`78.8%`) across 102 blind benchmarks (385,246 questions) & leading 7 of 9 capability categories | Slide 19 |
 
 ## 3. Recorded interactive demo traces (`demo-recordings.json`)
 
-Embedded automatically into `dist/html/index.html` and `docs/index.html` by `build_html.py` so the Interactive Auto-Routing Studio works offline and on GitHub Pages across all 3 scenarios (`fusion`, `foundry`, `decision`).
+Embedded automatically into `dist/html/index.html` and `docs/index.html` by `build_html.py` so the Interactive Auto-Routing Studio works offline and on GitHub Pages across all 3 demos (`fusion`, `foundry`, `decision`).
 

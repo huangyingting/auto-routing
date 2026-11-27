@@ -44,12 +44,13 @@ npm --prefix demo run demo:decision
 npm --prefix demo run demo:decision:live
 ```
 
-配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`，默认 `microsoft-decision-1.1`）后，4 个生产场景共对 `/providers/microsoft/v1/systemone` 发起 **7 次真实 HTTP 调用**（加 `--live` 强制要求云端连接）。原来的“同一消息连续调用 5 次”属于稳定性测试，已从现场 Demo 中移除：
+配置 `AZURE_FOUNDRY_ENDPOINT`（及可选 `DECISION_DEPLOYMENT`，默认 `microsoft-decision-1.1`）后，5 个生产场景共对 `/providers/microsoft/v1/systemone` 发起 **8 次真实 HTTP 调用**（加 `--live` 强制要求云端连接）：
 
 1. **收件箱前置分流（`choice`，4 次调用）**：分别处理致谢、退订、促销查询与跨系列质保对比；前三条无需高成本大模型。
 2. **受伤投诉转人工（`choice` + `score` + `noul`，1 次调用）**：一次返回负责团队、紧急程度与重复投诉判断。
 3. **发送前拦截竞品草稿（`noul`，1 次调用）**：检测推荐竞品 Fabrikam 的回复并在发送前转人工。
 4. **缺失附件时先询问（`choice`，1 次调用）**：只有 `Contract A`、缺少 `Exhibit B` 时，停止比较并提示用户补充材料。
+5. **界面截图判断（图片 + `noul`，1 次调用）**：把真实 Copilot Cowork PNG 截图以 Base64 放入 `assets`，在 `state` 中通过 `image:m365-cowork-ui.png` 引用，并判断截图里是否显示 Auto 模型选项。
 
 ## 命令行单步与自定义句子实时探测
 

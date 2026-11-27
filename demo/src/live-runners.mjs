@@ -16,6 +16,7 @@ const execFileAsync = promisify(execFile);
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const demoRoot = path.resolve(here, "..");
 export const fixturesDir = path.join(demoRoot, "fixtures");
+const presentationImagesDir = path.join(demoRoot, "..", "presentation", "assets", "images");
 
 // Load optional gitignored demo/.env.local for zero-flag local live runs
 const localEnvPath = path.join(demoRoot, ".env.local");
@@ -562,9 +563,23 @@ export async function callDecisionSystemOne({ state, questions, assets = undefin
       hasAssets: Boolean(assets),
     },
   );
+  const tracePayload = assets
+    ? {
+        ...payload,
+        assets: Object.fromEntries(
+          Object.entries(assets).map(([name, asset]) => [
+            name,
+            {
+              ...asset,
+              data_base64: `<base64 omitted: ${asset.data_base64?.length || 0} chars>`,
+            },
+          ]),
+        ),
+      }
+    : payload;
   const rawTrace =
     `# HTTP Request: POST ${endpoint}/providers/microsoft/v1/systemone\n` +
-    `${JSON.stringify(payload, null, 2)}\n\n` +
+    `${JSON.stringify(tracePayload, null, 2)}\n\n` +
     `# HTTP 200 Response JSON (${wallMs} ms)\n${JSON.stringify(json, null, 2)}`;
   return { json, wallMs, deployment, rawTrace };
 }
@@ -1512,6 +1527,68 @@ export async function runDecisionStepLive(step, emit) {
       chip2: `Latency: ${wallMs} ms ✓`,
       chip2Tone: "on",
       chip3: "Zero Frontier Waste ✓",
+      chip3Tone: "on",
+    });
+    emit({ kind: "step-done", demo: "decision", step, code: 0 });
+    return;
+  }
+
+  if (step === 5) {
+    const imageName = "m365-cowork-ui.png";
+    const imageBytes = await readFile(path.join(presentationImagesDir, imageName));
+    const state = `Microsoft Copilot Cowork interface screenshot: image:${imageName}`;
+    const assets = {
+      [imageName]: {
+        type: "image",
+        format: "png",
+        data_base64: imageBytes.toString("base64"),
+      },
+    };
+    const questions = {
+      auto_selector_visible: {
+        type: "noul",
+        instructions: "Does the screenshot visibly show Auto as a model selection option?",
+      },
+    };
+    const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions, assets });
+    const probability = Number(
+      json.answers?.auto_selector_visible?.noul ??
+      json.auto_selector_visible?.noul ??
+      0,
+    );
+    const detected = probability >= 0.5;
+    emit({
+      kind: "output",
+      text:
+        `[CONFIG] Multimodal Decision-1.1 check · assets.${imageName} = { type: "image", format: "png", data_base64: ... }\n` +
+        `[REQUEST] Does the screenshot visibly show Auto as a model selection option?\n` +
+        `  image bytes=${imageBytes.length} · auto_selector_visible.noul=${probability.toFixed(3)}\n` +
+        `${detected ? "✓ PASS" : "✕ NOT DETECTED"} — Screenshot evaluated in ${wallMs} ms\n` +
+        `Why: Decision-1.1 can apply the same typed noul gate to UI screenshots without OCR or a generative response.\n` +
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.auto_selector_visible.noul)  |  Scenario: Image input\n`,
+    });
+    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n${rawTrace}` });
+    emit({
+      kind: "artifact",
+      demo: "decision",
+      step: 5,
+      imageName,
+      imageBytes: imageBytes.length,
+      probability,
+      detected,
+      wallMs,
+      wallSec: wallMs / 1000,
+      credits: 305 * 0.042 / 1_000_000,
+    });
+    emit({
+      kind: "route",
+      model: `image noul = ${probability.toFixed(3)}`,
+      meta: `${wallMs} ms multimodal gate`,
+      chip1: "Image: PNG ✓",
+      chip1Tone: "on",
+      chip2: `Auto: ${probability.toFixed(3)} ✓`,
+      chip2Tone: detected ? "on" : "denied",
+      chip3: "Base64 Sent ✓",
       chip3Tone: "on",
     });
     emit({ kind: "step-done", demo: "decision", step, code: 0 });
