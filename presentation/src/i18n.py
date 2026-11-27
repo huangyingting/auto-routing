@@ -134,40 +134,33 @@ EN_NOTES = {
         "Source: Microsoft Command Line — Microsoft-Decision-1.1 GA (Nov 17, 2026)."
     ),
     20: (
-        "Let's translate accuracy and low cost into hard ROI with a $10,000-a-month sales inbox study. In the naive baseline, every customer reply hits a $0.15 frontier LLM, and because teams don't trust unguarded bots, a human reviews 100% of drafts at $0.24 each—capping monthly conversions at 764 customers, or $13 CAC.\n"
-        "Dropping in Decision-1.1 changes the funnel at three points: first, a `choice` router hits 100% accuracy across 32 reply types (versus 88% with regex), letting 57% of routine 'thanks' or 'unsubscribe' emails skip the LLM entirely; "
-        "second, `score` prioritizes high-intent leads; third, an outbound `noul` gate catches rival promotions automatically, cutting human review from 100% down to 8%. "
-        "All three checks combined cost $0.00019 per email—converting 7.2x more customers on the same budget and dropping CAC from $13 to $1.81.\n\n"
-        "Source: Microsoft Command Line blog ($10k/mo sales inbox case study)."
-    ),
-    21: (
         "Demo 1 now contains four distinct scenarios backed by five real Copilot CLI calls.\n"
         "Step 1 is Fusion Single: a routine whitespace fix stays on `gpt-6.1-terra`, adds no review call, and passes 3/3 unit tests. "
         "Step 2 is Cascade: `gpt-6.1-sol` fixes an ABBA lock-order deadlock, `gpt-6-luna` independently scores it 5/5, Opus repair is skipped, and 500 stress runs pass. "
         "Step 3 is Critique: Opus drafts a 50k-RPS payment failover RFC, Luna catches the missing cross-region durability behind the RPO=0 claim, and Opus revises it.\n"
         "Step 4 is the cache scenario, and it is deliberately two real calls: one Auto call warms the session, then `--resume` issues the measured follow-up. The second call reads 5,655 of 5,733 tokens from cache—a 99% hit—at 0.024 incremental AIU. Raw Log shows both the warm-up and resumed calls."
     ),
-    22: (
+    21: (
         "Demo 2 moves to Microsoft Foundry Model Router: four scenarios and six real cloud requests, all through the same `/openai/v1/chat/completions` endpoint with `model: \"auto\"` and `ModelRouterControls=V1Preview`.\n"
         "Step 1 tests pre-rank eligibility and cross-provider parameter cleanup—sending `developer` role, `temperature: 0.2`, and `json_object` together. Instead of tripping HTTP 400 mismatches across labs, Foundry normalizes the payload and routes to `gpt-5.6-luna` in 30 ms.\n"
         "Steps 2 and 3 send two starkly different tasks to the untouched `balanced` endpoint: Step 2 extracts invoice fields in 27 ms on cheap `DeepSeek-V4.1-Flash` with zero wasted reasoning tokens; "
         "Step 3 submits a formal Rust lock-free ring-buffer proof, automatically escalating in 30 ms to `gpt-6-luna`, and on Turn 2's short follow-up, message-fingerprint affinity returns `retain` so the warm model cache isn't broken.\n"
         "Step 4 contributes the final two calls: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to `gpt-5.6-terra` (29 ms) for strategy. The count is 1 + 1 + 2 + 2 = 6. Switch to `{ } Raw Log` to inspect the current scenario's `routing_trace`."
     ),
-    23: (
+    22: (
         "Demo 3 is now focused on four production scenarios and seven real `/providers/microsoft/v1/systemone` requests. The previous five-repeat stability probe was removed because the benchmark section already covers consistency.\n"
         "Step 1 runs a pre-LLM `choice` router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison). Three out of four skip the frontier LLM.\n"
         "Step 2 packs `choice`, `score`, and `noul` into one request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
         "Step 3 screens an outbound AI draft recommending rival 'Fabrikam for $749', scoring competitor mention at `0.970` and holding the draft before send.\n"
         "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing. The count is 4 + 1 + 1 + 1 = 7 real requests."
     ),
-    24: (
+    23: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
         "First, stop pinning one model to every turn—route sub-tasks by capability. Second, respect the prefix cache: switch models at Turn 1 or isolated sub-jobs, never mid-conversation for pennies. "
         "Third, adopt turnkey routers before building from scratch—turn on Copilot Auto at work, Copilot Fusion in your IDE, and Foundry Model Router on your cloud endpoints. "
         "Fourth, when your own application code needs fast triage, priority scoring, or outbound guardrails, plug in calibrated Microsoft-Decision-1.1. Thank you—let's open it up for Q&A!"
     ),
-    25: (
+    24: (
         "This final reference slide collects all public benchmarks, product docs, the HyDRA paper, and Microsoft-Decision-1.1 quickstarts and open benchmark suites—every link is clickable in both the PowerPoint and web deck."
     ),
 }
@@ -435,19 +428,6 @@ ZH_TEXT_MAP = {
     '• Adopted by Epic, Equinor, Atos & Raiffeisen Bank': '• 已被 Epic、Equinor、Atos 和 Raiffeisen 银行用于生产环境',
 
     # Slide 21 (idx 20)
-    '05 · MICROSOFT DECISION-1.1 · IMPACT': '05 · MICROSOFT DECISION-1.1 · 成本收益测算',
-    'Sales agent case: 7.2× lower CAC': '销售邮件场景案例：获客成本降低 7.2 倍',
-    '1 · Baseline: Frontier LLM + 100% review': '1 · 初始方案：全部调用大模型 + 全量人工审核',
-    '$0.31 per lead  ·  CAC = $13.00': '单条线索成本 $0.31  ·  获客成本 CAC = $13.00',
-    'Every email calls a $0.15 frontier LLM plus $0.24 human review — capping $10k/mo at 764 customers.': '每封回信都花 $0.15 调大模型生成草稿，再花 $0.24 人工检查，每月 1 万美元预算最多转化 764 位客户。',
-    '2 · Add choice router + score priority': '2 · 加入 choice 前置分流与 score 优先级排序',
-    '$0.07 per lead  ·  CAC = $2.63': '单条线索成本 $0.07  ·  获客成本 CAC = $2.63',
-    '100% routing accuracy (vs. 88% regex): 57% of simple replies skip the LLM; only P1–P3 go to humans.': '32 类邮件分流准确率达 100%（正则规则为 88%）：57% 的简单回信直接由规则处理，无需调用大模型。',
-    '3 · Add noul outbound safety gate': '3 · 加入 noul 发送前内容检查',
-    '$0.05 per lead  ·  CAC = $1.81 (7.2× lower)': '单条线索成本 $0.05  ·  CAC 降至 $1.81（降低 7.2 倍）',
-    'All 3 Decision-1.1 checks cost $0.00019/email total — cutting human review 100% → 8% (5,511 customers).': '三项检查加起来每封信仅需 $0.00019，将人工抽检比例从 100% 降到 8%，同样预算可转化 5,511 位客户。',
-
-    # Slide 22 (idx 21)
     '$ copilot --model fusion --fusion-tier high \\\n    -p "..." --output-format json --usage-output-file u.json\n\n// Server-resolved pattern per single CLI command:\n-> Routine fix  : pattern="single"   (gpt-6.1-terra, 0 review)\n-> Lock bug     : pattern="cascade"  (sol -> luna Judge 5/5)\n-> 50k RPS RFC  : pattern="critique" (opus -> luna -> revise)\n-> --resume <id>: 99% cacheReadTokens hit (5,655 / 5,733 tok)': '$ copilot --model fusion --fusion-tier high \\\n    -p "..." --output-format json --usage-output-file u.json\n\n// 单条命令由服务端按题目难度自动选择模式:\n-> 常规代码修改 : pattern="single"   (gpt-6.1-terra, 无额外评审)\n-> 并发死锁修复 : pattern="cascade"  (sol -> luna 评审 5/5)\n-> 高并发容灾方案: pattern="critique" (opus -> luna 审校 -> 修订)\n-> --resume <id>: 99% 缓存命中 (5,655 / 5,733 tok)',
     'POST /openai/v1/chat/completions\nFoundry-Features: ModelRouterControls=V1Preview\n{\n  "model": "auto",\n  "routing_config": {\n    "mode": "balanced",\n    "session_affinity": { "strategy": "adaptive" }\n  }\n}\n// Invoice JSON -> DeepSeek-V4.1-Flash (28 ms)\n// Rust MPMC    -> gpt-6-luna          (27 ms, retain)': 'POST /openai/v1/chat/completions\nFoundry-Features: ModelRouterControls=V1Preview\n{\n  "model": "auto",\n  "routing_config": {\n    "mode": "balanced",\n    "session_affinity": { "strategy": "adaptive" }\n  }\n}\n// 简单发票提取 -> DeepSeek-V4.1-Flash (27 ms)\n// Rust 并发证明 -> gpt-6-luna          (30 ms, retain)',
     '// Easy JSON -> DeepSeek-V4.1-Flash (23 ms) | Hard Rust -> gpt-5.6-luna (20 ms)\n"session_affinity": { "strategy": "adaptive", "decision": "retain" },\n"attempts": [ {"model":"gpt-6-sol","status":429}, {"model":"gpt-5.6-sol","status":200} ]': '// 简单提取 -> DeepSeek-V4.1-Flash (23 ms) | 复杂证明 -> gpt-5.6-luna (20 ms)\n"session_affinity": { "strategy": "adaptive", "decision": "retain" },\n"attempts": [ {"model":"gpt-6-sol","status":429}, {"model":"gpt-5.6-sol","status":200} ]',
@@ -464,7 +444,7 @@ ZH_TEXT_MAP = {
     'Opus draft → Luna Critic → Opus revise': 'Opus 起草 → Luna 审校提议修改 → Opus 修订',
     'Native Critic flags Active-Active zero-RPO gap for Opus to revise; --resume hits 99% cacheReadTokens.': 'Critic 指出多活方案里数据零丢失的前提漏洞并交回 Opus 修订；--resume 追问实测 99% 命中缓存。',
 
-    # Slide 23 (idx 22)
+    # Slide 22 (idx 21)
     '06 · LIVE DEMO 2': '06 · 演示 2',
     'Foundry Model Router live': 'Foundry Model Router 云端接口演示',
     '4 live Foundry V1Preview cloud traces (0 local mocks)': '4 组真实 Foundry V1Preview 云端接口调用',
@@ -478,7 +458,7 @@ ZH_TEXT_MAP = {
     'grok-4-1-fast (cost) → gpt-5.6-terra (quality)': 'grok-4-1-fast (cost 提取) → gpt-5.6-terra (quality 分析)',
     'Splits renewal analysis into two live calls: cheap extraction in cost mode followed by strategy in quality mode.': '将续约分析拆成两次调用：先用 cost 模式低成本提取关键数据，再用 quality 模式交由强模型制定策略。',
 
-    # Slide 24 (idx 23)
+    # Slide 23 (idx 22)
     '06 · LIVE DEMO 3': '06 · 演示 3',
     'Decision-1.1 agent controller': 'Decision-1.1 应用控制与检查演示',
     'GA · Nov 2026': '2026.11 正式版',
@@ -493,7 +473,7 @@ ZH_TEXT_MAP = {
     'Rival promo noul=0.970 & missing Exhibit B p=0.9999': '提及竞品 noul=0.970 拦截 · 缺少附件 B 概率 0.9999',
     'Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.': '拦下推荐竞品 Fabrikam 的回复草稿 (0.970)；发现未提供附件 B 时主动提示补充，不凭空编造。',
 
-    # Slide 25 (idx 24)
+    # Slide 24 (idx 23)
     'SUMMARY · KEY TAKEAWAYS': '总结 · 落地建议',
     'Right-size the model,\nkeep the control': '按任务选对模型，\n把控成本与质量',
     '1   Route sub-tasks by capability — no single model wins all.': '1   按子任务特点分配模型 —— 不要用一个模型处理所有请求。',
@@ -502,7 +482,7 @@ ZH_TEXT_MAP = {
     '4   Use Microsoft-Decision-1.1 for fast routing, priority & safety gates.': '4   业务代码里的分流、定级和内容检查，可接入 Decision-1.1。',
     'Thank you  ·  Q&A': '谢谢大家  ·  问答交流',
 
-    # Slide 26 (idx 25)
+    # Slide 25 (idx 24)
     'APPENDIX · OFFICIAL SOURCES & BENCHMARKS': '附录 · 参考文档与评测报告',
     'Public field guide': '公开资料链接',
     'Benchmarks & Product Routing': '评测报告与微软产品文档',
@@ -525,10 +505,10 @@ ZH_TEXT_MAP = {
 ZH_DEMO_LAUNCHERS = {
     10: ('fusion', '1', '打开 Fusion 演示'),
     12: ('foundry', '1', '打开 Foundry 演示'),
-    20: ('decision', '1', '打开 Decision-1.1 演示'),
-    21: ('fusion', '1', '启动 Demo 1 · Copilot CLI & Fusion'),
-    22: ('foundry', '1', '启动 Demo 2 · Foundry 路由器'),
-    23: ('decision', '1', '启动 Demo 3 · Decision-1.1'),
+    19: ('decision', '1', '打开 Decision-1.1 演示'),
+    20: ('fusion', '1', '启动 Demo 1 · Copilot CLI & Fusion'),
+    21: ('foundry', '1', '启动 Demo 2 · Foundry 路由器'),
+    22: ('decision', '1', '启动 Demo 3 · Decision-1.1'),
 }
 
 ZH_DEMO_TEXT_MAP = {
@@ -885,10 +865,6 @@ ZH_TEXT_MAP.update({
     '#1 across 102 decision benchmarks': '在 102 项判断类盲测中综合排名第一',
     '#1 Overall Across 102 Blind Benchmarks': '102 项盲测综合排名第 1',
     'Powering Microsoft & 4,000+ Customers': '已用于微软产品和 4,000 多家客户',
-    'Sales agent case: 7.2× lower CAC': '销售邮件案例：获客成本降至约七分之一',
-    '1 · Baseline: Frontier LLM + 100% review': '1 · 原方案：每封邮件都调用大模型，并全部人工审核',
-    '2 · Add choice router + score priority': '2 · 先做消息分流，再按优先级处理',
-    '3 · Add noul outbound safety gate': '3 · 发送前只检查可能有问题的草稿',
     'Decision-1.1 agent controller': 'Decision-1.1 业务流程判断演示',
     '✓  Zero-spread routing (choice & noul)': '✓  同一输入结果稳定，普通消息先分流',
     '!  3-in-1 safety triage (choice+score+noul)': '!  一次请求同时完成分组、定级和重复投诉判断',
@@ -899,10 +875,10 @@ ZH_TEXT_MAP.update({
 ZH_DEMO_LAUNCHERS = {
     10: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
     12: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    20: ('decision', '1', '打开演示 3：Decision-1.1'),
-    21: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
-    22: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    23: ('decision', '1', '打开演示 3：Decision-1.1'),
+    19: ('decision', '1', '打开演示 3：Decision-1.1'),
+    20: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
+    21: ('foundry', '1', '打开演示 2：Foundry Model Router'),
+    22: ('decision', '1', '打开演示 3：Decision-1.1'),
 }
 
 ZH_DEMO_TEXT_MAP.update({
@@ -1841,7 +1817,7 @@ ZH_TEXT_MAP.update({
         '一次调用停止合同对比，避免模型编造缺失条款。',
 })
 
-# 第 22–24 页用于现场讲解，中文先说清结论，再保留模型名和指标。
+# 第 21–23 页用于现场讲解，中文先说清结论，再保留模型名和指标。
 ZH_TEXT_MAP.update({
     'Copilot CLI Auto & Fusion live':
         'Copilot CLI：四种执行场景',

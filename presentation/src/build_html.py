@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build_html.py - turns the same 26 slides into ONE self-contained HTML file
+"""build_html.py - turns the same 25 slides into ONE self-contained HTML file
 (images & interactive Demo Studio recordings embedded, no external files).
 
 Usage:  pip install pillow
@@ -114,10 +114,10 @@ REVEAL_ITEMS = {
 DEMO_LAUNCHERS = {
     10: ('fusion', '1', 'Open Fusion Demo'),
     12: ('foundry', '1', 'Open Foundry Demo'),
-    20: ('decision', '1', 'Open Decision-1.1 Demo'),
-    21: ('fusion', '1', 'Launch Demo 1 · Copilot CLI & Fusion'),
-    22: ('foundry', '1', 'Launch Demo 2 · Foundry Router'),
-    23: ('decision', '1', 'Launch Demo 3 · Decision-1.1'),
+    19: ('decision', '1', 'Open Decision-1.1 Demo'),
+    20: ('fusion', '1', 'Launch Demo 1 · Copilot CLI & Fusion'),
+    21: ('foundry', '1', 'Launch Demo 2 · Foundry Router'),
+    22: ('decision', '1', 'Launch Demo 3 · Decision-1.1'),
 }
 
 def reveal_attrs(slide_index, operation_index):
@@ -1922,8 +1922,8 @@ function toggleNotes(force){
  syncNotes();
 }
 function defaultDemoForSlide(idx){
- if([6,7,8,11,12,22].indexOf(idx)!==-1)return 'foundry';
- if([16,17,18,19,20,23].indexOf(idx)!==-1)return 'decision';
+ if([6,7,8,11,12,21].indexOf(idx)!==-1)return 'foundry';
+ if([16,17,18,19,22].indexOf(idx)!==-1)return 'decision';
  return 'fusion';
 }
 deck.closeNotes=function(){if(notesOpen)toggleNotes(false);};

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_pptx.py - builds "Auto-routing LLMs" (26 slides, 16:9,
+build_pptx.py - builds "Auto-routing LLMs" (25 slides, 16:9,
 hand-drawn illustrations + product screenshots/charts, Chinese speaker notes)
 as a standalone .pptx with build-time layout & overlap verification.
 
@@ -630,30 +630,8 @@ card_box(s,rx,4260000,rw,1740000,[
 footer(s,'',20)
 note(s,'由于每次推理只激活 4B 参数、价格也很低，大家自然会关心它的准确率够不够高。为了避免在单一测试集上过拟合，评测团队选取了训练集以外的 102 项基准测试（包含 41 项公开测试和 61 项企业场景测试，共 38.5 万道题），对 8 款决策模型做了对比。\n左侧图表展示了测试结果：Decision-1.1 平均准确率为 78.8%，排在综合第一，并在 9 个细分能力维度中拿到了 7 项第一，包括路由分流、工具选择、安全检查和结果一致性；在第三方 Artificial Analysis 决策指数上得分为 68 分，速度提升了 2.2 倍。目前它除了用于微软内部的 Copilot 分流、Cowork 强度调节、Foundry 自动评测和 Xbox 数据分析流程外，也已经有四千多家企业接入使用。\n\n参考来源：Microsoft Command Line — Microsoft-Decision-1.1 GA（2026 年 11 月 17 日，附 Microsoft Decision benchmark report 2026-11-14）。')
 
-# ---------- 20 CONTOSO 7.2X CAC CASE STUDY VECTOR SVG
+# ---------- 20 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
 s=20
-header(s,'05 · MICROSOFT DECISION-1.1 · IMPACT','Sales agent case: 7.2× lower CAC',cx=CW-2300000)
-ix=M; iy=1540000; icw=6100000; ich=4400000
-rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
-img(s,'decision-cac-waterfall.svg',ix+50000,iy+50000,icw-100000,ich-100000,'Vector SVG chart: Contoso $10,000/mo sales agent Cost-per-Lead waterfall and 32-reply 100% accuracy router benchmark',fit='contain')
-rx=ix+icw+260000; rw=W-M-rx
-steps_cac=[
-    ('1 · Baseline: Frontier LLM + 100% review','$0.31 per lead  ·  CAC = $13.00','Every email calls a $0.15 frontier LLM plus $0.24 human review — capping $10k/mo at 764 customers.',AMB),
-    ('2 · Add choice router + score priority','$0.07 per lead  ·  CAC = $2.63','100% routing accuracy (vs. 88% regex): 57% of simple replies skip the LLM; only P1–P3 go to humans.',CY),
-    ('3 · Add noul outbound safety gate','$0.05 per lead  ·  CAC = $1.81 (7.2× lower)','All 3 Decision-1.1 checks cost $0.00019/email total — cutting human review 100% → 8% (5,511 customers).',CY),
-]
-for i,(t,sub,desc,col_) in enumerate(steps_cac):
-    yy=1540000+i*1510000
-    card_box(s,rx,yy,rw,1380000,[
-        {'text':t,'sizePt':14.6,'bold':True,'color':INK if col_==MUTED else col_,'spaceAfterPt':6.5},
-        {'text':sub,'sizePt':12.2,'bold':True,'color':col_,'spaceAfterPt':6.5},
-        {'text':desc,'sizePt':12.1,'color':MUTED},
-    ],fill=CARD,pad_x=200000,pad_y=95000)
-footer(s,'',21)
-note(s,'再看一个具体的成本测算案例，场景是每月预算 1 万美元的销售邮件跟进。最初的做法是每收到一封客户回信，都直接调用 0.15 美元一次的大模型起草回复，再为了稳妥起见安排人工逐封审核，每封人工成本 0.24 美元。算下来处理一条线索需要 0.31 美元，平均签下一位客户的获客成本是 13 美元。\n引入 Decision-1.1 后做了三处改动：先在入口用 choice 做邮件分流，在 32 类真实客户回信测试中准确率达到 100%（原本的正则规则是 88%），把 57% 像“谢谢”或“退订”这类简单回信直接用规则处理，不再调用大模型；接着用 score 给高意向客户排优先级；最后在发送前用 noul 检查草稿内容。三项检查加在一起，每封邮件只花 0.00019 美元，但把需要人工审核的比例从 100% 降到了 8%。同样每月 1 万美元预算，转化的客户数量增加到原来的 7.2 倍，获客成本降到了 1.81 美元。\n\n参考来源：Microsoft Command Line 博客（$10k/月销售收件箱架构测算案例）。')
-
-# ---------- 21 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
-s=21
 header(s,'06 · LIVE DEMO 1','Copilot CLI Auto & Fusion live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
@@ -687,11 +665,11 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
-footer(s,'',22)
+footer(s,'',21)
 note(s,'第一个 Demo 有四个场景，每个场景证明一件不同的事。\n第一个场景是常规代码修改。虽然选择了 Fusion High，但系统判断一个模型就够了，因此只调用 Terra 完成修改，3 项测试全部通过，也没有额外调用评审模型。\n第二个场景是并发死锁。Sol 先修正两把锁的顺序，Luna 再独立检查。Luna 给出 5 分通过后，系统没有再调用 Opus 重做；后面的 500 次并发测试也全部通过。\n第三个场景是架构方案。Opus 先写初稿，Luna 发现其中把“避免写入冲突”误当成了“跨区域数据不会丢”，于是 Opus 按照这个意见补上三区域同步提交方案。\n第四个场景看缓存复用。为了真实验证 --resume，程序先发起一次调用建立会话，再发起第二次追问。第二次调用有 5,655 / 5,733 个 Token 直接来自缓存，命中率为 99%，增量费用是 0.024 AIU。因此四个场景一共是五次真实 CLI 调用。')
 
-# ---------- 22 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
-s=22
+# ---------- 21 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
+s=21
 header(s,'06 · LIVE DEMO 2','Foundry Model Router live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
@@ -729,11 +707,11 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
-footer(s,'',23)
+footer(s,'',22)
 note(s,'第二个 Demo 有四个场景，业务代码始终调用同一个 /chat/completions 接口，只把 model 设为 auto。\n第一个场景验证参数兼容。请求里同时带了 developer 角色、temperature 和 JSON 输出要求。Foundry 会先排除不支持这些要求的模型，再把参数转换成目标模型能接受的格式，最后由 gpt-5.6-luna 返回正确 JSON。\n第二个场景只从发票里提取编号和币种。这个任务很简单，DeepSeek Flash 已经足够，选模耗时 27 毫秒，推理 Token 为 0，没必要调用成本更高的模型。\n第三个场景有两轮请求。第一轮要求用 5 行设计 Rust 无锁 MPMC 环形队列，并准确说明 Acquire/Release 内存序和 ABA epoch 回收约束；任务变难后，系统自动升级到 gpt-6-luna。第二轮只追问一句“如何避免下标回绕溢出”，系统识别为同一段对话，继续沿用 Luna，不重新建立上下文。\n第四个场景把续约分析拆成两步：先用 grok fast 整理关键数字，再把两条摘要交给 terra 制定报价和谈判方案。四个场景一共六次真实请求，分别是 1、1、2、2 次。')
 
-# ---------- 23 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
-s=23
+# ---------- 22 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
+s=22
 header(s,'06 · LIVE DEMO 3','Decision-1.1 agent controller',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
@@ -772,11 +750,11 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
-footer(s,'',24)
+footer(s,'',23)
 note(s,'第三个 Demo 精简为四个生产场景，展示 Decision-1.1 怎么替业务代码先做判断。原来的“同一消息连续调用 5 次”属于稳定性测试，前面的评测页已经介绍过，因此从现场 Demo 中移除。\n第一个场景处理 4 条客服消息：“谢谢”、退订、促销咨询和复杂质保对比。前三条不需要高成本大模型，只有最后一条才升级。\n第二个场景是一条受伤投诉。一次请求同时返回负责团队、紧急程度和是否重复投诉，程序立即停用自动回复，并通知人工安全专员。\n第三个场景检查待发送草稿。草稿里推荐了竞品 Fabrikam，提及竞品的概率为 0.970，因此不会自动发给客户，而是转人工确认。\n第四个场景检查合同附件。用户要求对比合同 A 和附件 B，但附件 B 没有上传。系统选择先请用户补充材料，不继续比较，也不让模型猜测缺失条款。四个场景合计 7 次真实请求：4 + 1 + 1 + 1。')
 
-# ---------- 24 CLOSER: KEY TAKEAWAYS
-s=24
+# ---------- 23 CLOSER: KEY TAKEAWAYS
+s=23
 img(s,'hd-review.jpg',W-M-5040000,1620000,5040000,3360000,'Hand-drawn illustration: two friendly robots reviewing and approving a routed workflow together')
 x=M+80000; cx=5850000
 rect(s,x,330000,520000,38000,fill=CY,preset='roundRect')
@@ -794,11 +772,11 @@ card_box(s,x,4560000,cx,820000,[
     {'text':'github.com/microsoftconnect/Decision-Benchmarks','sizePt':12.5,'bold':True,'color':CY},
 ],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=90000,font=MF)
 tb(s,x,5540000,cx,'Thank you  ·  Q&A',size=24,color=INK,font=HF,bold=True,cy=480000)
-footer(s,'',25)
+footer(s,'',24)
 note(s,'最后简单总结四条落地建议：\n第一，不要把所有请求都固定绑在同一个模型上，可以根据子任务的特点分别选择合适的模型；第二，控制成本时要注意前缀缓存，尽量在对话开始或独立子任务时选定模型，避免中途频繁切换；第三，优先利用平台已有的能力，日常办公开启 Copilot Auto，写代码使用 Copilot Fusion，调用云端接口可以直接接入 Foundry Model Router；第四，如果业务代码里需要做请求分流、优先级评估或发送前的内容检查，可以尝试接入低延迟、低成本的 Decision-1.1。今天的内容就分享到这里，谢谢大家，欢迎提问交流。')
 
-# ---------- 25 APPENDIX: PUBLIC REFERENCES
-s=25
+# ---------- 24 APPENDIX: PUBLIC REFERENCES
+s=24
 header(s,'APPENDIX · OFFICIAL SOURCES & BENCHMARKS','Public field guide')
 gap=240000; colw=(CW-gap)/2; cy0=1540000; ch=4420000
 app_cols=[
@@ -817,7 +795,7 @@ for i,(t,sub,links,col_) in enumerate(app_cols):
         {'text':f'↗  {label}','sizePt':12.8,'bold':True,'color':CY,'href':url,'spaceAfterPt':9}
         for label,url in links
     ],cy=ch-1460000)
-footer(s,'',26)
+footer(s,'',25)
 note(s,'最后一页整理了今天提到的评测报告、产品文档、HyDRA 论文以及 Decision-1.1 的使用指南和开源测试集链接，在 PPT 和网页版里都可以直接点击打开，方便会后查阅。')
 
 

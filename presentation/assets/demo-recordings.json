@@ -506,7 +506,7 @@
           "delayMs": 15,
           "event": {
             "kind": "output",
-            "text": "✓ PASS — Routed 4/4 messages live; 3/4 skipped the expensive frontier LLM\nWhy: Spending $0.000013 up front filters out routine messages that never needed a frontier LLM call.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.route.{choice,probabilities})  |  Eval: Slide 21\n"
+            "text": "✓ PASS — Routed 4/4 messages live; 3/4 skipped the expensive frontier LLM\nWhy: Spending $0.000013 up front filters out routine messages that never needed a frontier LLM call.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.route.{choice,probabilities})  |  Scenario: Inbox routing\n"
           }
         },
         {
@@ -600,7 +600,7 @@
           "delayMs": 160,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Outbound policy guardrail · type=\"noul\" · hold draft if mentions_competitor >= 0.50\n[REQUEST] Screen LLM draft: \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n  mentions_competitor.noul=0.970 | promises_unapproved_discount.noul=0.000\n✕ BLOCKED — Outbound draft HELD before send (competitor leak p=0.970)\n✓ PASS — Outbound guardrail evaluated in 347 ms\nWhy: Pre-send noul gates catch policy leaks for $0.00006 so safe drafts auto-send without human review.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.mentions_competitor.noul)  |  Case Study: Slide 21\n"
+            "text": "[CONFIG] Outbound policy guardrail · type=\"noul\" · hold draft if mentions_competitor >= 0.50\n[REQUEST] Screen LLM draft: \"Honestly, Fabrikam has a similar sofa for $749. Here's the link.\"\n  mentions_competitor.noul=0.970 | promises_unapproved_discount.noul=0.000\n✕ BLOCKED — Outbound draft HELD before send (competitor leak p=0.970)\n✓ PASS — Outbound guardrail evaluated in 347 ms\nWhy: Pre-send noul gates catch policy leaks for $0.00006 so safe drafts auto-send without human review.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.mentions_competitor.noul)  |  Scenario: Outbound draft screening\n"
           }
         },
         {
@@ -647,7 +647,7 @@
           "delayMs": 160,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75 or missing document)\n[REQUEST] \"Compare the renewal termination notice window in Contract A vs Exhibit B.\"  (Exhibit B missing from attached_documents!)\n  choice=\"request_missing_exhibit\" · probabilities={\"fast_extract\":0.000013924910734296821,\"frontier_compare\":0.000043116736198178034,\"request_missing_exhibit\":0.9999429583530675}\n✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n✓ PASS — Safeguard evaluated in 347 ms (asked user for Exhibit B)\nWhy: Calibrated probabilities let software know when to stop and ask instead of guessing.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  CAC ROI: Slide 21\n"
+            "text": "[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75 or missing document)\n[REQUEST] \"Compare the renewal termination notice window in Contract A vs Exhibit B.\"  (Exhibit B missing from attached_documents!)\n  choice=\"request_missing_exhibit\" · probabilities={\"fast_extract\":0.000013924910734296821,\"frontier_compare\":0.000043116736198178034,\"request_missing_exhibit\":0.9999429583530675}\n✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n✓ PASS — Safeguard evaluated in 347 ms (asked user for Exhibit B)\nWhy: Calibrated probabilities let software know when to stop and ask instead of guessing.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  Scenario: Missing-document check\n"
           }
         },
         {

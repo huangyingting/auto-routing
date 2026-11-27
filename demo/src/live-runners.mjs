@@ -1311,7 +1311,7 @@ export async function runDecisionStepLive(step, emit) {
       text:
         `✓ PASS — Routed 4/4 messages live; ${skipped}/4 skipped the expensive frontier LLM\n` +
         `Why: Spending $0.000013 up front filters out routine messages that never needed a frontier LLM call.\n` +
-        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.route.{choice,probabilities})  |  Eval: Slide 21\n`,
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.route.{choice,probabilities})  |  Scenario: Inbox routing\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone batch HTTP JSON.\n\n${rawTraces.join("\n\n")}` });
     emit({
@@ -1432,7 +1432,7 @@ export async function runDecisionStepLive(step, emit) {
         (held ? `✕ BLOCKED — Outbound draft HELD before send (competitor leak p=${comp.toFixed(3)})\n` : ``) +
         `✓ PASS — Outbound guardrail evaluated in ${wallMs} ms\n` +
         `Why: Pre-send noul gates catch policy leaks for $0.00006 so safe drafts auto-send without human review.\n` +
-        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.mentions_competitor.noul)  |  Case Study: Slide 21\n`,
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.mentions_competitor.noul)  |  Scenario: Outbound draft screening\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone outbound noul HTTP JSON.\n\n${rawTrace}` });
     emit({
@@ -1491,7 +1491,7 @@ export async function runDecisionStepLive(step, emit) {
         (abstained ? `✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n` : ``) +
         `✓ PASS — Safeguard evaluated in ${wallMs} ms (${abstained ? "asked user for Exhibit B" : "proceeded"})\n` +
         `Why: Calibrated probabilities let software know when to stop and ask instead of guessing.\n` +
-        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  CAC ROI: Slide 21\n`,
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  Scenario: Missing-document check\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone abstention HTTP JSON.\n\n${rawTrace}` });
     emit({

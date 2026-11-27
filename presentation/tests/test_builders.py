@@ -122,26 +122,34 @@ class BuilderTests(unittest.TestCase):
         expected = {
             10: 'fusion',
             12: 'foundry',
-            20: 'decision',
-            21: 'fusion',
-            22: 'foundry',
-            23: 'decision',
+            19: 'decision',
+            20: 'fusion',
+            21: 'foundry',
+            22: 'decision',
         }
         self.assertEqual({k: v[0] for k, v in H.DEMO_LAUNCHERS.items()}, expected)
         self.assertEqual({k: v[0] for k, v in H.ZH_DEMO_LAUNCHERS.items()}, expected)
-        for slide_index in range(26):
+        self.assertEqual(sorted(D.slides), list(range(25)))
+        for slide_index in range(25):
             en_markup = H.slide_html(slide_index, [], '.', 1600, lang='en')
             zh_markup = H.slide_html(slide_index, [], '.', 1600, lang='zh')
             should_have_launcher = slide_index in expected
             self.assertEqual('class="live-demo-trigger"' in en_markup, should_have_launcher)
             self.assertEqual('class="live-demo-trigger"' in zh_markup, should_have_launcher)
+        deck_text = '\n'.join(
+            op.get('text', '') or '\n'.join(p.get('text', '') for p in op.get('paragraphs', []))
+            for slide_ops in D.slides.values()
+            for op in slide_ops
+        )
+        self.assertNotIn('Sales agent case', deck_text)
+        self.assertNotIn('CAC = $1.81', deck_text)
 
     def test_chinese_demo_studio_localizes_controls_and_explanations(self):
         self.assertNotIn('Source', H.ZH_DEMO_TEXT_MAP)
         self.assertNotIn('Error', H.ZH_DEMO_TEXT_MAP)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            with patch.object(D, 'slides', {21: []}), patch.object(D, 'notes', {21: '中文备注'}):
+            with patch.object(D, 'slides', {20: []}), patch.object(D, 'notes', {20: '中文备注'}):
                 H.build(str(root / 'index.html'), str(root), 1600, lang='en')
                 H.build(str(root / 'index.zh.html'), str(root), 1600, lang='zh')
             doc_en = (root / 'index.html').read_text(encoding='utf-8')
@@ -294,7 +302,7 @@ class BuilderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             url = 'https://huangyingting.github.io/auto-routing/'
-            with patch.object(D, 'slides', {0: [], 21: []}), patch.object(D, 'notes', {0: 'secret note'}), patch.object(D, 'EN_NOTES', {0: 'secret note'}):
+            with patch.object(D, 'slides', {0: [], 20: []}), patch.object(D, 'notes', {0: 'secret note'}), patch.object(D, 'EN_NOTES', {0: 'secret note'}):
                 H.build(str(root / 'local.html'), str(root), 1600, pages_url=url, presenter_tools=True)
                 H.build(str(root / 'pages.html'), str(root), 1600, pages_url=url, presenter_tools=False)
             local_doc = (root / 'local.html').read_text(encoding='utf-8')
@@ -360,23 +368,23 @@ class BuilderTests(unittest.TestCase):
             )
 
         zh_slides = D.get_localized_slides('zh')
-        self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[21]))
-        self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[22]))
-        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[23]))
+        self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[20]))
+        self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[21]))
+        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[22]))
 
-        foundry_slide = visible_text(zh_slides[22])
+        foundry_slide = visible_text(zh_slides[21])
         for step in range(1, 5):
             self.assertIn(f'场景 {step} ·', foundry_slide)
         self.assertNotIn('步骤 2–3', foundry_slide)
 
-        decision_slide = visible_text(zh_slides[23])
+        decision_slide = visible_text(zh_slides[22])
         for step in range(1, 5):
             self.assertIn(f'场景 {step} ·', decision_slide)
         self.assertNotIn('场景 5 ·', decision_slide)
         self.assertNotIn('步骤 1–2', decision_slide)
         self.assertNotIn('步骤 4–5', decision_slide)
 
-        natural_copy = '\n'.join(visible_text(zh_slides[index]) for index in (21, 22, 23))
+        natural_copy = '\n'.join(visible_text(zh_slides[index]) for index in (20, 21, 22))
         for expected in (
             '常规修改，一个模型就够了',
             '只提取两个字段，用 Flash 就够了',

@@ -1,6 +1,6 @@
 # Auto-Routing LLMs Interactive Demos
 
-这组 Demo 对应幻灯片第 22、23、24 页的三个核心生产场景，支持**静态网页回放**（GitHub Pages 零依赖运行）与**本机 Live Bridge 实时调用**。
+这组 Demo 对应幻灯片第 21、22、23 页的三个核心生产场景，支持**静态网页回放**（GitHub Pages 零依赖运行）与**本机 Live Bridge 实时调用**。
 
 ## 1. Demo 1 · GitHub Copilot Fusion 与缓存复用（本机真实执行 `copilot` CLI）
 
@@ -62,7 +62,7 @@ npm --prefix demo run demo:replay
 ## 网页交互式 Demo Studio
 
 - **三视图切换与累计账本**：默认打开 **`✦ Visual`（可视化视图）**，直观展示真实文件代码修改对比、Judge/Critic 评审意见、两阶段请求卡片、智能客服收件箱分流与发送前拦截高亮，并在顶部实时累计“固定大模型 vs 自动路由”的成本与耗时；同时保留 **`Summary`** 与 **`{ } Raw Log`**。原始日志只显示当前步骤或刚刚执行的自定义输入，切换步骤时自动换成对应步骤的日志预览，不会把前面的记录一直累加。
-- **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#22`（中文版 `/zh/#22`），页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI 以及已配置的云端 Foundry / Decision-1.1 端点，并将实时补丁与返回结果同步渲染到可视化工作台。
+- **本机 Live Bridge（真实执行）**：运行 `npm --prefix demo run demo:web` 后打开 `http://127.0.0.1:8787/#21`（中文版 `/zh/#21`），页面上的步骤按钮与底部自定义输入框都会实时驱动本机 `copilot` CLI 以及已配置的云端 Foundry / Decision-1.1 端点，并将实时补丁与返回结果同步渲染到可视化工作台。
 - **静态离线回放（GitHub Pages）**：直接打开 `dist/html/index.html` 或 `dist/html/index.zh.html` 时无需后端，使用 `presentation/assets/demo-recordings.json` 离线回放（可通过 `node demo/src/record-web-demo.mjs --record-fusion` 重新录制真实轨迹）。
 
 ### 如何从服务器日志确认是真实调用
