@@ -141,17 +141,18 @@ x=M+80000; cx=5800000
 rect(s,x,480000,560000,40000,fill=CY,preset='roundRect')
 tb(s,x,590000,cx,'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS',size=12,color=CY,font=HF,bold=True,ls=0.9,cy=260000)
 tb(s,x,920000,cx,'Auto-routing\nLLMs',size=44,color=INK,font=HF,bold=True,cy=1380000)
-tb(s,x,2400000,cx,'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.',size=16,color=MUTED,cy=1100000)
+tb(s,x,2400000,cx,'Routing each task to the right model for quality, cost and speed, illustrated with real implementations across Microsoft products.',size=16,color=MUTED,cy=1100000)
+tb(s,x,3650000,cx,'Yingting Huang - Microsoft',size=13.2,color=CY,font=HF,bold=True,cy=320000)
 footer(s,'',1)
 note(s,'大家好，欢迎参加今天的分享。现在做 AI 应用，很多团队都会遇到同一个问题：市面上的模型越来越多、更新也很快，怎么在不牺牲效果的前提下，把调用费用和响应时间降下来？这就是今天要讲的自动路由。\n接下来这 45 分钟，我会结合微软在几个产品里的实际做法，先看看 Microsoft Copilot、GitHub Copilot Fusion 和 Foundry Model Router 是怎么自动选模型的，再介绍专门用于程序判断的决策模型 Decision-1.1，最后通过三组演示，看看怎么把这些能力用到自己的项目里。')
 
 # ---------- 1 AGENDA
 s=1
-header(s,'AGENDA','Our journey today')
+header(s,'AGENDA','Session outline')
 items=[
     ('01','Capability gap','No single model wins all'),
     ('02','Cost & cache','163× gap & prefix cache'),
-    ('03','MS products','Copilot, Fusion & Foundry'),
+    ('03','Implementations','Across Microsoft products'),
     ('04','Under the hood','Industry vs. MS HyDRA'),
     ('05','Decision-1.1','Fast, calibrated control'),
     ('06','Live demos','Fusion, Foundry & Decision'),
@@ -269,7 +270,7 @@ note(s,'看到模型之间有这么大的价差，很容易想到一个做法：
 
 # ---------- 6 PART 3: MICROSOFT ROUTING LANDSCAPE (4 CARDS + APPEAR)
 s=6
-header(s,'03 · MICROSOFT PRODUCTS IN ACTION','Four routing surfaces across Microsoft')
+header(s,'03 · AUTO-ROUTING AT MICROSOFT','How auto-routing appears across Microsoft products')
 gap=170000; cw4=(CW-3*gap)/4; y0=1560000; ch=4360000
 surfaces=[
     ('M365 Copilot & Cowork','Workplace Auto','Routes >90% of queries: Chat → Cowork handoff, multi-provider selection, dynamic effort & sub-agents.'),
@@ -286,11 +287,11 @@ for i,(prod,tag_,desc) in enumerate(surfaces):
     rect(s,x+200000,y0+1480000,cw4-400000,14000,fill=EDGE)
     tb(s,x+200000,y0+1620000,cw4-400000,desc,size=13.8,color=MUTED,cy=2480000)
 footer(s,'',7)
-note(s,'结合按任务选型和保持缓存这两点，我们来看看微软自己的四类产品方案。虽然界面上大多都叫 Auto，但针对不同使用场景，底层的处理方式各有侧重。\n面向日常办公的 M365 Copilot 和 Cowork，主要处理什么时候从普通问答转入多步任务，以及在企业允许的范围内跨厂商选模型；面向开发者的 GitHub Copilot Fusion，除了选模型，还会根据问题难度在单次执行、级联评审和多模型审校之间切换；面向云端 API 开发的 Foundry Model Router，用约 20 毫秒在 45 个模型里完成排序，并优先使用企业已购买的 PTU 配额；最右边的 Decision-1.1，则是把用于分类、打分和内容检查的决策模型直接做成 API，方便业务系统自己调用。')
+note(s,'结合按任务选型和保持缓存这两点，我们来看看自动路由在微软产品中的四种实现。虽然界面上大多都叫 Auto，但针对不同使用场景，底层的处理方式各有侧重。\n面向日常办公的 M365 Copilot 和 Cowork，主要处理什么时候从普通问答转入多步任务，以及在企业允许的范围内跨厂商选模型；面向开发者的 GitHub Copilot Fusion，除了选模型，还会根据问题难度在单次执行、级联评审和多模型审校之间切换；面向云端 API 开发的 Foundry Model Router，用约 20 毫秒在 45 个模型里完成排序，并优先使用企业已购买的 PTU 配额；最右边的 Decision-1.1，则是把用于分类、打分和内容检查的决策模型直接做成 API，方便业务系统自己调用。')
 
 # ---------- 7 MICROSOFT COPILOT HOME SCREENSHOT
 s=7
-header(s,'03 · MICROSOFT PRODUCTS · MICROSOFT COPILOT','Microsoft Copilot Home: unified Auto')
+header(s,'03 · AUTO-ROUTING AT MICROSOFT · MICROSOFT COPILOT','Microsoft Copilot Home: unified Auto')
 ix=M; iy=1540000; icw=6400000; ich=3600000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'m365-copilot-home.png',ix+50000,iy+50000,icw-100000,ich-100000,'Official Microsoft screenshot: Microsoft Copilot Home composer unifying Chat and Cowork with Auto',fit='contain')
@@ -312,7 +313,7 @@ note(s,'先看办公场景下的 Microsoft Copilot 主界面。以前用户常�
 
 # ---------- 8 COPILOT COWORK AUTO SCREENSHOT
 s=8
-header(s,'03 · MICROSOFT PRODUCTS · COPILOT COWORK','Copilot Cowork: keep cache, tune effort')
+header(s,'03 · AUTO-ROUTING AT MICROSOFT · COPILOT COWORK','Copilot Cowork: keep cache, tune effort')
 ix=M; iy=1540000; icw=6400000; ich=1660000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'m365-cowork-ui.png',ix+50000,iy+50000,icw-100000,ich-100000,'Official Microsoft Learn screenshot: Copilot Cowork composer with Chat/Cowork toggle and Auto Medium selector',fit='contain')
@@ -340,7 +341,7 @@ note(s,'进入多步执行的 Copilot Cowork 后，它的设计思路是先固�
 
 # ---------- 9 GITHUB COPILOT FUSION COMPOSER SCREENSHOT
 s=9
-header(s,'03 · MICROSOFT PRODUCTS · GITHUB COPILOT FUSION','Copilot Fusion: pick effort, not models')
+header(s,'03 · AUTO-ROUTING AT MICROSOFT · GITHUB COPILOT FUSION','Copilot Fusion: pick effort, not models')
 ix=M; iy=1540000; icw=6200000; ich=3592000
 rect(s,ix,iy,icw,ich,fill='11161D',line=EDGE,lw=12700)
 img(s,'fusion-picker.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official GitHub screenshot: Copilot Fusion composer menu showing Standard, High, and Max effort levels',fit='contain')
@@ -362,7 +363,7 @@ note(s,'再看开发场景里的 GitHub Copilot Fusion。过去开发者点开�
 
 # ---------- 10 COPILOT FUSION EXECUTION PATTERNS SCREENSHOT
 s=10
-header(s,'03 · MICROSOFT PRODUCTS · FUSION ORCHESTRATION','Single, Cascade & Critique patterns',cx=CW-2300000)
+header(s,'03 · AUTO-ROUTING AT MICROSOFT · FUSION ORCHESTRATION','Single, Cascade & Critique patterns',cx=CW-2300000)
 ix=M; iy=1540000; icw=5420000; ich=4400000
 rect(s,ix,iy,icw,ich,fill='0F141A',line=EDGE,lw=12700)
 img(s,'fusion-patterns.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official GitHub diagram: Three execution patterns in Copilot Fusion — Single, Cascade, and Critique',fit='contain')
@@ -383,7 +384,7 @@ note(s,'Fusion 之所以能在保持质量的同时省下一半费用，是因�
 
 # ---------- 11 FOUNDRY MODEL ROUTER: HOW IT RANKS & CACHES
 s=11
-header(s,'03 · MICROSOFT PRODUCTS · MICROSOFT FOUNDRY','Foundry Router: how it ranks & caches')
+header(s,'03 · AUTO-ROUTING AT MICROSOFT · MICROSOFT FOUNDRY','Foundry Router: how it ranks & caches')
 ix=M; iy=1540000; icw=6980000; ich=2708000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'foundry-overview.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official Microsoft Learn diagram: Microsoft Foundry Model Router ranking prompts across 45 models with Balanced/Quality/Cost modes, session affinity and failover',fit='contain')
@@ -412,7 +413,7 @@ note(s,'如果团队是自己调用云端 API 开发应用，可以使用 Micros
 
 # ---------- 12 FOUNDRY ROUTER: GATES, PARAMS & FAILOVER
 s=12
-header(s,'03 · MICROSOFT PRODUCTS · FOUNDRY PIPELINE','Foundry: filters, params & failover',cx=CW-2300000)
+header(s,'03 · AUTO-ROUTING AT MICROSOFT · FOUNDRY PIPELINE','Foundry: filters, params & failover',cx=CW-2300000)
 ix=M; iy=1540000; icw=6980000; ich=2708000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
 img(s,'foundry-router-flow.png',ix+40000,iy+40000,icw-80000,ich-80000,'Official Microsoft Learn diagram: Six-step Foundry Model Router execution flow from eligibility filtering and ranking to PTU/PAYG capacity waterfall and failover',fit='contain')
@@ -462,7 +463,7 @@ for a,lat,how,lim,col_ in approaches:
     tb(s,c4+150000,y+80000,w4-180000,lim,size=13.2,color=AMB if col_==AMB else MUTED,cy=rh-160000)
     y+=rh+90000
 footer(s,'',14)
-note(s,'了解完产品方案，我们再来看看底层实现。目前业界常见的模型路由主要有四类做法，各自都有比较明显的局限。\n第一类是正则规则或向量相似度匹配，几毫秒就能算完，但表面话题相似不代表推理难度一样，比如“写一个简单排序”和“实现无锁并发队列”在字面上都是数据结构问题，实际难度却相差很多。第二类是像 RouteLLM 这样的二分类偏好路由，预测强模型表现优于弱模型的概率，准确率更高，但分类器权重和具体模型型号绑在一起——每当候选模型更新，就需要重新收集数据训练。第三类是 FrugalGPT 式的串行级联，先让小模型试跑，遇到难题时白白多花了一轮等待时间。第四类是直接写提示词让通用大模型做路由判断，不仅耗时长、费用高，而且通用模型容易盲目自信，输出的概率很难直接拿来做阈值判断。')
+note(s,'看完这些具体实现，我们再来看看底层原理。目前业界常见的模型路由主要有四类做法，各自都有比较明显的局限。\n第一类是正则规则或向量相似度匹配，几毫秒就能算完，但表面话题相似不代表推理难度一样，比如“写一个简单排序”和“实现无锁并发队列”在字面上都是数据结构问题，实际难度却相差很多。第二类是像 RouteLLM 这样的二分类偏好路由，预测强模型表现优于弱模型的概率，准确率更高，但分类器权重和具体模型型号绑在一起——每当候选模型更新，就需要重新收集数据训练。第三类是 FrugalGPT 式的串行级联，先让小模型试跑，遇到难题时白白多花了一轮等待时间。第四类是直接写提示词让通用大模型做路由判断，不仅耗时长、费用高，而且通用模型容易盲目自信，输出的概率很难直接拿来做阈值判断。')
 
 # ---------- 14 MICROSOFT'S APPROACH: GITHUB HYDRA (ARXIV:2605.17106)
 s=14
@@ -621,7 +622,7 @@ card_box(s,rx,2900000,rw,1240000,[
     {'text':'#1 in routing, tools, safety, rules, reasoning, judging & consistency — plus Score 68 (+6 pts, 123 ms) on AA Decision Index v2.1.','sizePt':12.4,'color':MUTED},
 ],fill=CARD,pad_x=200000,pad_y=95000)
 card_box(s,rx,4260000,rw,1740000,[
-    {'text':'Powering Microsoft & 4,000+ Customers','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
+    {'text':'Observed use: Microsoft workflows & 4,000+ customers','sizePt':15.2,'bold':True,'color':CY,'spaceAfterPt':7},
     {'text':'• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper','sizePt':11.8,'color':INK,'spaceAfterPt':4},
     {'text':'• Cowork Auto effort + Foundry Evaluation judge','sizePt':11.8,'color':INK,'spaceAfterPt':4},
     {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':11.8,'color':INK,'spaceAfterPt':4},

@@ -18,8 +18,8 @@
 
 1. **能力专精化（Slides 3–4）**：基于微软 Charles Lamanna 的白板拆解（>90% Copilot 请求已走 Auto），说明为何不存在“全能第一”的单一模型，以及如何把单次续约请求拆解为 SLM 检索、Claude 推理制表与 GPT Image 2.5 配图的跨实验室协同。
 2. **成本压缩与缓存边界（Slides 5–6）**：引用 GenisisIQ 28 模型 × 8 多模态任务基准（前 14 名质量仅差 4.2 分，算力却相差 **163×**），证明常规工作无需动用昂贵旗舰，同时阐述 **10×–20×** 前缀缓存自然边界铁律。
-3. **微软产品实战与官方截图（Slides 7–13）**：结合官方产品截图拆解 **Microsoft Copilot Home**、**Copilot Cowork Auto**、**GitHub Copilot Fusion**（`Single` / `Cascade` / `Critique` 三种执行拓扑，AA 指数接近满血但省费约 50%）与 **Microsoft Foundry Model Router 工作原理**（非 LLM 毫秒级专用 ML 排序器、1–2% / 5–6% 质量带与子集重校准、`Adaptive` 消息指纹缓存亲和、排序前资格过滤 + 跨厂商参数自动适配，以及 `PTU（$0 模型费） → PAYG → 托管 → 子集内第 2 顺位模型` 两级容量与故障转移）。
-4. **底层架构：业界通用方案 vs. 微软方案（Slides 14–16）**：对比规则/向量路由、二分类偏好路由（如 RouteLLM 绑死模型 ID 的重训痛点）、级联 FrugalGPT 与生成式 LLM 路由；详解 GitHub **HyDRA（`arXiv:2605.17106`）** 4 头 `ModernBERT` 能力需求预测（86 ms CPU）+ 零重训配置短板匹配（等质量省费 **54.1%**）。
+3. **自动路由在微软产品中的实现（Slides 7–13）**：以官方截图为例，分析 **Microsoft Copilot Home**、**Copilot Cowork Auto**、**GitHub Copilot Fusion**（`Single` / `Cascade` / `Critique` 三种执行拓扑）与 **Microsoft Foundry Model Router** 的路由机制（非 LLM 毫秒级专用 ML 排序器、1–2% / 5–6% 质量带与子集重校准、`Adaptive` 消息指纹缓存亲和、排序前资格过滤 + 跨厂商参数自动适配，以及 `PTU（$0 模型费） → PAYG → 托管 → 子集内第 2 顺位模型` 两级容量与故障转移）。
+4. **底层架构：常见方法与 HyDRA（Slides 14–16）**：对比规则/向量路由、二分类偏好路由（如 RouteLLM 绑死模型 ID 的重训痛点）、级联 FrugalGPT 与生成式 LLM 路由；详解 GitHub **HyDRA（`arXiv:2605.17106`）** 4 头 `ModernBERT` 能力需求预测（86 ms CPU）+ 零重训配置短板匹配（等质量省费 **54.1%**）。
 5. **Microsoft-Decision-1.1 与交互式 Demo（Slides 17–25）**：介绍基于 Gemma 4 26B-A4B MoE 与定制推理引擎的 **Microsoft-Decision-1.1**（`$0.042/1M` 输入、输出免费，支持文本/JSON/图片），先讲清 `/providers/microsoft/v1/systemone` 的 `choice`、`noul`、`score` 三大原语与四个生产模式，再用 102 项盲测第一的评测结果说明效果，最后通过三个交互式 Demo 串联全流程。
 
 ## 快速开始

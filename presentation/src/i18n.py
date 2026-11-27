@@ -12,7 +12,7 @@ EN_NOTES = {
     1: (
         "Here is our roadmap for today. First, why auto-routing matters: no single model wins every task, cost across top models "
         "spans more than 160x, and there is a critical prefix-cache rule that trips up many teams.\n"
-        "Next, we will tour how Microsoft products route in production and compare common industry routers against GitHub's HyDRA design. "
+        "Next, we will examine how auto-routing is implemented in Microsoft products and compare common routing methods with GitHub's HyDRA design. "
         "In the second half, we will dive into Microsoft-Decision-1.1's three typed primitives and run all three live demos."
     ),
     2: (
@@ -169,18 +169,18 @@ ZH_TEXT_MAP = {
     # Cover & Agenda
     'INTELLIGENT MODEL SELECTION & DECISION SYSTEMS': '智能模型选型与决策系统',
     'Auto-routing\nLLMs': '大模型自动路由\nAuto-routing',
-    'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.': '根据任务特点自动选择合适的模型，兼顾效果、成本和响应速度 —— 从 Microsoft Copilot、Foundry 到 Microsoft-Decision-1.1。',
+    'Routing each task to the right model for quality, cost and speed, illustrated with real implementations across Microsoft products.': '根据任务特点自动选择模型，在效果、成本和响应速度之间取得平衡，并结合微软产品中的实际实现说明方法。',
     'SCAN FOR LIVE SLIDES & DEMO': '扫码查看在线幻灯片与交互演示',
-    'AGENDA': '目录 · AGENDA',
-    'Our journey today': '今天的内容安排',
+    'AGENDA': 'AGENDA',
+    'Session outline': '内容安排',
     'Capability gap': '模型各有所长',
     'No single model wins all': '没有全能的单一模型',
     'Cost & cache': '成本与缓存机制',
     '163× gap & prefix cache': '163 倍价差与前缀缓存',
-    'MS products': '微软产品方案',
-    'Copilot, Fusion & Foundry': 'Copilot、Fusion 与 Foundry',
+    'Implementations': '微软产品中的实现',
+    'Across Microsoft products': 'Copilot、Fusion 与 Foundry',
     'Under the hood': '路由实现原理',
-    'Industry vs. MS HyDRA': '常见方案对比微软 HyDRA',
+    'Industry vs. MS HyDRA': '常见路由方法与 HyDRA',
     'Decision-1.1': 'Decision-1.1',
     'Fast, calibrated control': '低延迟决策与输出控制',
     'Live demos': '现场演示',
@@ -247,8 +247,8 @@ ZH_TEXT_MAP = {
     'Pick on Turn 1, after context compaction, on isolated sub-agents, or only when task complexity shifts dramatically.': '只在会话开始、上下文压缩重置后、独立子任务，或任务难度明显变化时重新选择模型。',
 
     # Slide 7 (idx 6)
-    '03 · MICROSOFT PRODUCTS IN ACTION': '03 · 微软产品中的自动路由',
-    'Four routing surfaces across Microsoft': '微软不同产品层面的四类路由方案',
+    '03 · AUTO-ROUTING AT MICROSOFT': '03 · 自动路由在微软产品中的实现',
+    'How auto-routing appears across Microsoft products': '四类产品场景中的自动路由实现',
     'Workplace Auto': '日常办公路由',
     'Routes >90% of queries: Chat → Cowork handoff, multi-provider selection, dynamic effort & sub-agents.': '处理超过 90% 的办公提问：支持 Chat 转交 Cowork、跨厂商选型、推理档位调节与子任务拆分。',
     'Coding Orchestrator': '编程多模型协同',
@@ -259,7 +259,7 @@ ZH_TEXT_MAP = {
     'Purpose-built decision API that classifies, scores priority, and runs yes/no safety gates in ~123 ms at $0.042/1M.': '面向程序控制逻辑的决策 API：约 123 ms 完成分类、优先级打分与合规检查（每百万输入 Token $0.042）。',
 
     # Slide 8 (idx 7)
-    '03 · MICROSOFT PRODUCTS · MICROSOFT COPILOT': '03 · 微软产品方案 · MICROSOFT COPILOT',
+    '03 · AUTO-ROUTING AT MICROSOFT · MICROSOFT COPILOT': '03 · 微软产品中的自动路由 · MICROSOFT COPILOT',
     'Microsoft Copilot Home: unified Auto': 'Microsoft Copilot 主界面：统一的 Auto 入口',
     'One unified prompt box: Auto answers quick questions in Chat or hands off multi-step work to Cowork.': '同一个输入框：简单问题直接在 Chat 回复，需要多步执行的任务自动提示转到 Cowork。',
     '1 · Chat → Cowork handoff': '1 · Chat 到 Cowork 的自动分流',
@@ -270,7 +270,7 @@ ZH_TEXT_MAP = {
     'Pulls only relevant M365 emails, chats & files via Work IQ — and offloads light tasks to local Windows PC models.': '通过 Work IQ 只提取相关的邮件和文档，在支持的 Windows 电脑上还能把轻量任务交给本地小模型。',
 
     # Slide 9 (idx 8)
-    '03 · MICROSOFT PRODUCTS · COPILOT COWORK': '03 · 微软产品方案 · COPILOT COWORK',
+    '03 · AUTO-ROUTING AT MICROSOFT · COPILOT COWORK': '03 · 微软产品中的自动路由 · COPILOT COWORK',
     'Copilot Cowork: keep cache, tune effort': 'Copilot Cowork：保持模型缓存，按步调节推理强度',
     'COWORK MODEL POOL  ·  ENABLED BY TENANT ADMIN': 'COWORK 可选模型池  ·  由企业管理员配置启用',
     '• Auto (Default)      → Picks on turn 1 & keeps cache warm': '• Auto（默认）         → 首轮选定主模型，后续轮次复用缓存',
@@ -283,7 +283,7 @@ ZH_TEXT_MAP = {
     'Agent 365 Cost Management tracks work completed and enforces team spending limits so frontier runs never surprise IT.': '通过 Agent 365 成本管理统计任务消耗并设置团队费用上限，避免复杂任务带来意外账单。',
 
     # Slide 10 (idx 9)
-    '03 · MICROSOFT PRODUCTS · GITHUB COPILOT FUSION': '03 · 微软产品方案 · GITHUB COPILOT FUSION',
+    '03 · AUTO-ROUTING AT MICROSOFT · GITHUB COPILOT FUSION': '03 · 微软产品中的自动路由 · GITHUB COPILOT FUSION',
     'Copilot Fusion: pick effort, not models': 'Copilot Fusion：选择投入档位，不用逐个挑模型',
     'Pick Standard, High, or Max effort — hover the badge on any reply to see which models ran.': '只需选择 Standard、High 或 Max 档位 —— 鼠标悬停在回复标签上即可查看实际调用的模型。',
     'Standard · High · Max (+ Fast)': 'Standard · High · Max（另含 Fast）',
@@ -294,7 +294,7 @@ ZH_TEXT_MAP = {
     'AT&T found developers picked a heavy model for one hard bug and left it on; Fusion right-sizes every turn automatically.': 'AT&T 团队发现开发者常为一个难 Bug 切到大模型后一直不改；Fusion 会在每一轮自动匹配合适的规模。',
 
     # Slide 11 (idx 10)
-    '03 · MICROSOFT PRODUCTS · FUSION ORCHESTRATION': '03 · 微软产品方案 · FUSION 执行模式',
+    '03 · AUTO-ROUTING AT MICROSOFT · FUSION ORCHESTRATION': '03 · 微软产品中的自动路由 · FUSION 执行模式',
     'Single, Cascade & Critique patterns': 'Single、Cascade 与 Critique 三种执行模式',
     '1 · Single  (Everyday tasks)': '1 · Single 单模型模式（日常任务）',
     'One right-sized primary model solves the request with tools. Zero extra review latency or AI credit overhead.': '由一个匹配任务难度的主模型直接调用工具完成，不增加额外的评审耗时和额度开销。',
@@ -304,7 +304,7 @@ ZH_TEXT_MAP = {
     'Primary drafts while read-only Critics review in parallel (cannot edit files, avoiding conflicts); Primary revises.': '主模型起草方案，只读的 Critic 模型负责审阅挑错（只读权限可避免并发改乱文件），最后由主模型整合修订。',
 
     # Slide 12 (idx 11)
-    '03 · MICROSOFT PRODUCTS · MICROSOFT FOUNDRY': '03 · 微软产品方案 · MICROSOFT FOUNDRY',
+    '03 · AUTO-ROUTING AT MICROSOFT · MICROSOFT FOUNDRY': '03 · 微软产品中的自动路由 · MICROSOFT FOUNDRY',
     'Foundry Router: how it ranks & caches': 'Foundry Model Router：排序逻辑与缓存保持',
     'SCORING & AFFINITY ENGINE  ·  TRAINED ON BILLIONS OF INTERACTIONS': '评分与会话保持机制  ·  基于海量真实交互数据训练',
     '1. Rank eligible models for this prompt (~20 ms ML scorer)\n2. Keep models within 1–2% of #1 quality  (5–6% in Cost mode)\n3. Reuse prior model if cache is warm & in band; else cheapest': '1. 为候选模型实时打分排序（专用机器学习模型，约 20 ms）\n2. 筛出与最高分差距在 1–2% 以内的模型（Cost 模式放宽到 5–6%）\n3. 如果上一轮模型缓存仍有效且得分达标就继续沿用，否则选最便宜的',
@@ -316,7 +316,7 @@ ZH_TEXT_MAP = {
     'Tracks sessions via ID, previous_response_id or message fingerprint — keeping the prior model while warm & in-band.': '通过会话 ID、响应 ID 或历史消息指纹识别同一轮对话，只要缓存未过期且质量达标，就继续使用原模型。',
 
     # Slide 13 (idx 12)
-    '03 · MICROSOFT PRODUCTS · FOUNDRY PIPELINE': '03 · 微软产品方案 · FOUNDRY 请求处理流程',
+    '03 · AUTO-ROUTING AT MICROSOFT · FOUNDRY PIPELINE': '03 · 微软产品中的自动路由 · FOUNDRY 请求处理流程',
     'Foundry: filters, params & failover': 'Foundry：条件筛选、参数适配与故障切换',
     '1 · Pre-Rank Eligibility Gate': '1 · 排序前先筛除不满足条件的模型',
     'Filters by region, approved allow-list, tools / json_schema / image support, and valid reasoning_effort before ranking.': '打分前先按区域、允许的模型列表，以及是否支持工具调用、JSON Schema、图片输入等条件过滤候选池。',
@@ -421,7 +421,7 @@ ZH_TEXT_MAP = {
     '78.8% mean accuracy over 385,246 zero-overlap questions — ahead of Jev 1.14 (78.1), Gemini Decision 1 (77.7) & GPT-6 Luna (73.4).': '在 385,246 道无训练集重叠的题目上平均准确率达 78.8%，高于 Jev 1.14 (78.1)、Gemini Decision 1 (77.7) 和 GPT-6 Luna (73.4)。',
     'Leads 7 of 9 Capabilities  ·  2.2× Faster': '9 个细分维度中 7 项第一  ·  速度提升 2.2 倍',
     '#1 in routing, tools, safety, rules, reasoning, judging & consistency — plus Score 68 (+6 pts, 123 ms) on AA Decision Index v2.1.': '在路由、工具选择、安全、规则、推理、评审和一致性上排名第一；AA 决策指数达 68 分（提升 6 分，中位耗时 123 ms）。',
-    'Powering Microsoft & 4,000+ Customers': '已在微软内部及 4,000 多家企业落地',
+    'Observed use: Microsoft workflows & 4,000+ customers': '公开采用情况：微软内部流程及 4,000 多家客户',
     '• Copilot Chat→Cowork: 2.2× faster, 4.4× cheaper': '• Copilot Chat 转 Cowork 判断：提速 2.2 倍，成本降至 1/4.4',
     '• Cowork Auto effort + Foundry Evaluation judge': '• 用于 Cowork 推理强度调节与 Foundry 自动评测打分',
     '• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol': '• Xbox 数据分析流程：比 GPT-6 Sol 快 14 倍，成本降至 1/200',
@@ -795,11 +795,11 @@ ZH_TEXT_MAP.update({
     'warm-up + resumed follow-up': '预热调用 + resume 追问',
     '# Click Run Step 4 to create a warm session and verify the resumed cache hit...':
         '# 点击“运行步骤 4”，先建立缓存，再通过 --resume 验证命中率...',
-    'Routing every task to the right model for quality, cost and speed — from Microsoft Copilot and Foundry to Microsoft-Decision-1.1.':
-        '根据每项任务的难度和特点自动选择模型，在效果、成本和响应速度之间取得平衡——从 Microsoft Copilot、Foundry 到 Microsoft-Decision-1.1。',
-    'AGENDA': '内容安排',
+    'Routing each task to the right model for quality, cost and speed, illustrated with real implementations across Microsoft products.':
+        '根据每项任务的难度和特点自动选择模型，在效果、成本和响应速度之间取得平衡，并结合微软产品中的实际实现说明方法。',
+    'AGENDA': 'AGENDA',
     'Fast, calibrated control': '快速、稳定的程序判断',
-    'Our journey today': '今天主要讲七件事',
+    'Session outline': '内容安排',
     'One prompt, four specialized jobs': '一个需求，交给四类模型分工完成',
     'Guardrail gate first: filters tenant-allowed model providers, data residency, and live endpoint health.':
         '开始执行前，先按企业设置检查可用的模型提供商、数据处理区域和服务状态。',
@@ -864,7 +864,7 @@ ZH_TEXT_MAP.update({
     '4 · Outbound LLM Guardrail Filter (noul)': '4 · AI 回复发送前检查（noul）',
     '#1 across 102 decision benchmarks': '在 102 项判断类盲测中综合排名第一',
     '#1 Overall Across 102 Blind Benchmarks': '102 项盲测综合排名第 1',
-    'Powering Microsoft & 4,000+ Customers': '已用于微软产品和 4,000 多家客户',
+    'Observed use: Microsoft workflows & 4,000+ customers': '公开采用情况：微软内部流程及 4,000 多家客户',
     'Decision-1.1 agent controller': 'Decision-1.1 业务流程判断演示',
     '✓  Zero-spread routing (choice & noul)': '✓  同一输入结果稳定，普通消息先分流',
     '!  3-in-1 safety triage (choice+score+noul)': '!  一次请求同时完成分组、定级和重复投诉判断',

@@ -278,7 +278,19 @@ class BuilderTests(unittest.TestCase):
     def test_cover_omits_duration_footer_and_renders_pages_qr_code(self):
         cover_texts = [op.get('text', '') for op in D.slides[0] if op['op'] == 'add_text_box']
         self.assertFalse(any('November 2026' in t or '45 minutes' in t for t in cover_texts))
+        self.assertIn('Yingting Huang - Microsoft', cover_texts)
         self.assertTrue(all(op.get('name') != 'footer_src' for ops in D.slides.values() for op in ops))
+        zh_slides = D.get_localized_slides('zh')
+        zh_text = '\n'.join(
+            op.get('text', '') or '\n'.join(p.get('text', '') for p in op.get('paragraphs', []))
+            for slide_ops in zh_slides.values()
+            for op in slide_ops
+        )
+        zh_notes = '\n'.join(D.get_localized_notes('zh').values())
+        self.assertIn('内容安排', zh_text)
+        self.assertIn('自动路由在微软产品中的实现', zh_text + zh_notes)
+        self.assertNotIn('今天主要讲七件事', zh_text + zh_notes)
+        self.assertNotIn('微软产品方案', zh_text + zh_notes)
         for slide_idx, ops in D.slides.items():
             nums = [op for op in ops if op.get('name') == 'footer_num']
             self.assertEqual(len(nums), 1, f'Slide {slide_idx + 1} missing footer_num')
