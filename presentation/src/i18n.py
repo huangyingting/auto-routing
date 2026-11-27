@@ -103,64 +103,57 @@ EN_NOTES = {
         "Source: Garg et al., HyDRA paper (arXiv:2605.17106)."
     ),
     15: (
-        "Putting all of these products and papers together reveals one consistent three-layer blueprint across Microsoft.\n"
-        "Layer 1 is always deterministic code: tenant allow-lists, data zones, required tool or schema capabilities, and warm prefix-cache state—compliance rules never rely on model guesses. "
-        "Layer 2 is a sub-180ms purpose-built scorer that produces calibrated probabilities across the allowed candidates. "
-        "And Layer 3 executes the right workflow—Single, Cascade, or Critique—followed by deterministic output checks.\n"
-        "Which raises the natural question: Microsoft has internal encoders like HyDRA, so what can you drop into Layer 2 of your own agent?"
-    ),
-    16: (
         "That is exactly why Microsoft built and shipped Microsoft-Decision-1.1. Generative LLMs are trained to sound helpful and write fluent prose—even if you only ask for a binary routing check, "
         "they generate tokens one by one, burn hundreds of milliseconds, and guess confidently when context is missing.\n"
         "Decision-1.1 flips the paradigm. Built on a Mixture-of-Experts backbone with only 4B active parameters and a custom single-pass decision engine, it emits zero filler prose—reading text, JSON, and even UI screenshots or photos to return calibrated probabilities in ~123 milliseconds. "
         "Global Standard input costs just $0.042 per million tokens with zero output-token charge, and option-order variance is under 1.3%."
     ),
-    17: (
+    16: (
         "Using it in code feels like calling a strongly typed function. The endpoint is called `systemone`—built for fast, intuitive system-one judgments. You pass your business context in `state` and ask multiple typed questions in a single round-trip using three primitives:\n"
         "Use `choice` to pick one path—like a model tier or support queue—complete with calibrated probabilities per option, so if the top confidence is below 0.75, your code can pause and ask a clarifying question. "
         "Use `noul` for any yes/no gate, returning a clean 0-to-1 probability for policy leaks or photo damage. "
         "And use `score` to compute a probability-weighted severity or quality rating across ordered levels like P0 through P3."
     ),
-    18: (
+    17: (
         "With just those three primitives, the messy control glue around agents becomes clean and testable. Build your own router with `choice` across Flash, Sonnet, Opus Critique, and `ask_clarify`—catching missing exhibits before burning frontier credits.\n"
         "At support intake, combine `choice` and `score` in one call: when a customer reports a collapsed bed frame and a back injury, severity hits 2.94 out of 3, immediately bypassing the bot and paging a human safety specialist. "
         "For e-commerce claims, pass a delivery photo in `assets` with a `noul` damage check—auto-replacing above 0.80 and routing borderline cases to an adjuster. "
         "And right before an AI reply goes out the door, run parallel `noul` guardrails to hold any draft that promotes a competitor or promises an unapproved discount."
     ),
-    19: (
+    18: (
         "With only 4B active parameters and a four-cent price tag, the obvious question is: how accurate is it really? Because narrow leaderboards are easy to overfit, Microsoft evaluated eight decision models across 102 blind benchmarks—41 public and 61 private enterprise tasks totaling 385,000 zero-overlap questions.\n"
         "Decision-1.1 ranked #1 overall at 78.8% mean accuracy and led seven out of nine capability categories—including routing, tool selection, safety, and consistency—while jumping 6 points to 68 on the Artificial Analysis Decision Index at 2.2x the speed. "
         "Within five weeks of launch, over 4,000 organizations adopted it alongside Microsoft Copilot, Cowork, Foundry Evaluation, and Xbox Research—where it runs 14x faster and 200x cheaper than flagship LLMs.\n\n"
         "Source: Microsoft Command Line — Microsoft-Decision-1.1 GA (Nov 17, 2026)."
     ),
-    20: (
+    19: (
         "Demo 1 now contains four distinct scenarios backed by five real Copilot CLI calls.\n"
         "Step 1 is Fusion Single: a routine whitespace fix stays on `gpt-6.1-terra`, adds no review call, and passes 3/3 unit tests. "
         "Step 2 is Cascade: `gpt-6.1-sol` fixes an ABBA lock-order deadlock, `gpt-6-luna` independently scores it 5/5, Opus repair is skipped, and 500 stress runs pass. "
         "Step 3 is Critique: Opus drafts a 50k-RPS payment failover RFC, Luna catches the missing cross-region durability behind the RPO=0 claim, and Opus revises it.\n"
         "Step 4 is the cache scenario, and it is deliberately two real calls: one Auto call warms the session, then `--resume` issues the measured follow-up. The second call reads 5,655 of 5,733 tokens from cache—a 99% hit—at 0.024 incremental AIU. Raw Log shows both the warm-up and resumed calls."
     ),
-    21: (
+    20: (
         "Demo 2 moves to Microsoft Foundry Model Router: four scenarios and six real cloud requests, all through the same `/openai/v1/chat/completions` endpoint with `model: \"auto\"` and `ModelRouterControls=V1Preview`.\n"
         "Step 1 tests pre-rank eligibility and cross-provider parameter cleanup—sending `developer` role, `temperature: 0.2`, and `json_object` together. Instead of tripping HTTP 400 mismatches across labs, Foundry normalizes the payload and routes to `gpt-5.6-luna` in 30 ms.\n"
         "Steps 2 and 3 send two starkly different tasks to the untouched `balanced` endpoint: Step 2 extracts invoice fields in 27 ms on cheap `DeepSeek-V4.1-Flash` with zero wasted reasoning tokens; "
         "Step 3 submits a formal Rust lock-free ring-buffer proof, automatically escalating in 30 ms to `gpt-6-luna`, and on Turn 2's short follow-up, message-fingerprint affinity returns `retain` so the warm model cache isn't broken.\n"
         "Step 4 contributes the final two calls: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to `gpt-5.6-terra` (29 ms) for strategy. The count is 1 + 1 + 2 + 2 = 6. Switch to `{ } Raw Log` to inspect the current scenario's `routing_trace`."
     ),
-    22: (
+    21: (
         "Demo 3 is now focused on four production scenarios and seven real `/providers/microsoft/v1/systemone` requests. The previous five-repeat stability probe was removed because the benchmark section already covers consistency.\n"
         "Step 1 runs a pre-LLM `choice` router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison). Three out of four skip the frontier LLM.\n"
         "Step 2 packs `choice`, `score`, and `noul` into one request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
         "Step 3 screens an outbound AI draft recommending rival 'Fabrikam for $749', scoring competitor mention at `0.970` and holding the draft before send.\n"
         "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing. The count is 4 + 1 + 1 + 1 = 7 real requests."
     ),
-    23: (
+    22: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
         "First, stop pinning one model to every turn—route sub-tasks by capability. Second, respect the prefix cache: switch models at Turn 1 or isolated sub-jobs, never mid-conversation for pennies. "
         "Third, adopt turnkey routers before building from scratch—turn on Copilot Auto at work, Copilot Fusion in your IDE, and Foundry Model Router on your cloud endpoints. "
         "Fourth, when your own application code needs fast triage, priority scoring, or outbound guardrails, plug in calibrated Microsoft-Decision-1.1. Thank you—let's open it up for Q&A!"
     ),
-    24: (
+    23: (
         "This final reference slide collects all public benchmarks, product docs, the HyDRA paper, and Microsoft-Decision-1.1 quickstarts and open benchmark suites—every link is clickable in both the PowerPoint and web deck."
     ),
 }
@@ -359,17 +352,6 @@ ZH_TEXT_MAP = {
     'Trained on full multi-turn coding sessions (including Chinese, Japanese & Korean) within 4 pts of English accuracy.': '基于真实多轮编程对话训练，涵盖中、日、韩等 19 种语言，准确率与英文差距在 4 个百分点以内。',
 
     # Slide 16 (idx 15)
-    '04 · MICROSOFT’S ARCHITECTURE · BLUEPRINT': '04 · 微软路由架构 · 三层设计',
-    'Microsoft’s three-layer routing stack': '微软采用的三层路由架构',
-    'Models score bounded options; deterministic code enforces policy gates, thresholds & fallbacks.': '基本原则：由模型对可选范围打分，由确定性代码负责权限校验、阈值判断和异常兜底。',
-    'Layer 1 · Deterministic Policy & Cache Gate': '第 1 层 · 代码级规则校验与缓存检查',
-    'Hard code filters tenant-allowed providers, data zones, required tool/schema capabilities, and warm prefix-cache state.': '先用普通代码检查租户允许的厂商、数据区域、工具或结构化输出能力，以及当前前缀缓存是否有效。',
-    'Layer 2 · Fast Scorer / Decision Model (<180 ms)': '第 2 层 · 快速评分器 / 专用决策模型 (<180 ms)',
-    'Purpose-built encoder (HyDRA / Foundry ML ranker) or Microsoft-Decision-1.1 produces calibrated scores over allowed options.': '使用专用模型（HyDRA、Foundry 排序器或 Microsoft-Decision-1.1）对符合条件的选项输出校准后的概率。',
-    'Layer 3 · Workflow Pattern & Output Verifier': '第 3 层 · 执行流程编排与结果检查',
-    'Executes Single, Cascade or Critique, then runs deterministic schema, citation or policy safety checks before acting.': '根据分值选择 Single、Cascade 或 Critique 模式执行，并在返回前检查数据格式、引用与内容合规。',
-
-    # Slide 17 (idx 16)
     '05 · MICROSOFT DECISION-1.1': '05 · MICROSOFT DECISION-1.1 决策模型',
     'Meet Microsoft-Decision-1.1': '认识 Microsoft-Decision-1.1',
     'Generative LLMs as routers': '用生成式大模型做判断的痛点',
@@ -388,7 +370,7 @@ ZH_TEXT_MAP = {
     '3 Clouds': '3 个平台可用',
     'Microsoft Foundry, OpenRouter & Vercel': '支持 Foundry、OpenRouter 与 Vercel',
 
-    # Slide 18 (idx 17)
+    # Slide 17 (idx 16)
     '05 · MICROSOFT DECISION-1.1 · API PRIMITIVES': '05 · MICROSOFT DECISION-1.1 · 接口类型',
     'Three primitives: choice, noul, score': '三种基本问题类型：choice、noul、score',
     '01 · choice  (Pick one)': '01 · choice（多项选一）',
@@ -402,7 +384,7 @@ ZH_TEXT_MAP = {
     'Computes a probability-weighted score across ordered levels.\nUse: P0–P3 incident priority, output grading.': '按有序档位计算加权得分。\n适用：P0–P3 故障定级、客户意向评估与结果打分。',
     'POST <foundry-endpoint>/providers/microsoft/v1/systemone   ·   Ask all 3 in ONE call': 'POST <foundry-endpoint>/providers/microsoft/v1/systemone   ·   一次请求可同时提交多个问题',
 
-    # Slide 19 (idx 18)
+    # Slide 18 (idx 17)
     '05 · MICROSOFT DECISION-1.1 · EXAMPLES': '05 · MICROSOFT DECISION-1.1 · 常见用法',
     'Four production Decision-1.1 patterns': 'Decision-1.1 的四种常见使用场景',
     '1 · Custom LLM & Agent Router (choice)': '1 · 自定义模型与 Agent 路由 (choice)',
@@ -414,7 +396,7 @@ ZH_TEXT_MAP = {
     '4 · Outbound LLM Guardrail Filter (noul)': '4 · AI 回复发送前的内容检查 (noul)',
     'Independent noul checks: mentions_competitor, unapproved_discount, medical_claim.\n→ Hold draft if ANY noul >= 0.50; catches “Try Fabrikam for $749”!': '同时检查多项条件：是否提及竞品、是否擅自承诺折扣、是否包含违规建议。\n→ 任一概率 >= 0.50 即暂停发送，例如拦下“推荐竞品 Fabrikam 只要 $749”。',
 
-    # Slide 20 (idx 19)
+    # Slide 19 (idx 18)
     '05 · MICROSOFT DECISION-1.1 · BENCHMARKS': '05 · MICROSOFT DECISION-1.1 · 评测表现',
     '#1 across 102 decision benchmarks': '102 项盲测基准综合排名第一（共 38.5 万题）',
     '#1 Overall Across 102 Blind Benchmarks': '102 项未见测试集综合排名第 1',
@@ -427,7 +409,7 @@ ZH_TEXT_MAP = {
     '• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol': '• Xbox 数据分析流程：比 GPT-6 Sol 快 14 倍，成本降至 1/200',
     '• Adopted by Epic, Equinor, Atos & Raiffeisen Bank': '• 已被 Epic、Equinor、Atos 和 Raiffeisen 银行用于生产环境',
 
-    # Slide 21 (idx 20)
+    # Slide 20 (idx 19)
     '$ copilot --model fusion --fusion-tier high \\\n    -p "..." --output-format json --usage-output-file u.json\n\n// Server-resolved pattern per single CLI command:\n-> Routine fix  : pattern="single"   (gpt-6.1-terra, 0 review)\n-> Lock bug     : pattern="cascade"  (sol -> luna Judge 5/5)\n-> 50k RPS RFC  : pattern="critique" (opus -> luna -> revise)\n-> --resume <id>: 99% cacheReadTokens hit (5,655 / 5,733 tok)': '$ copilot --model fusion --fusion-tier high \\\n    -p "..." --output-format json --usage-output-file u.json\n\n// 单条命令由服务端按题目难度自动选择模式:\n-> 常规代码修改 : pattern="single"   (gpt-6.1-terra, 无额外评审)\n-> 并发死锁修复 : pattern="cascade"  (sol -> luna 评审 5/5)\n-> 高并发容灾方案: pattern="critique" (opus -> luna 审校 -> 修订)\n-> --resume <id>: 99% 缓存命中 (5,655 / 5,733 tok)',
     'POST /openai/v1/chat/completions\nFoundry-Features: ModelRouterControls=V1Preview\n{\n  "model": "auto",\n  "routing_config": {\n    "mode": "balanced",\n    "session_affinity": { "strategy": "adaptive" }\n  }\n}\n// Invoice JSON -> DeepSeek-V4.1-Flash (28 ms)\n// Rust MPMC    -> gpt-6-luna          (27 ms, retain)': 'POST /openai/v1/chat/completions\nFoundry-Features: ModelRouterControls=V1Preview\n{\n  "model": "auto",\n  "routing_config": {\n    "mode": "balanced",\n    "session_affinity": { "strategy": "adaptive" }\n  }\n}\n// 简单发票提取 -> DeepSeek-V4.1-Flash (27 ms)\n// Rust 并发证明 -> gpt-6-luna          (30 ms, retain)',
     '// Easy JSON -> DeepSeek-V4.1-Flash (23 ms) | Hard Rust -> gpt-5.6-luna (20 ms)\n"session_affinity": { "strategy": "adaptive", "decision": "retain" },\n"attempts": [ {"model":"gpt-6-sol","status":429}, {"model":"gpt-5.6-sol","status":200} ]': '// 简单提取 -> DeepSeek-V4.1-Flash (23 ms) | 复杂证明 -> gpt-5.6-luna (20 ms)\n"session_affinity": { "strategy": "adaptive", "decision": "retain" },\n"attempts": [ {"model":"gpt-6-sol","status":429}, {"model":"gpt-5.6-sol","status":200} ]',
@@ -444,7 +426,7 @@ ZH_TEXT_MAP = {
     'Opus draft → Luna Critic → Opus revise': 'Opus 起草 → Luna 审校提议修改 → Opus 修订',
     'Native Critic flags Active-Active zero-RPO gap for Opus to revise; --resume hits 99% cacheReadTokens.': 'Critic 指出多活方案里数据零丢失的前提漏洞并交回 Opus 修订；--resume 追问实测 99% 命中缓存。',
 
-    # Slide 22 (idx 21)
+    # Slide 21 (idx 20)
     '06 · LIVE DEMO 2': '06 · 演示 2',
     'Foundry Model Router live': 'Foundry Model Router 云端接口演示',
     '4 live Foundry V1Preview cloud traces (0 local mocks)': '4 组真实 Foundry V1Preview 云端接口调用',
@@ -458,7 +440,7 @@ ZH_TEXT_MAP = {
     'grok-4-1-fast (cost) → gpt-5.6-terra (quality)': 'grok-4-1-fast (cost 提取) → gpt-5.6-terra (quality 分析)',
     'Splits renewal analysis into two live calls: cheap extraction in cost mode followed by strategy in quality mode.': '将续约分析拆成两次调用：先用 cost 模式低成本提取关键数据，再用 quality 模式交由强模型制定策略。',
 
-    # Slide 23 (idx 22)
+    # Slide 22 (idx 21)
     '06 · LIVE DEMO 3': '06 · 演示 3',
     'Decision-1.1 agent controller': 'Decision-1.1 应用控制与检查演示',
     'GA · Nov 2026': '2026.11 正式版',
@@ -473,7 +455,7 @@ ZH_TEXT_MAP = {
     'Rival promo noul=0.970 & missing Exhibit B p=0.9999': '提及竞品 noul=0.970 拦截 · 缺少附件 B 概率 0.9999',
     'Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.': '拦下推荐竞品 Fabrikam 的回复草稿 (0.970)；发现未提供附件 B 时主动提示补充，不凭空编造。',
 
-    # Slide 24 (idx 23)
+    # Slide 23 (idx 22)
     'SUMMARY · KEY TAKEAWAYS': '总结 · 落地建议',
     'Right-size the model,\nkeep the control': '按任务选对模型，\n把控成本与质量',
     '1   Route sub-tasks by capability — no single model wins all.': '1   按子任务特点分配模型 —— 不要用一个模型处理所有请求。',
@@ -482,7 +464,7 @@ ZH_TEXT_MAP = {
     '4   Use Microsoft-Decision-1.1 for fast routing, priority & safety gates.': '4   业务代码里的分流、定级和内容检查，可接入 Decision-1.1。',
     'Thank you  ·  Q&A': '谢谢大家  ·  问答交流',
 
-    # Slide 25 (idx 24)
+    # Slide 24 (idx 23)
     'APPENDIX · OFFICIAL SOURCES & BENCHMARKS': '附录 · 参考文档与评测报告',
     'Public field guide': '公开资料链接',
     'Benchmarks & Product Routing': '评测报告与微软产品文档',
@@ -505,10 +487,10 @@ ZH_TEXT_MAP = {
 ZH_DEMO_LAUNCHERS = {
     10: ('fusion', '1', '打开 Fusion 演示'),
     12: ('foundry', '1', '打开 Foundry 演示'),
-    19: ('decision', '1', '打开 Decision-1.1 演示'),
-    20: ('fusion', '1', '启动 Demo 1 · Copilot CLI & Fusion'),
-    21: ('foundry', '1', '启动 Demo 2 · Foundry 路由器'),
-    22: ('decision', '1', '启动 Demo 3 · Decision-1.1'),
+    18: ('decision', '1', '打开 Decision-1.1 演示'),
+    19: ('fusion', '1', '启动 Demo 1 · Copilot CLI & Fusion'),
+    20: ('foundry', '1', '启动 Demo 2 · Foundry 路由器'),
+    21: ('decision', '1', '启动 Demo 3 · Decision-1.1'),
 }
 
 ZH_DEMO_TEXT_MAP = {
@@ -842,14 +824,6 @@ ZH_TEXT_MAP.update({
     'GitHub HyDRA: decouple demand & catalog': 'GitHub HyDRA：先判断任务需要什么，再从模型列表中选择',
     '4-Head Capability Scorer': '同时评估四项能力需求',
     'Zero-Retraining Model Updates': '新增模型只改配置，不必重新训练路由器',
-    'Microsoft’s three-layer routing stack': '微软自动路由的三层结构',
-    'Models score bounded options; deterministic code enforces policy gates, thresholds & fallbacks.':
-        '模型只负责给允许的选项打分；权限、阈值和失败后的处理仍由普通代码控制。',
-    'Layer 1 · Deterministic Policy & Cache Gate': '第 1 层 · 用普通代码检查权限、能力和缓存状态',
-    'Hard code filters tenant-allowed providers, data zones, required tool/schema capabilities, and warm prefix-cache state.':
-        '先检查企业允许的模型提供商、数据处理范围、工具或结构化输出能力，以及当前会话缓存是否还能复用。',
-    'Layer 2 · Fast Scorer / Decision Model (<180 ms)': '第 2 层 · 用快速评分器判断哪个选项更合适（<180 ms）',
-    'Layer 3 · Workflow Pattern & Output Verifier': '第 3 层 · 执行对应流程，并在提交结果前做确定性检查',
     'Meet Microsoft-Decision-1.1': 'Microsoft-Decision-1.1：把“判断”单独交给专用模型',
     'Generative LLMs as routers': '让生成式大模型负责判断，问题在哪里',
     'Built specifically for fast, calibrated decisions': '专门用于快速、稳定地比较有限选项',
@@ -875,10 +849,10 @@ ZH_TEXT_MAP.update({
 ZH_DEMO_LAUNCHERS = {
     10: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
     12: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    19: ('decision', '1', '打开演示 3：Decision-1.1'),
-    20: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
-    21: ('foundry', '1', '打开演示 2：Foundry Model Router'),
-    22: ('decision', '1', '打开演示 3：Decision-1.1'),
+    18: ('decision', '1', '打开演示 3：Decision-1.1'),
+    19: ('fusion', '1', '打开演示 1：Copilot Auto 与 Fusion'),
+    20: ('foundry', '1', '打开演示 2：Foundry Model Router'),
+    21: ('decision', '1', '打开演示 3：Decision-1.1'),
 }
 
 ZH_DEMO_TEXT_MAP.update({
@@ -1817,7 +1791,7 @@ ZH_TEXT_MAP.update({
         '一次调用停止合同对比，避免模型编造缺失条款。',
 })
 
-# 第 21–23 页用于现场讲解，中文先说清结论，再保留模型名和指标。
+# 第 20–22 页用于现场讲解，中文先说清结论，再保留模型名和指标。
 ZH_TEXT_MAP.update({
     'Copilot CLI Auto & Fusion live':
         'Copilot CLI：四种执行场景',

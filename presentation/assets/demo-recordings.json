@@ -553,7 +553,7 @@
           "delayMs": 160,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Combined /v1/systemone call: 3 typed questions (choice + score[0..3] + noul) in ONE request\n[REQUEST] \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\"\n  team (choice)    : \"safety_support\" (p=0.998)\n  priority (score) : 1.97 / 3.0  (repeat.noul=0.998)\n✕ ESCALATED — Safety incident (safety_support, score=1.97, repeat=1.00); bot reply blocked!\n✓ PASS — Completed 3-primitive triage & human escalation in 366 ms\nWhy: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.{team,priority,repeat})  |  Schema: Slide 18\n"
+            "text": "[CONFIG] Combined /v1/systemone call: 3 typed questions (choice + score[0..3] + noul) in ONE request\n[REQUEST] \"The bed frame collapsed last night and my husband hurt his back. Third time writing in!\"\n  team (choice)    : \"safety_support\" (p=0.998)\n  priority (score) : 1.97 / 3.0  (repeat.noul=0.998)\n✕ ESCALATED — Safety incident (safety_support, score=1.97, repeat=1.00); bot reply blocked!\n✓ PASS — Completed 3-primitive triage & human escalation in 366 ms\nWhy: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.{team,priority,repeat})  |  Schema: Slide 17\n"
           }
         },
         {

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_pptx.py - builds "Auto-routing LLMs" (25 slides, 16:9,
+build_pptx.py - builds "Auto-routing LLMs" (24 slides, 16:9,
 hand-drawn illustrations + product screenshots/charts, Chinese speaker notes)
 as a standalone .pptx with build-time layout & overlap verification.
 
@@ -490,31 +490,8 @@ for i,(t,d,col_) in enumerate(hy_cards):
 footer(s,'',15)
 note(s,'那么怎么解决候选模型频繁更新、不想反复重训路由器的问题？GitHub Copilot 采用的 HyDRA 架构给出了一个做法：把“评估任务需要什么能力”和“当前有哪些可用模型”分开处理。\n它底层使用一个轻量的 ModernBERT 编码器，带有四个输出头，在普通 CPU 上运行的中位耗时只有 86 毫秒。它预测的不是某个模型的名字，而是当前请求在推理、代码生成、调试和工具调用四个维度上的需求分值。同时，每个候选模型的四项能力指标和单价单独写在配置文件里；运行时只要对比哪些模型能满足这四项需求，从中选出可用且成本最低的一个即可。后续上线新模型时，只需要更新配置文件，不需要重新训练分类器。在 SWE-Bench 测试中，这套方法在保持同等解决率的前提下节省了 54.1% 的成本。\n\n参考来源：Garg et al., HyDRA 论文（arXiv:2605.17106）。')
 
-# ---------- 15 MICROSOFT'S THREE-LAYER ROUTING STACK
+# ---------- 15 PART 5: MEET MICROSOFT-DECISION-1.1
 s=15
-header(s,'04 · MICROSOFT’S ARCHITECTURE · BLUEPRINT','Microsoft’s three-layer routing stack')
-img(s,'hd-sorter.jpg',M,1520000,4980000,3320000,'Hand-drawn robot sorting incoming tasks into three policy-governed trays')
-banner_box(s,M,5020000,4980000,980000,'Models score bounded options; deterministic code enforces policy gates, thresholds & fallbacks.',size=13)
-rx=M+4980000+320000; rw=W-M-rx
-layers=[
-    ('Layer 1 · Deterministic Policy & Cache Gate','Hard code filters tenant-allowed providers, data zones, required tool/schema capabilities, and warm prefix-cache state.',CY),
-    ('Layer 2 · Fast Scorer / Decision Model (<180 ms)','Purpose-built encoder (HyDRA / Foundry ML ranker) or Microsoft-Decision-1.1 produces calibrated scores over allowed options.',CY),
-    ('Layer 3 · Workflow Pattern & Output Verifier','Executes Single, Cascade or Critique, then runs deterministic schema, citation or policy safety checks before acting.',CY),
-]
-ch_=1300000; gap_=290000; y0_=1520000
-for i,(t,d,col_) in enumerate(layers):
-    yy=y0_+i*(ch_+gap_)
-    card_box(s,rx,yy,rw,ch_,[
-        {'text':t,'sizePt':16.2,'bold':True,'color':col_,'spaceAfterPt':6},
-        {'text':d,'sizePt':13.1,'color':MUTED},
-    ],fill=CARD,line=EDGE,lw=12700,pad_x=220000,pad_y=95000)
-    if i<2:
-        medallion(s,rx+rw//2,yy+ch_+gap_//2,diam=230000,glyph='↓',fill=CY,size=11)
-footer(s,'',16)
-note(s,'把前面这些产品和算法放在一起看，其实可以归纳成三层。\n第一层是普通代码，负责检查企业允许使用哪些模型、数据可以在哪些区域处理、目标模型是否支持工具或结构化输出，以及当前缓存还能不能继续用。这些明确的规则不应该交给模型猜。第二层用一个速度很快的专用模型，在允许的选项里判断哪个更合适。第三层再按判断结果执行：简单任务只用一个模型，难题增加检查，最后由普通代码核对格式和必要字段。\n如果我们在自己的业务系统里也需要这样一个速度快、成本低的判断组件，可以用什么？下一页就是答案。')
-
-# ---------- 16 PART 5: MEET MICROSOFT-DECISION-1.1
-s=16
 header(s,'05 · MICROSOFT DECISION-1.1','Meet Microsoft-Decision-1.1')
 cw_=5480000; cy0=1520000; ch=2880000
 card_box(s,M,cy0,cw_,ch,[
@@ -545,11 +522,11 @@ for i,(v,l,col_) in enumerate(facts):
         {'text':v,'sizePt':23,'bold':True,'color':col_,'spaceAfterPt':6},
         {'text':l,'sizePt':12.8,'color':INK},
     ],fill=CODEBG,line=EDGE,lw=12700,pad_x=180000,pad_y=120000)
-footer(s,'',17)
+footer(s,'',16)
 note(s,'Microsoft-Decision-1.1 就是为这种程序判断准备的。常见的生成式大模型主要擅长写完整回答；即使只让它做一次分类，也会逐字生成解释，额外增加几百毫秒到两秒，而且缺少信息时仍可能给出看似确定的答案。\nDecision-1.1 的做法不同。它基于混合专家架构，每次只激活 4B 参数，通过一次前向计算直接返回各个选项的概率，不生成多余文字；输入既可以是文本和 JSON，也可以是图片。每百万输入 Token 的价格是 0.042 美元，输出 Token 免费，典型响应时间约 123 毫秒。把选项顺序打乱后，结果变化也小于 1.3%，因此程序可以更放心地按阈值处理。')
 
-# ---------- 17 DECISION-1.1 THREE TYPED PRIMITIVES
-s=17
+# ---------- 16 DECISION-1.1 THREE TYPED PRIMITIVES
+s=16
 header(s,'05 · MICROSOFT DECISION-1.1 · API PRIMITIVES','Three primitives: choice, noul, score')
 gap=180000; cw3=(CW-2*gap)/3; y0=1540000; ch=2360000
 prims=[
@@ -575,11 +552,11 @@ api_code=(
     '    "escalate": {"type": "noul",   "instructions": "Needs immediate human on-call?"} } }'
 )
 tb(s,M+220000,4460000,CW-440000,api_code,size=11.5,color=CODE,font=MF,cy=1420000)
-footer(s,'',18)
+footer(s,'',17)
 note(s,'它的接口调用方式很简洁，路径是 systemone。调用时把当前业务上下文放在 state 里，针对同一份上下文可以一次提交多个问题，主要包含三种类型：\n第一种是 choice，用于多项选一，比如决定调用哪个模型或分给哪个客服组，它会同时返回每个选项的概率——如果最高概率低于设定的阈值（例如 0.75），程序就可以先停下来让用户补充信息；第二种是 noul，用于是非判断，比如检查回复草稿里有没有提及竞品、退货照片里的包装是否破损，返回一个 0 到 1 的概率；第三种是 score，用于按等级打分，比如评估工单是 P0 到 P3 哪一档紧急程度，返回加权后的分值。这三种问题可以在同一次请求里一起返回。')
 
-# ---------- 18 FOUR CONCRETE DECISION-1.1 EXAMPLES
-s=18
+# ---------- 17 FOUR CONCRETE DECISION-1.1 EXAMPLES
+s=17
 header(s,'05 · MICROSOFT DECISION-1.1 · EXAMPLES','Four production Decision-1.1 patterns')
 g=180000; tw=(CW-g)/2; th=2120000; y0=1540000
 examples=[
@@ -603,11 +580,11 @@ for i,(title_,st_,body_,col_) in enumerate(examples):
         {'text':st_,'sizePt':11.8,'bold':True,'color':CODE,'spaceAfterPt':7},
         {'text':body_,'sizePt':12.8,'color':INK},
     ],fill=CARD,pad_x=220000,pad_y=110000)
-footer(s,'',19)
+footer(s,'',18)
 note(s,'通过这三种基本类型，可以很方便地实现常见的流程控制。比如自己搭一个模型路由，用 choice 设置轻量提取、常规编码、多模型审校和“缺少信息需追问”四个选项，遇到附件缺失或描述不清时先提示用户补充，避免直接调用高成本模型。\n再比如客服工单入口，在一次调用里同时使用 choice 分组和 score 定级：看到用户反馈“床架塌了伤到腰”，紧急度打到 2.94 分，系统就直接跳过机器人回复，转给人工客服跟进。在电商售后场景里，把退货照片放进 assets 做 noul 判断，破损概率超过 0.8 自动换货，介于中间区间的再转人工处理。另外在大模型生成完回复草稿、正式发给用户之前，也可以用几个 noul 检查是否提到竞品或擅自承诺折扣，超过阈值就暂停发送。')
 
-# ---------- 19 DECISION-1.1 BENCHMARKS & INTERNAL WINS
-s=19
+# ---------- 18 DECISION-1.1 BENCHMARKS & INTERNAL WINS
+s=18
 header(s,'05 · MICROSOFT DECISION-1.1 · BENCHMARKS','#1 across 102 decision benchmarks')
 ix=M; iy=1540000; icw=6150000; ich=4460000
 rect(s,ix,iy,icw,ich,fill='FFFFFF',line=EDGE,lw=12700)
@@ -628,11 +605,11 @@ card_box(s,rx,4260000,rw,1740000,[
     {'text':'• Xbox Research: 14× faster, 200× cheaper than GPT-6 Sol','sizePt':11.8,'color':INK,'spaceAfterPt':4},
     {'text':'• Adopted by Epic, Equinor, Atos & Raiffeisen Bank','sizePt':11.8,'color':INK},
 ],fill=CARD,pad_x=200000,pad_y=90000)
-footer(s,'',20)
+footer(s,'',19)
 note(s,'由于每次推理只激活 4B 参数、价格也很低，大家自然会关心它的准确率够不够高。为了避免在单一测试集上过拟合，评测团队选取了训练集以外的 102 项基准测试（包含 41 项公开测试和 61 项企业场景测试，共 38.5 万道题），对 8 款决策模型做了对比。\n左侧图表展示了测试结果：Decision-1.1 平均准确率为 78.8%，排在综合第一，并在 9 个细分能力维度中拿到了 7 项第一，包括路由分流、工具选择、安全检查和结果一致性；在第三方 Artificial Analysis 决策指数上得分为 68 分，速度提升了 2.2 倍。目前它除了用于微软内部的 Copilot 分流、Cowork 强度调节、Foundry 自动评测和 Xbox 数据分析流程外，也已经有四千多家企业接入使用。\n\n参考来源：Microsoft Command Line — Microsoft-Decision-1.1 GA（2026 年 11 月 17 日，附 Microsoft Decision benchmark report 2026-11-14）。')
 
-# ---------- 20 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
-s=20
+# ---------- 19 LIVE DEMO 1: GITHUB COPILOT AUTO & FUSION
+s=19
 header(s,'06 · LIVE DEMO 1','Copilot CLI Auto & Fusion live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
@@ -666,11 +643,11 @@ for idx,(t,sub,desc,col_) in enumerate(d1_cards):
         {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
-footer(s,'',21)
+footer(s,'',20)
 note(s,'第一个 Demo 有四个场景，每个场景证明一件不同的事。\n第一个场景是常规代码修改。虽然选择了 Fusion High，但系统判断一个模型就够了，因此只调用 Terra 完成修改，3 项测试全部通过，也没有额外调用评审模型。\n第二个场景是并发死锁。Sol 先修正两把锁的顺序，Luna 再独立检查。Luna 给出 5 分通过后，系统没有再调用 Opus 重做；后面的 500 次并发测试也全部通过。\n第三个场景是架构方案。Opus 先写初稿，Luna 发现其中把“避免写入冲突”误当成了“跨区域数据不会丢”，于是 Opus 按照这个意见补上三区域同步提交方案。\n第四个场景看缓存复用。为了真实验证 --resume，程序先发起一次调用建立会话，再发起第二次追问。第二次调用有 5,655 / 5,733 个 Token 直接来自缓存，命中率为 99%，增量费用是 0.024 AIU。因此四个场景一共是五次真实 CLI 调用。')
 
-# ---------- 21 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
-s=21
+# ---------- 20 LIVE DEMO 2: MICROSOFT FOUNDRY MODEL ROUTER
+s=20
 header(s,'06 · LIVE DEMO 2','Foundry Model Router live',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
@@ -708,11 +685,11 @@ for idx,(t,sub,desc,col_) in enumerate(d2_cards):
         {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
-footer(s,'',22)
+footer(s,'',21)
 note(s,'第二个 Demo 有四个场景，业务代码始终调用同一个 /chat/completions 接口，只把 model 设为 auto。\n第一个场景验证参数兼容。请求里同时带了 developer 角色、temperature 和 JSON 输出要求。Foundry 会先排除不支持这些要求的模型，再把参数转换成目标模型能接受的格式，最后由 gpt-5.6-luna 返回正确 JSON。\n第二个场景只从发票里提取编号和币种。这个任务很简单，DeepSeek Flash 已经足够，选模耗时 27 毫秒，推理 Token 为 0，没必要调用成本更高的模型。\n第三个场景有两轮请求。第一轮要求用 5 行设计 Rust 无锁 MPMC 环形队列，并准确说明 Acquire/Release 内存序和 ABA epoch 回收约束；任务变难后，系统自动升级到 gpt-6-luna。第二轮只追问一句“如何避免下标回绕溢出”，系统识别为同一段对话，继续沿用 Luna，不重新建立上下文。\n第四个场景把续约分析拆成两步：先用 grok fast 整理关键数字，再把两条摘要交给 terra 制定报价和谈判方案。四个场景一共六次真实请求，分别是 1、1、2、2 次。')
 
-# ---------- 22 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
-s=22
+# ---------- 21 LIVE DEMO 3: MICROSOFT-DECISION-1.1 CONTROLLER
+s=21
 header(s,'06 · LIVE DEMO 3','Decision-1.1 agent controller',cx=CW-3400000)
 cx_=5550000; cy0=1540000; chh=4420000
 rect(s,M,cy0,cx_,chh,fill=CODEBG,line=EDGE,lw=12700)
@@ -751,11 +728,11 @@ for idx,(t,sub,desc,col_) in enumerate(d3_cards):
         {'text':sub,'sizePt':10.6,'bold':True,'color':col_,'spaceAfterPt':4.5},
         {'text':desc,'sizePt':11.4,'color':MUTED},
     ],fill=CARD,line=EDGE,lw=12700,pad_x=180000,pad_y=70000)
-footer(s,'',23)
+footer(s,'',22)
 note(s,'第三个 Demo 精简为四个生产场景，展示 Decision-1.1 怎么替业务代码先做判断。原来的“同一消息连续调用 5 次”属于稳定性测试，前面的评测页已经介绍过，因此从现场 Demo 中移除。\n第一个场景处理 4 条客服消息：“谢谢”、退订、促销咨询和复杂质保对比。前三条不需要高成本大模型，只有最后一条才升级。\n第二个场景是一条受伤投诉。一次请求同时返回负责团队、紧急程度和是否重复投诉，程序立即停用自动回复，并通知人工安全专员。\n第三个场景检查待发送草稿。草稿里推荐了竞品 Fabrikam，提及竞品的概率为 0.970，因此不会自动发给客户，而是转人工确认。\n第四个场景检查合同附件。用户要求对比合同 A 和附件 B，但附件 B 没有上传。系统选择先请用户补充材料，不继续比较，也不让模型猜测缺失条款。四个场景合计 7 次真实请求：4 + 1 + 1 + 1。')
 
-# ---------- 23 CLOSER: KEY TAKEAWAYS
-s=23
+# ---------- 22 CLOSER: KEY TAKEAWAYS
+s=22
 img(s,'hd-review.jpg',W-M-5040000,1620000,5040000,3360000,'Hand-drawn illustration: two friendly robots reviewing and approving a routed workflow together')
 x=M+80000; cx=5850000
 rect(s,x,330000,520000,38000,fill=CY,preset='roundRect')
@@ -773,11 +750,11 @@ card_box(s,x,4560000,cx,820000,[
     {'text':'github.com/microsoftconnect/Decision-Benchmarks','sizePt':12.5,'bold':True,'color':CY},
 ],fill=CODEBG,line=EDGE,lw=12700,pad_x=200000,pad_y=90000,font=MF)
 tb(s,x,5540000,cx,'Thank you  ·  Q&A',size=24,color=INK,font=HF,bold=True,cy=480000)
-footer(s,'',24)
+footer(s,'',23)
 note(s,'最后简单总结四条落地建议：\n第一，不要把所有请求都固定绑在同一个模型上，可以根据子任务的特点分别选择合适的模型；第二，控制成本时要注意前缀缓存，尽量在对话开始或独立子任务时选定模型，避免中途频繁切换；第三，优先利用平台已有的能力，日常办公开启 Copilot Auto，写代码使用 Copilot Fusion，调用云端接口可以直接接入 Foundry Model Router；第四，如果业务代码里需要做请求分流、优先级评估或发送前的内容检查，可以尝试接入低延迟、低成本的 Decision-1.1。今天的内容就分享到这里，谢谢大家，欢迎提问交流。')
 
-# ---------- 24 APPENDIX: PUBLIC REFERENCES
-s=24
+# ---------- 23 APPENDIX: PUBLIC REFERENCES
+s=23
 header(s,'APPENDIX · OFFICIAL SOURCES & BENCHMARKS','Public field guide')
 gap=240000; colw=(CW-gap)/2; cy0=1540000; ch=4420000
 app_cols=[
@@ -796,7 +773,7 @@ for i,(t,sub,links,col_) in enumerate(app_cols):
         {'text':f'↗  {label}','sizePt':12.8,'bold':True,'color':CY,'href':url,'spaceAfterPt':9}
         for label,url in links
     ],cy=ch-1460000)
-footer(s,'',25)
+footer(s,'',24)
 note(s,'最后一页整理了今天提到的评测报告、产品文档、HyDRA 论文以及 Decision-1.1 的使用指南和开源测试集链接，在 PPT 和网页版里都可以直接点击打开，方便会后查阅。')
 
 

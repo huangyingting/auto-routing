@@ -1375,7 +1375,7 @@ export async function runDecisionStepLive(step, emit) {
         (escalated ? `✕ ESCALATED — Safety incident (${team.choice}, score=${score.toFixed(2)}, repeat=${Number(repeat.noul ?? 0).toFixed(2)}); bot reply blocked!\n` : ``) +
         `✓ PASS — Completed 3-primitive triage & human escalation in ${wallMs} ms\n` +
         `Why: Packing choice, score, and noul into one call classifies, prioritizes, and gates safety in one round-trip.\n` +
-        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.{team,priority,repeat})  |  Schema: Slide 18\n`,
+        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.{team,priority,repeat})  |  Schema: Slide 17\n`,
     });
     emit({ kind: "raw", text: `# PROVENANCE: Live 3-question /providers/microsoft/v1/systemone HTTP JSON.\n\n${rawTrace}` });
     emit({

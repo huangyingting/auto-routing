@@ -122,15 +122,15 @@ class BuilderTests(unittest.TestCase):
         expected = {
             10: 'fusion',
             12: 'foundry',
-            19: 'decision',
-            20: 'fusion',
-            21: 'foundry',
-            22: 'decision',
+            18: 'decision',
+            19: 'fusion',
+            20: 'foundry',
+            21: 'decision',
         }
         self.assertEqual({k: v[0] for k, v in H.DEMO_LAUNCHERS.items()}, expected)
         self.assertEqual({k: v[0] for k, v in H.ZH_DEMO_LAUNCHERS.items()}, expected)
-        self.assertEqual(sorted(D.slides), list(range(25)))
-        for slide_index in range(25):
+        self.assertEqual(sorted(D.slides), list(range(24)))
+        for slide_index in range(24):
             en_markup = H.slide_html(slide_index, [], '.', 1600, lang='en')
             zh_markup = H.slide_html(slide_index, [], '.', 1600, lang='zh')
             should_have_launcher = slide_index in expected
@@ -143,6 +143,7 @@ class BuilderTests(unittest.TestCase):
         )
         self.assertNotIn('Sales agent case', deck_text)
         self.assertNotIn('CAC = $1.81', deck_text)
+        self.assertNotIn('three-layer routing stack', deck_text)
 
     def test_chinese_demo_studio_localizes_controls_and_explanations(self):
         self.assertNotIn('Source', H.ZH_DEMO_TEXT_MAP)
@@ -380,23 +381,23 @@ class BuilderTests(unittest.TestCase):
             )
 
         zh_slides = D.get_localized_slides('zh')
-        self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[20]))
-        self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[21]))
-        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[22]))
+        self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[19]))
+        self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[20]))
+        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[21]))
 
-        foundry_slide = visible_text(zh_slides[21])
+        foundry_slide = visible_text(zh_slides[20])
         for step in range(1, 5):
             self.assertIn(f'场景 {step} ·', foundry_slide)
         self.assertNotIn('步骤 2–3', foundry_slide)
 
-        decision_slide = visible_text(zh_slides[22])
+        decision_slide = visible_text(zh_slides[21])
         for step in range(1, 5):
             self.assertIn(f'场景 {step} ·', decision_slide)
         self.assertNotIn('场景 5 ·', decision_slide)
         self.assertNotIn('步骤 1–2', decision_slide)
         self.assertNotIn('步骤 4–5', decision_slide)
 
-        natural_copy = '\n'.join(visible_text(zh_slides[index]) for index in (20, 21, 22))
+        natural_copy = '\n'.join(visible_text(zh_slides[index]) for index in (19, 20, 21))
         for expected in (
             '常规修改，一个模型就够了',
             '只提取两个字段，用 Flash 就够了',

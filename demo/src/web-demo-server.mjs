@@ -287,7 +287,7 @@ process.on("SIGINT", async () => {
 
 server.listen(port, "127.0.0.1", () => {
   const caps = detectLiveCapabilities();
-  console.log(`Auto-Routing Interactive Demo Studio listening at http://127.0.0.1:${port}/#21`);
+  console.log(`Auto-Routing Interactive Demo Studio listening at http://127.0.0.1:${port}/#20`);
   console.log(
     `Live backends -> Copilot CLI: ${caps.copilotAvailable ? "READY" : "missing"} | Foundry Router: ${caps.foundryReady ? "READY" : "replay-until-AZURE_FOUNDRY_ENDPOINT"} | Decision-1.1: ${caps.decisionReady ? "READY" : "replay-until-AZURE_FOUNDRY_ENDPOINT"}`,
   );

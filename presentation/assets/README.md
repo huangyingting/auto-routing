@@ -8,7 +8,6 @@ Shared style suffix:
 | File | Size | Subject |
 |---|---|---|
 | `hd-fork.jpg` | 3:2 | Robot dispatcher at a fork holding a clipboard, pointing between a fast bicycle courier and a heavy cargo van |
-| `hd-sorter.jpg` | 3:2 | Robot sorting incoming documents into three policy-governed trays |
 | `hd-tradeoff.jpg` | 3:2 | Robot weighing a stopwatch in one hand and a coin in the other above a quality checkmark sheet |
 | `hd-review.jpg` | 3:2 | Two robots at a desk reviewing and marking up a shared draft document together |
 
