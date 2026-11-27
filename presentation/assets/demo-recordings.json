@@ -647,61 +647,14 @@
           "delayMs": 160,
           "event": {
             "kind": "output",
-            "text": "[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75 or missing document)\n[REQUEST] \"Compare the renewal termination notice window in Contract A vs Exhibit B.\"  (Exhibit B missing from attached_documents!)\n  choice=\"request_missing_exhibit\" · probabilities={\"fast_extract\":0.000013924910734296821,\"frontier_compare\":0.000043116736198178034,\"request_missing_exhibit\":0.9999429583530675}\n✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n✓ PASS — Safeguard evaluated in 347 ms (asked user for Exhibit B)\nWhy: Calibrated probabilities let software know when to stop and ask instead of guessing.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  Scenario: Missing-document check\n"
+            "text": "[CONFIG] Multimodal Decision-1.1 check · assets.cargo-damage.jpg = { type: \"image\", format: \"jpeg\", data_base64: ... }\n[REQUEST] Does the photo show cargo damage or serious unsafe displacement during transport?\n  image bytes=211333 · cargo_damage_visible.noul=0.739\n✓ DAMAGE DETECTED — Cargo photo evaluated in 3359 ms\nWhy: A claims workflow can route visibly damaged cargo for human inspection using one typed image probability.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.cargo_damage_visible.noul)  |  Scenario: Cargo damage image\n"
           }
         },
         {
           "delayMs": 15,
           "event": {
             "kind": "raw",
-            "text": "# PROVENANCE: Live /providers/microsoft/v1/systemone abstention HTTP JSON.\n\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": {\n    \"user_query\": \"Compare the renewal termination notice window in Contract A vs Exhibit B.\",\n    \"attached_documents\": {\n      \"Contract_A\": \"Section 9.2: Either party may terminate upon 60 days prior written notice.\"\n    }\n  },\n  \"questions\": {\n    \"action\": {\n      \"type\": \"choice\",\n      \"instructions\": \"Choose the next action based strictly on available documents in state.\",\n      \"criteria\": {\n        \"fast_extract\": \"All referenced documents are present and trivial to extract\",\n        \"frontier_compare\": \"All referenced documents are present and require legal comparison\",\n        \"request_missing_exhibit\": \"A referenced document or exhibit is missing from attached_documents\"\n      }\n    }\n  }\n}\n\n# HTTP 200 Response JSON (347 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"action\": {\n      \"type\": \"choice\",\n      \"choice\": \"request_missing_exhibit\",\n      \"confidence\": 0.9999144375296012,\n      \"probabilities\": {\n        \"fast_extract\": 0.000013924910734296821,\n        \"frontier_compare\": 0.000043116736198178034,\n        \"request_missing_exhibit\": 0.9999429583530675\n      }\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 138,\n    \"output_tokens\": 1\n  }\n}"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "route",
-            "model": "Abstain · Ask User",
-            "meta": "347 ms · zero hallucination",
-            "chip1": "Missing File Caught ✓",
-            "chip1Tone": "on",
-            "chip2": "Latency: 347 ms ✓",
-            "chip2Tone": "on",
-            "chip3": "Zero Frontier Waste ✓",
-            "chip3Tone": "on"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-done",
-            "demo": "decision",
-            "step": 4,
-            "code": 0
-          }
-        }
-      ],
-      "5": [
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "step-start",
-            "demo": "decision",
-            "step": 5
-          }
-        },
-        {
-          "delayMs": 160,
-          "event": {
-            "kind": "output",
-            "text": "[CONFIG] Multimodal Decision-1.1 check · assets.cargo-damage.jpg = { type: \"image\", format: \"jpeg\", data_base64: ... }\n[REQUEST] Does the photo show cargo damage or serious unsafe displacement during transport?\n  image bytes=211333 · cargo_damage_visible.noul=0.739\n✓ DAMAGE DETECTED — Cargo photo evaluated in 4359 ms\nWhy: A claims workflow can route visibly damaged cargo for human inspection using one typed image probability.\n[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (assets + answers.cargo_damage_visible.noul)  |  Scenario: Cargo damage image\n"
-          }
-        },
-        {
-          "delayMs": 15,
-          "event": {
-            "kind": "raw",
-            "text": "# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Cargo inside a shipping container after transport: image:cargo-damage.jpg\",\n  \"questions\": {\n    \"cargo_damage_visible\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Does the photo show cargo damage or serious unsafe displacement during transport?\"\n    }\n  },\n  \"assets\": {\n    \"cargo-damage.jpg\": {\n      \"type\": \"image\",\n      \"format\": \"jpeg\",\n      \"data_base64\": \"<base64 omitted: 281780 chars>\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (4359 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"cargo_damage_visible\": {\n      \"type\": \"noul\",\n      \"noul\": 0.7389602203173705\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 308,\n    \"output_tokens\": 1\n  }\n}"
+            "text": "# PROVENANCE: Live /providers/microsoft/v1/systemone image HTTP JSON (base64 omitted from log).\n\n# HTTP Request: POST https://<foundry-resource>.cognitiveservices.azure.com/providers/microsoft/v1/systemone\n{\n  \"model\": \"decision-1-1\",\n  \"state\": \"Cargo inside a shipping container after transport: image:cargo-damage.jpg\",\n  \"questions\": {\n    \"cargo_damage_visible\": {\n      \"type\": \"noul\",\n      \"instructions\": \"Does the photo show cargo damage or serious unsafe displacement during transport?\"\n    }\n  },\n  \"assets\": {\n    \"cargo-damage.jpg\": {\n      \"type\": \"image\",\n      \"format\": \"jpeg\",\n      \"data_base64\": \"<base64 omitted: 281780 chars>\"\n    }\n  }\n}\n\n# HTTP 200 Response JSON (3359 ms)\n{\n  \"model\": \"microsoft-decision-1.1\",\n  \"answers\": {\n    \"cargo_damage_visible\": {\n      \"type\": \"noul\",\n      \"noul\": 0.7389602203173705\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 308,\n    \"output_tokens\": 1\n  }\n}"
           }
         },
         {
@@ -709,13 +662,13 @@
           "event": {
             "kind": "artifact",
             "demo": "decision",
-            "step": 5,
+            "step": 4,
             "imageName": "cargo-damage.jpg",
             "imageBytes": 211333,
             "probability": 0.7389602203173705,
             "detected": true,
-            "wallMs": 4359,
-            "wallSec": 4.359,
+            "wallMs": 3359,
+            "wallSec": 3.359,
             "inputTokens": 308,
             "outputTokens": 1,
             "credits": 0.000012936
@@ -726,7 +679,7 @@
           "event": {
             "kind": "route",
             "model": "cargo damage = 0.739",
-            "meta": "4359 ms image gate",
+            "meta": "3359 ms image gate",
             "chip1": "Image: JPEG ✓",
             "chip1Tone": "on",
             "chip2": "Damage: 0.739 ✕",
@@ -740,7 +693,7 @@
           "event": {
             "kind": "step-done",
             "demo": "decision",
-            "step": 5,
+            "step": 4,
             "code": 0
           }
         }

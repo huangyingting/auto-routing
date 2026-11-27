@@ -141,12 +141,11 @@ EN_NOTES = {
         "Step 4 contributes the final two calls: `mode: \"cost\"` routes raw extraction to fast `grok-4-1-fast-reasoning` (28 ms), then `mode: \"quality\"` hands the compact bullets to `gpt-5.6-terra` (29 ms) for strategy. The count is 1 + 1 + 2 + 2 = 6. Switch to `{ } Raw Log` to inspect the current scenario's `routing_trace`."
     ),
     21: (
-        "Demo 3 now contains five production scenarios and eight real `/providers/microsoft/v1/systemone` requests, including a multimodal image call.\n"
+        "Demo 3 now contains four production scenarios and seven real `/providers/microsoft/v1/systemone` requests, including a multimodal image call.\n"
         "Step 1 runs a pre-LLM `choice` router across four customer messages ('Thanks!', 'STOP', promo lookup, and multi-line warranty comparison). Three out of four skip the frontier LLM.\n"
         "Step 2 packs `choice`, `score`, and `noul` into one request on a collapsed-bed injury report—returning `safety_support` (0.998), urgency `1.97 / 3.0`, and `repeat = 0.998` to block the bot and page a human.\n"
         "Step 3 screens an outbound AI draft recommending rival 'Fabrikam for $749', scoring competitor mention at `0.970` and holding the draft before send.\n"
-        "Step 4 checks evidence completeness before legal comparison. Because Exhibit B is missing, it selects `request_missing_exhibit` at `0.99994` instead of guessing.\n"
-        "Step 5 sends a real cargo-damage JPEG in `assets`, references it as `image:cargo-damage.jpg`, and asks one `noul` question. The live response returns `cargo_damage_visible = 0.739` in 4.36 seconds, crossing the 0.50 threshold and routing the claim to human inspection. The count is 4 + 1 + 1 + 1 + 1 = 8 real requests."
+        "Step 4 sends a real cargo-damage JPEG in `assets`, references it as `image:cargo-damage.jpg`, and asks one `noul` question. The live response returns `cargo_damage_visible = 0.739` in 3.36 seconds, crossing the 0.50 threshold and routing the claim to human inspection. The count is 4 + 1 + 1 + 1 = 7 real requests."
     ),
     22: (
         "Let's wrap up with four practical takeaways you can bring back to your team on Monday:\n"
@@ -452,9 +451,6 @@ ZH_TEXT_MAP = {
     '!  3-in-1 safety triage (choice+score+noul)': '!  一次请求同时完成三项判断',
     'safety_support (0.998) + score 1.97 + repeat 1.00': '安全团队 (0.998) + 紧急度 1.97 + 重复反馈 1.00',
     'One 348 ms call classifies injury risk, scores urgency & flags 3rd repeat contact — blocking bot reply.': '单次三百多毫秒调用同时完成分组、定级和重复投诉识别，及时停用自动回复并转交人工。',
-    '✕  Outbound guardrail & missing-doc abstain': '✕  发送前竞品拦截与缺失文件提醒',
-    'Rival promo noul=0.970 & missing Exhibit B p=0.9999': '提及竞品 noul=0.970 拦截 · 缺少附件 B 概率 0.9999',
-    'Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.': '拦下推荐竞品 Fabrikam 的回复草稿 (0.970)；发现未提供附件 B 时主动提示补充，不凭空编造。',
 
     # Slide 23 (idx 22)
     'SUMMARY · KEY TAKEAWAYS': '总结 · 落地建议',
@@ -613,9 +609,6 @@ ZH_DEMO_TEXT_MAP = {
     'Check 3 (noul): Live Outbound Guardrail Blocks Rival Promo': '检查 3（noul）：发送前拦截推荐竞品的草稿',
     'Pre-Send Guardrail': '发送前内容检查',
     'A $0.00006 pre-send noul check catches competitor promotions or unauthorized discounts automatically so clean drafts ship without 100% manual human review.': '发送前使用 noul 检查是否推荐竞品或擅自承诺折扣，只有命中风险的草稿才需要人工处理。',
-    'Missing Document Caught: Abstains Instead of Hallucinating': '发现缺少文件：提示补充材料而不是猜测',
-    'Missing-Context Guard': '缺少上下文检查',
-    'Before calling an expensive frontier model to compare legal clauses, Decision-1.1 verifies all referenced exhibits exist in state — stopping to ask when one is missing.': '在调用大模型比较合同条款前，Decision-1.1 先检查引用的附件是否都已提供，缺少时先提示用户补充。',
     'DEMO 1 · CODING AGENT': '演示 1 · 编码 Agent',
     'Fast Single pass on easy code, Judge/Critic teams on hard bugs, and warm-cache retention.': '简单代码使用单模型，复杂问题增加评审，并在多轮对话中复用缓存。',
     'DEMO 2 · CLOUD API': '演示 2 · 云端 API',
@@ -742,14 +735,6 @@ ZH_DEMO_TEXT_MAP = {
     'OUTBOUND AGENT DRAFT COMPOSER (PRE-SEND GATE)': '待发送回复草稿（发送前检查）',
     'Without pre-send <code>noul</code> screening, either unsafe replies leak to customers or humans must review 100% of drafts ($0.24/msg).': '如果不做发送前 <code>noul</code> 检查，要么不当回复直接发给客户，要么所有草稿都得人工逐条审核（约 $0.24/条）。',
     'PARALLEL POLICY GATES (': '并行策略检查（',
-    'Legal Comparison Request: Checking attached_documents completeness before Frontier call': '合同对比请求：在调用大模型前先检查附件是否齐全',
-    'LEGAL WORKSPACE STATE': '合同工作区附件状态',
-    '📄 Contract_A.pdf · Attached (Sec 9.2: 60 days)': '📄 Contract_A.pdf · 已上传（第 9.2 条：提前 60 天通知）',
-    '⚠️ Exhibit_B.pdf · MISSING FROM STATE ✕': '⚠️ Exhibit_B.pdf · 未上传 ✕',
-    'ACTION PROBABILITIES': '下一步动作概率',
-    'SAFE ASSISTANT ACTION': '安全处理方式',
-    '<strong>Asked Customer:</strong> "Contract A specifies 60 days prior written notice, but <strong>Exhibit B is not attached</strong>. Please upload Exhibit B so I can compare both clauses accurately."': '<strong>向用户提示：</strong>“已读取主合同 A（第 9.2 条规定需提前 60 天书面通知），但当前<strong>尚未上传附件 Exhibit B</strong>。请先补充上传后再为您对比两份条款。”',
-    'Instead of letting a frontier LLM guess missing Exhibit B terms, Decision-1.1 catches missing context upfront.': '与其让大模型在缺少附件时凭空猜测条款，不如先用 Decision-1.1 发现缺失文件并提示用户补充。',
     '✓ Retained ': '✓ 继续使用原模型 ',
     ' — 99% prefix cache hit (': ' —— 复用 99% 前缀缓存（',
     '✓ Pre-rank gate filtered candidates & normalized params in ': '✓ 排序前完成条件筛选与参数转换，耗时 ',
@@ -857,8 +842,8 @@ ZH_DEMO_LAUNCHERS = {
 }
 
 ZH_DEMO_TEXT_MAP.update({
-    'Microsoft-Decision-1.1 · 5 scenarios / 8 calls':
-        'Microsoft-Decision-1.1 · 5 个场景 / 8 次调用',
+    'Microsoft-Decision-1.1 · 4 scenarios / 7 calls':
+        'Microsoft-Decision-1.1 · 4 个场景 / 7 次调用',
     'Demo 1 · Coding Agent': '演示 1 · 编程 Agent',
     'Demo 3 · App Controller': '演示 3 · 业务流程判断',
     'Coding Agent Orchestration': '编程任务的多模型协作',
@@ -942,9 +927,6 @@ ZH_DEMO_TEXT_MAP.update({
     '100% Human Review': '所有草稿都人工审核',
     '$0.24 / msg labor': '人工审核约 $0.24/条',
     'Reviewing every AI draft manually kills ROI': '逐条人工检查会抵消自动化带来的收益',
-    'Direct Frontier Call': '直接调用大模型',
-    'Hallucinated Terms ✕': '可能编造缺失条款 ✕',
-    'Guesses missing Exhibit B clauses confidently': '附件没提供时仍可能给出看似确定的结论',
     '4 Live Messages': '4 条客户消息',
     'p = 1.00 Confidence': '每条结果概率接近 1.00',
     '~338 ms per HTTP call': '每次 HTTP 调用约 338 ms',
@@ -962,13 +944,6 @@ ZH_DEMO_TEXT_MAP.update({
     'Draft HELD ✓': '草稿已暂停 ✓',
     'Rival: ': '竞品提及概率：',
     'Latency: ': '耗时：',
-    'Missing File Caught ✓': '发现缺少附件 ✓',
-    'Zero Frontier Waste ✓': '未调用高成本大模型 ✓',
-    'Attached State': '当前已上传材料',
-    'Contract A Only': '只有主合同 A',
-    'Exhibit B missing!': '缺少附件 B',
-    'Abstain & Ask User': '先向用户索取缺失材料',
-    'Zero frontier hallucination': '避免在材料不全时猜测',
     'DEMO 1 · CODING AGENT': '演示 1 · 编程 Agent',
     'DEMO 3 · APP CONTROLLER': '演示 3 · 业务流程判断',
     'Fast Single pass on easy code, Judge/Critic teams on hard bugs, and warm-cache retention.':
@@ -1137,20 +1112,18 @@ ZH_DEMO_TEXT_MAP.update({
 
 # Demo 2 采用更适合现场讲解的中文：先说发生了什么，再保留技术字段供核对。
 ZH_TEXT_MAP.update({
-    '5 scenarios · 8 live /v1/systemone requests + custom probe':
-        '5 个场景 · 8 次真实 /v1/systemone 请求 · 支持现场输入',
+    '4 scenarios · 7 live /v1/systemone requests + custom probe':
+        '4 个场景 · 7 次真实 /v1/systemone 请求 · 支持现场输入',
     'Step 1 · Route four messages before the LLM':
         '场景 1 · 先给 4 条客服消息分流，只把难题交给大模型',
     'Step 2 · One call returns team, urgency, and repeat':
         '场景 2 · 受伤投诉一次完成分组、定级和转人工',
     'Step 3 · Hold competitor draft before send':
         '场景 3 · 回复发送前，拦下推荐竞品的草稿',
-    'Step 4 · Ask for the missing Exhibit B':
-        '场景 4 · 缺少附件 B，就停下来请用户补充',
-    'Step 5 · Inspect damaged cargo':
-        '场景 5 · 检查运输中的货物破损',
-    'cargo_damage 0.739 · 4.36 s':
-        '货损概率 0.739 · 耗时 4.36 秒',
+    'Step 4 · Inspect damaged cargo':
+        '场景 4 · 检查运输中的货物破损',
+    'cargo_damage 0.739 · 3.36 s':
+        '货损概率 0.739 · 耗时 3.36 秒',
     'One multimodal call routes visibly damaged cargo to human inspection.':
         '一次多模态调用识别明显货损，并转交人工验货。',
     'Foundry Model Router live': 'Foundry Model Router：自动选模型',
@@ -1304,12 +1277,6 @@ ZH_TEXT_MAP.update({
         '负责团队 safety_support (0.998) · 紧急程度 1.97 · 重复投诉 1.00',
     'One 348 ms call classifies injury risk, scores urgency & flags 3rd repeat contact — blocking bot reply.':
         '一次调用同时判断负责团队、紧急程度和是否重复投诉，并立即停用自动回复、转交人工专员。',
-    '✕  Outbound guardrail & missing-doc abstain':
-        '✕  不当回复发送前拦下，资料不全时先向用户询问',
-    'Rival promo noul=0.970 & missing Exhibit B p=0.9999':
-        '推荐竞品概率 0.970 · 缺少附件 B 的概率 0.9999',
-    'Holds a draft recommending rival Fabrikam (0.970) and stops to ask when Exhibit B is missing from state.':
-        '草稿里推荐了竞品 Fabrikam，因此发送前暂停；合同附件 B 没上传时，先请用户补充，不让模型猜。',
 })
 
 ZH_DEMO_TEXT_MAP.update({
@@ -1450,11 +1417,6 @@ ZH_DEMO_TEXT_MAP.update({
     'A $0.00006 pre-send noul check catches competitor promotions or unauthorized discounts automatically so clean drafts ship without 100% manual human review.':
         '发送前只检查是否提到竞品或承诺未批准的折扣。只有命中风险的草稿才转人工，不必逐条审核所有回复。',
 
-    'Missing Document Caught: Abstains Instead of Hallucinating':
-        '缺少附件时停下来问，不让模型猜',
-    'Missing-Context Guard': '资料不全时先向用户询问',
-    'Before calling an expensive frontier model to compare legal clauses, Decision-1.1 verifies all referenced exhibits exist in state — stopping to ask when one is missing.':
-        '用户要求对比合同条款，但附件 B 没有上传。系统先请用户补充材料，不把不完整的内容交给大模型猜测。',
 
     'Smart Support Inbox: 4 incoming customer messages waiting for tier assignment':
         '客服收件箱：先判断 4 条消息该由业务代码、小模型还是大模型处理',
@@ -1723,12 +1685,6 @@ ZH_TEXT_MAP.update({
         'safety_support 0.998 · 紧急程度 1.97 · 重复投诉 0.998',
     'The bot stops immediately and a human safety specialist is notified.':
         '业务代码立即停用自动回复，并通知人工安全专员。',
-    'Steps 4–5 · Hold unsafe draft; ask for missing file':
-        '步骤 4–5 · 拦下不当草稿，缺少附件时先询问',
-    'competitor 0.970 · request_missing_exhibit 0.99994':
-        '提及竞品 0.970 · 请求补充附件 0.99994',
-    'Two more calls block the rival draft and prevent a made-up contract comparison.':
-        '最后两次请求分别拦下推荐竞品的草稿，并在附件 B 缺失时停止对比，避免模型猜测。',
 })
 
 ZH_TEXT_MAP.update({
@@ -1790,12 +1746,6 @@ ZH_TEXT_MAP.update({
         '提及竞品 0.970 · 347 ms',
     'One call blocks the rival recommendation and sends it to human review.':
         '一次调用发现竞品推荐，在发送前暂停并转人工审核。',
-    'Step 5 · Ask for the missing Exhibit B':
-        '步骤 5 · 缺少附件 B，先请用户补充',
-    'request_missing_exhibit 0.99994 · 347 ms':
-        '请求补充附件 0.99994 · 347 ms',
-    'One call stops the comparison instead of inventing missing contract terms.':
-        '一次调用停止合同对比，避免模型编造缺失条款。',
 })
 
 # 第 20–22 页用于现场讲解，中文先说清结论，再保留模型名和指标。
@@ -1886,16 +1836,10 @@ ZH_TEXT_MAP.update({
         '提及竞品的概率 0.970 · 耗时 347 ms',
     'One call blocks the rival recommendation and sends it to human review.':
         '草稿命中竞品检查，因此不会自动发给客户，而是转交人工确认。',
-    'Step 5 · Ask for the missing Exhibit B':
-        '场景 5 · 缺少附件 B，就停下来请用户补充',
-    'request_missing_exhibit 0.99994 · 347 ms':
-        '请求补充附件的概率 0.99994 · 耗时 347 ms',
-    'One call stops the comparison instead of inventing missing contract terms.':
-        '材料不完整时不继续比较，也不让模型猜测缺失的合同条款。',
 })
 
 ZH_DEMO_TEXT_MAP.update({
-    'Text + Image · 8 Calls': '文本与图片 · 8 次调用',
+    'Text + Image · 7 Calls': '文本与图片 · 7 次调用',
     'Image Input': '图片输入',
     'Live Decision': '实时判断',
     'IMAGE INPUT': '图片输入',
@@ -1916,8 +1860,8 @@ ZH_DEMO_TEXT_MAP.update({
 
 ZH_DEMO_TEXT_MAP.update({
     'Multimodal Damage Gate': '多模态货损判断',
-    'Check 5 (image + noul): Live Cargo Damage Inspection':
-        '场景 5（image + noul）：实时判断货物破损',
+    'Check 4 (image + noul): Live Cargo Damage Inspection':
+        '场景 4（image + noul）：实时判断货物破损',
     'JPEG in assets · state references image:cargo-damage.jpg':
         'JPEG 放入 assets · state 通过 image:cargo-damage.jpg 引用',
     'Does the photo show cargo damage or serious unsafe displacement during transport?':
@@ -1953,8 +1897,8 @@ ZH_DEMO_TEXT_MAP.update({
     'Continue normal flow': '继续正常流程',
     'The claims workflow can threshold this typed result directly and route visible cargo damage to a human inspector.':
         '理赔流程可以直接按这个概率设置阈值，把明显货损转交人工验货。',
-    'Click Run Step 5 to send the embedded cargo photo as real base64 image data.':
-        '点击“运行步骤 5”，把内嵌货损照片作为真实 Base64 图片发送。',
+    'Click Run Step 4 to send the embedded cargo photo as real base64 image data.':
+        '点击“运行步骤 4”，把内嵌货损照片作为真实 Base64 图片发送。',
     '[REQUEST] Does the photo show cargo damage or serious unsafe displacement during transport?':
         '[请求] 照片中的货物是否在运输中发生破损或严重位移？',
     'Why: A claims workflow can route visibly damaged cargo for human inspection using one typed image probability.':

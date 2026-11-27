@@ -20,7 +20,7 @@ HTML embeds `.svg` files directly as native vector graphics (`data:image/svg+xml
 | `bench-163x-frontier.svg` (`.png`) | GenisisIQ 28-model Creative & Multimodal Benchmark (`163×` Cost Compression Frontier) | Slide 5 |
 | `m365-copilot-home.png` | Official Microsoft Blog — Microsoft Copilot Home unified `Auto` composer (`Chat` + `Cowork`) | Slide 8 |
 | `m365-cowork-ui.png` | Official Microsoft Learn — Copilot Cowork `Chat / Cowork` + `Auto Medium` composer | Slide 9 |
-| `cargo-damage.jpg` | Astrid Groeneveld / Wikimedia Commons — [`Cargo damage.JPG`](https://commons.wikimedia.org/wiki/File:Cargo_damage.JPG), resized to 960×720, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | Demo 3 image Step 5 |
+| `cargo-damage.jpg` | Astrid Groeneveld / Wikimedia Commons — [`Cargo damage.JPG`](https://commons.wikimedia.org/wiki/File:Cargo_damage.JPG), resized to 960×720, [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | Demo 3 image Step 4 |
 | `fusion-picker.png` | Official GitHub Changelog — GitHub Copilot Fusion composer (`Standard` / `High` / `Max`) | Slide 10 |
 | `fusion-patterns.png` | Official GitHub Changelog — Three execution patterns in Copilot Fusion (`Single` / `Cascade` / `Critique`) | Slide 11 |
 | `foundry-overview.png` | Official Microsoft Learn — Microsoft Foundry Auto (`"model": "auto"`) & Model Router overview across 40+ models & coding/agent SDKs | Slide 12 |

@@ -1475,65 +1475,6 @@ export async function runDecisionStepLive(step, emit) {
   }
 
   if (step === 4) {
-    const state = {
-      user_query: "Compare the renewal termination notice window in Contract A vs Exhibit B.",
-      attached_documents: {
-        Contract_A: "Section 9.2: Either party may terminate upon 60 days prior written notice.",
-      },
-    };
-    const questions = {
-      action: {
-        type: "choice",
-        instructions: "Choose the next action based strictly on available documents in state.",
-        criteria: {
-          fast_extract: "All referenced documents are present and trivial to extract",
-          frontier_compare: "All referenced documents are present and require legal comparison",
-          request_missing_exhibit: "A referenced document or exhibit is missing from attached_documents",
-        },
-      },
-    };
-    const { json, wallMs, rawTrace } = await callDecisionSystemOne({ state, questions });
-    const ans = json.answers?.action ?? json.action ?? {};
-    const probs = ans.probabilities || {};
-    const maxP = Math.max(0, ...Object.values(probs).map(Number));
-    const abstained = ans.choice === "request_missing_exhibit" || maxP < 0.75;
-    emit({
-      kind: "output",
-      text:
-        `[CONFIG] Confidence abstention gate (abstain if max(p) < 0.75 or missing document)\n` +
-        `[REQUEST] "${state.user_query}"  (Exhibit B missing from attached_documents!)\n` +
-        `  choice="${ans.choice}" · probabilities=${JSON.stringify(probs)}\n` +
-        (abstained ? `✕ BLOCKED — Missing document / low confidence caught; abstained from hallucinating comparison!\n` : ``) +
-        `✓ PASS — Safeguard evaluated in ${wallMs} ms (${abstained ? "asked user for Exhibit B" : "proceeded"})\n` +
-        `Why: Calibrated probabilities let software know when to stop and ask instead of guessing.\n` +
-        `[SOURCE] Raw Log: POST /providers/microsoft/v1/systemone (answers.action.probabilities)  |  Scenario: Missing-document check\n`,
-    });
-    emit({ kind: "raw", text: `# PROVENANCE: Live /providers/microsoft/v1/systemone abstention HTTP JSON.\n\n${rawTrace}` });
-    emit({
-      kind: "artifact",
-      demo: "decision",
-      step: 4,
-      choice: ans.choice || "request_missing_exhibit",
-      probs,
-      abstained,
-      wallMs,
-    });
-    emit({
-      kind: "route",
-      model: abstained ? "Abstain · Ask User" : ans.choice,
-      meta: `${wallMs} ms · zero hallucination`,
-      chip1: abstained ? "Missing File Caught ✓" : ans.choice,
-      chip1Tone: "on",
-      chip2: `Latency: ${wallMs} ms ✓`,
-      chip2Tone: "on",
-      chip3: "Zero Frontier Waste ✓",
-      chip3Tone: "on",
-    });
-    emit({ kind: "step-done", demo: "decision", step, code: 0 });
-    return;
-  }
-
-  if (step === 5) {
     const imageName = "cargo-damage.jpg";
     const imageBytes = await readFile(path.join(presentationImagesDir, imageName));
     const state = `Cargo inside a shipping container after transport: image:${imageName}`;
@@ -1573,7 +1514,7 @@ export async function runDecisionStepLive(step, emit) {
     emit({
       kind: "artifact",
       demo: "decision",
-      step: 5,
+      step: 4,
       imageName,
       imageBytes: imageBytes.length,
       probability,

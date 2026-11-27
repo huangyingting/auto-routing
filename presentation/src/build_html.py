@@ -283,7 +283,7 @@ LIVE_DEMO = """
             </li>
             <li role="option" data-val="decision" aria-selected="false" class="cs-option">
               <span class="cs-opt-main">Demo 3 · App Controller</span>
-              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 5 scenarios / 8 calls</span>
+              <span class="cs-opt-sub">Microsoft-Decision-1.1 · 4 scenarios / 7 calls</span>
             </li>
           </ul>
         </div>
@@ -928,7 +928,7 @@ var SCENARIOS={
   ]
  },
  decision:{
-  ledgerSave:'Text + Image · 8 Calls',
+  ledgerSave:'Text + Image · 7 Calls',
   steps:[
    {short:'① Router',boundary:'Pre-LLM Inbox Filter',title:'Check 1 (choice): 4/4 Live Inbox Triage (3/4 Skip Frontier)',
     ctx:'4 live /v1/systemone calls · 4 handler tiers',
@@ -981,24 +981,7 @@ var SCENARIOS={
     baseName:'100% Human Review',baseNums:'$0.24 / msg labor',baseMeta:'Reviewing every AI draft manually kills ROI',
     agentName:'noul = 0.970 HELD',agentNums:'341 ms Pre-Send Gate',agentMeta:'Blocked rival leak · 8% review rate',
     chips:[['Rival: 0.970 ✕','denied'],['Draft HELD ✓','on'],['Latency: 341 ms ✓','on']],risk:1},
-   {short:'④ Abstain',boundary:'Missing-Context Guard',title:'Missing Document Caught: Abstains Instead of Hallucinating',
-    ctx:'Contract A attached · Exhibit B missing from state',
-    prompt:'"Compare the renewal termination notice window in Contract A vs Exhibit B."',
-    scorer:'Live /v1/systemone · Evidence-Completeness Gate (334 ms)',
-    bars:[],
-    pattern:'MISSING EVIDENCE CAUGHT · ABSTAIN',
-    nodes:[
-     {role:'Attached State',name:'Contract A Only',sub:'Exhibit B missing!',state:'err'},
-     {role:'Live /systemone',name:'p = 0.9999',sub:'request_missing_exhibit',state:'active'},
-     {role:'Safe Action',name:'Abstain & Ask User',sub:'Zero frontier hallucination',state:'win'}
-    ],
-    outcome:'✓ Live /v1/systemone selected request_missing_exhibit (p=0.99994) in 334 ms — zero hallucinated comparison!',
-    what:'Before calling an expensive frontier model to compare legal clauses, Decision-1.1 verifies all referenced exhibits exist in state — stopping to ask when one is missing.',
-    code:'answers.action: { choice: "request_missing_exhibit", p: 0.99994 } → Ask user for Exhibit B',
-    baseName:'Direct Frontier Call',baseNums:'Hallucinated Terms ✕',baseMeta:'Guesses missing Exhibit B clauses confidently',
-    agentName:'Abstain · Ask User',agentNums:'p = 0.9999 · 334 ms',agentMeta:'Missing file caught · no guessed terms',
-     chips:[['Missing File Caught ✓','on'],['Latency: 334 ms ✓','on'],['Zero Frontier Waste ✓','on']],risk:1},
-    {short:'⑤ Image',boundary:'Multimodal Damage Gate',title:'Check 5 (image + noul): Live Cargo Damage Inspection',
+    {short:'④ Image',boundary:'Multimodal Damage Gate',title:'Check 4 (image + noul): Live Cargo Damage Inspection',
      ctx:'JPEG in assets · state references image:cargo-damage.jpg',
      prompt:'Does the photo show cargo damage or serious unsafe displacement during transport?',
      scorer:'Live Microsoft-Decision-1.1 · image noul',
@@ -1068,8 +1051,7 @@ var LEDGER_SPECS={
    {base:0.6000,auto:0.15005,baseSec:15.20,autoSec:4.15},
    {base:0.1500,auto:0.00002,baseSec:3.80,autoSec:0.37},
    {base:0.2400,auto:0.00006,baseSec:12.00,autoSec:0.35},
-   {base:0.1500,auto:0.00002,baseSec:4.10,autoSec:0.35},
-   {base:0.000012936,auto:0.000012936,baseSec:4.359,autoSec:4.359}
+   {base:0.000012936,auto:0.000012936,baseSec:3.359,autoSec:3.359}
   ]
  }
 };
@@ -1144,9 +1126,9 @@ function updateLedger(){
  }else{
   byId('ledger-count').textContent='Completed: '+doneCount+' / '+totalSteps;
  }
- var imageOnly=curKind==='decision'&&curStep===5&&(doneCount===0||(doneCount===1&&doneSet.decision[5]));
+ var imageOnly=curKind==='decision'&&curStep===4&&(doneCount===0||(doneCount===1&&doneSet.decision[4]));
  if(imageOnly){
-  var imageArt=lastArtifact['decision:5'],imageP=imageArt&&typeof imageArt.probability==='number'?imageArt.probability:0.739;
+  var imageArt=lastArtifact['decision:4'],imageP=imageArt&&typeof imageArt.probability==='number'?imageArt.probability:0.739;
   byId('ledger-base-lbl').textContent='Image Input';
   byId('ledger-auto-lbl').textContent='Live Decision';
   byId('ledger-base-bar').style.width='100%';
@@ -1344,26 +1326,15 @@ function renderVisualStage(){
       {lbl:'mentions_competitor',val:done?(compVal.toFixed(3)+' ≥ 0.50 HOLD ✕'):'threshold 0.50',pct:done?Math.round(compVal*100):8,tone:'warn'},
       {lbl:'unapproved_discount',val:done?(discVal.toFixed(3)+' < 0.50 Clean ✓'):'threshold 0.50',pct:done?Math.max(3,Math.round(discVal*100)):3,tone:'ok'}
     ])+'</div>';
-  }else if(curStep===4){
-   h=stateBannerHtml(done,stepRunning,done,'Legal Comparison Request: Checking attached_documents completeness before Frontier call','✕ ABSTAINED in '+(art.wallMs||347)+' ms — Missing Exhibit B caught (p = 0.99994); zero hallucination!')
-    +'<div class="vs-panel"><span class="vs-pkicker">LEGAL WORKSPACE STATE</span><div class="vs-ptitle">"Compare the renewal termination notice window in Contract A vs Exhibit B."</div>'
-    +'<div class="vs-annot-foot"><span class="vs-mini-tag ok">📄 Contract_A.pdf · Attached (Sec 9.2: 60 days)</span><span class="vs-mini-tag warn">⚠️ Exhibit_B.pdf · MISSING FROM STATE ✕</span></div></div>'
-    +'<div class="vs-cols"><div class="vs-panel"><span class="vs-pkicker">ACTION PROBABILITIES</span>'
-    +renderMeterRows([
-      {lbl:'request_missing_exhibit',val:done?'0.9999 · SELECTED':'pending',pct:done?100:12,tone:'warn'},
-      {lbl:'frontier_compare',val:done?'0.0001':'pending',pct:3,tone:'muted'},
-      {lbl:'fast_extract',val:done?'0.0000':'pending',pct:3,tone:'muted'}
-    ])+'</div>'
-    +'<div class="vs-panel '+(done?'win':'')+'"><span class="vs-pkicker">SAFE ASSISTANT ACTION</span><div class="vs-pbody">'+(done?'<strong>Asked Customer:</strong> "Contract A specifies 60 days prior written notice, but <strong>Exhibit B is not attached</strong>. Please upload Exhibit B so I can compare both clauses accurately."':'Instead of letting a frontier LLM guess missing Exhibit B terms, Decision-1.1 catches missing context upfront.')+'</div></div></div>';
   }else{
    var imageProb=art.probability!==undefined?Number(art.probability):0.739;
    var imageSrc=window.DECISION_DAMAGE_IMAGE||'';
    var imageMarkup=imageSrc?'<img class="vs-image-preview" src="'+imageSrc+'" alt="Damaged cargo inside a shipping container used for the live image decision">':'<div class="vs-mono-box">cargo-damage.jpg · embedded JPEG asset</div>';
-   h=stateBannerHtml(done,stepRunning,false,'Multimodal claim check: JPEG in assets, referenced from state as image:cargo-damage.jpg','✕ DAMAGE DETECTED in '+(art.wallMs||4359)+' ms — cargo_damage_visible.noul = '+imageProb.toFixed(3))
+   h=stateBannerHtml(done,stepRunning,false,'Multimodal claim check: JPEG in assets, referenced from state as image:cargo-damage.jpg','✕ DAMAGE DETECTED in '+(art.wallMs||3359)+' ms — cargo_damage_visible.noul = '+imageProb.toFixed(3))
     +'<div class="vs-cols"><div class="vs-panel err"><span class="vs-pkicker">REAL CARGO PHOTO SENT TO DECISION-1.1</span>'+imageMarkup+'<div class="vs-annot-foot"><span class="vs-mini-tag warn">JPEG · '+(art.imageBytes||'embedded')+' bytes</span><span class="vs-mini-tag">Astrid Groeneveld · Wikimedia Commons · CC BY-SA 3.0</span></div></div>'
     +'<div class="vs-panel '+(done?'err':'')+'"><span class="vs-pkicker">TYPED DAMAGE DECISION</span><div class="vs-ptitle">Does the photo show cargo damage or serious unsafe displacement during transport?</div>'
     +renderMeterRows([{lbl:'cargo_damage_visible.noul',val:done?imageProb.toFixed(3):'pending',pct:done?Math.round(imageProb*100):10,tone:imageProb>=0.5?'warn':'ok'},{lbl:'Claims action',val:done?(imageProb>=0.5?'Route to human inspection':'Continue normal flow'):'pending',pct:done?Math.round(imageProb*100):10,tone:imageProb>=0.5?'warn':'ok'}])
-    +'<div class="vs-pbody">'+(done?'The claims workflow can threshold this typed result directly and route visible cargo damage to a human inspector.':'Click Run Step 5 to send the embedded cargo photo as real base64 image data.')+'</div></div></div>';
+    +'<div class="vs-pbody">'+(done?'The claims workflow can threshold this typed result directly and route visible cargo damage to a human inspector.':'Click Run Step 4 to send the embedded cargo photo as real base64 image data.')+'</div></div></div>';
   }
  }
  stage.innerHTML=h;
@@ -1527,7 +1498,7 @@ function renderTabsAndPills(keepExplicitRun){
 
 function renderVisualStep(kind,stepNum,keepExplicitRun){
  var list=SCENARIOS[kind].steps,idx=Math.max(0,Math.min(list.length-1,(Number(stepNum)||1)-1)),g=list[idx];
- var imageDecision=kind==='decision'&&idx===4;
+ var imageDecision=kind==='decision'&&idx===3;
  curKind=kind;curStep=idx+1;
  byId('terminal-mode-sub').textContent=g.pattern;
  renderNodes(g.nodes);

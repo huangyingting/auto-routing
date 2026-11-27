@@ -177,7 +177,6 @@ class BuilderTests(unittest.TestCase):
                 '代码修改与评审',
                 '与固定使用大模型相比',
                 '所有消息都交给大模型',
-                '先请用户补充材料',
                 '{ } 原始日志',
                 '业务代码只调用一个 /chat/completions 接口',
                 '简单任务只用一个模型',
@@ -344,7 +343,7 @@ class BuilderTests(unittest.TestCase):
         rec = json.loads(rec_path.read_text(encoding='utf-8'))
         self.assertEqual(sorted(rec['steps']['fusion'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(sorted(rec['steps']['foundry'].keys()), ['1', '2', '3', '4'])
-        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4', '5'])
+        self.assertEqual(sorted(rec['steps']['decision'].keys()), ['1', '2', '3', '4'])
         self.assertEqual(
             {demo: len(steps) for demo, steps in rec['steps'].items()},
             D.DEMO_STEP_COUNTS,
@@ -385,7 +384,7 @@ class BuilderTests(unittest.TestCase):
         )
         image_raw = '\n'.join(
             item['event']['text']
-            for item in rec['steps']['decision']['5']
+            for item in rec['steps']['decision']['4']
             if item['event']['kind'] == 'raw'
         )
         self.assertIn('image:cargo-damage.jpg', image_raw)
@@ -395,7 +394,7 @@ class BuilderTests(unittest.TestCase):
             any(
                 item['event']['kind'] == 'artifact'
                 and item['event'].get('imageName') == 'cargo-damage.jpg'
-                for item in rec['steps']['decision']['5']
+                for item in rec['steps']['decision']['4']
             )
         )
 
@@ -409,7 +408,7 @@ class BuilderTests(unittest.TestCase):
         zh_slides = D.get_localized_slides('zh')
         self.assertIn('4 个场景 · 5 次真实 CLI 调用', visible_text(zh_slides[19]))
         self.assertIn('4 个场景 · 6 次真实 Foundry 请求', visible_text(zh_slides[20]))
-        self.assertIn('5 个场景 · 8 次真实 /v1/systemone 请求', visible_text(zh_slides[21]))
+        self.assertIn('4 个场景 · 7 次真实 /v1/systemone 请求', visible_text(zh_slides[21]))
 
         foundry_slide = visible_text(zh_slides[20])
         for step in range(1, 5):
@@ -417,8 +416,9 @@ class BuilderTests(unittest.TestCase):
         self.assertNotIn('步骤 2–3', foundry_slide)
 
         decision_slide = visible_text(zh_slides[21])
-        for step in range(1, 6):
+        for step in range(1, 5):
             self.assertIn(f'场景 {step} ·', decision_slide)
+        self.assertNotIn('场景 5 ·', decision_slide)
         self.assertNotIn('步骤 1–2', decision_slide)
         self.assertNotIn('步骤 4–5', decision_slide)
 
@@ -427,7 +427,6 @@ class BuilderTests(unittest.TestCase):
             '常规修改，一个模型就够了',
             '只提取两个字段，用 Flash 就够了',
             '只把难题交给大模型',
-            '缺少附件 B，就停下来请用户补充',
             '检查运输中的货物破损',
         ):
             self.assertIn(expected, natural_copy)
@@ -485,8 +484,8 @@ class BuilderTests(unittest.TestCase):
             self.assertIn(title, H.STUDIO_JS)
 
     def test_decision_studio_has_real_image_scenario(self):
-        self.assertIn('Microsoft-Decision-1.1 · 5 scenarios / 8 calls', H.LIVE_DEMO)
-        self.assertIn('Check 5 (image + noul): Live Cargo Damage Inspection', H.STUDIO_JS)
+        self.assertIn('Microsoft-Decision-1.1 · 4 scenarios / 7 calls', H.LIVE_DEMO)
+        self.assertIn('Check 4 (image + noul): Live Cargo Damage Inspection', H.STUDIO_JS)
         self.assertIn('image:cargo-damage.jpg', H.STUDIO_JS)
         self.assertIn('vs-image-preview', H.STUDIO_JS)
         cargo_path = Path(__file__).resolve().parents[1] / 'assets' / 'images' / 'cargo-damage.jpg'
@@ -508,6 +507,8 @@ class BuilderTests(unittest.TestCase):
             '<base64 omitted:',
         ):
             self.assertIn(expected, runner_source)
+        self.assertNotIn('request_missing_exhibit', runner_source)
+        self.assertNotIn('Missing Document Caught', H.STUDIO_JS)
 
     def test_foundry_step_three_requests_match_visual_and_summary(self):
         turn1 = (
