@@ -697,21 +697,19 @@ rect(s,M+cx_-1480000,cy0+120000,1240000,300000,fill=CY,preset='roundRect',text='
 tb(s,M+220000,cy0+120000,cx_-1800000,'decision-controller.ts  ·  /v1/systemone',size=11,color=FOOT,font=MF,cy=300000)
 rect(s,M+220000,cy0+450000,cx_-440000,14000,fill=EDGE)
 d3_code=(
+    'const photo = { type: "image", format: "jpeg", data_base64 };\n'
     'const res = await systemOne({\n'
     '  model: "microsoft-decision-1.1",\n'
-    '  state: { customer_msg, draft_reply, photo: "image:cargo-damage.jpg" },\n'
-    '  assets: { "cargo-damage.jpg": { type: "image", format: "jpeg", data_base64 } },\n'
+    '  state: { msg, draft, photo: "image:cargo-damage.jpg" },\n'
+    '  assets: { "cargo-damage.jpg": photo },\n'
     '  questions: {\n'
-    '    team:     { type: "choice", criteria: TEAMS },\n'
-    '    priority: { type: "score",  criteria: P0_TO_P3 },\n'
-    '    rival:    { type: "noul",   instructions: "Names rival?" },\n'
-    '    damaged:  { type: "noul",   instructions: "Cargo damaged?" }\n'
+    '    team: choice(TEAMS), priority: score(P0_TO_P3),\n'
+    '    rival: noul("Names rival?"),\n'
+    '    damaged: noul("Cargo damaged?")\n'
     '  }\n'
-    '});\n'
-    'if (res.team.choice === "safety_support") return pageHuman();\n'
-    'if (res.rival.noul >= 0.50)               return holdDraft();'
+    '});'
 )
-tb(s,M+220000,cy0+490000,cx_-440000,d3_code,size=11.5,color=CODE,font=MF,cy=2640000)
+tb(s,M+220000,cy0+620000,cx_-440000,d3_code,size=10.5,color=CODE,font=MF,cy=2320000)
 card_box(s,M+220000,cy0+3260000,cx_-440000,960000,[
     {'text':'PS> npm --prefix demo run demo:decision:live','sizePt':11.5,'bold':True,'color':INK,'spaceAfterPt':7},
     {'text':f'5 scenarios · {DEMO_CALL_COUNTS["decision"]} live /v1/systemone requests + custom probe','sizePt':11,'color':CY},

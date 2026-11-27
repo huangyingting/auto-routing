@@ -118,6 +118,17 @@ class BuilderTests(unittest.TestCase):
                 op['text'],
             )
 
+    def test_decision_demo_code_stays_between_header_and_command_card(self):
+        slide_ops = D.slides[21]
+        def op_text(op):
+            return op.get('text', '') or '\n'.join(p.get('text', '') for p in op.get('paragraphs', []))
+
+        header = next(op for op in slide_ops if op_text(op).startswith('decision-controller.ts'))
+        code = next(op for op in slide_ops if op_text(op).startswith('const photo = { type: "image"'))
+        command = next(op for op in slide_ops if op_text(op).startswith('PS> npm --prefix demo run demo:decision:live'))
+        self.assertGreaterEqual(code['y'] - (header['y'] + header['cy']), 150000)
+        self.assertGreaterEqual(command['y'] - (code['y'] + code['cy']), 300000)
+
     def test_demo_launchers_only_appear_on_matching_slides(self):
         expected = {
             10: 'fusion',
